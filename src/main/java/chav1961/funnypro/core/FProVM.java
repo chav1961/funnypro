@@ -35,6 +35,8 @@ import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.funnypro.core.CommonUtil;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class FProVM implements IFProVM, IGentlemanSet {
 	private static final int			SERIALIZATION_MAGIC = 0x12120000;
@@ -190,7 +192,7 @@ public class FProVM implements IFProVM, IGentlemanSet {
 	}
 
 	@Override
-	public void consult(final Reader source) throws FProParsingException, IOException {
+	public void consult(final CharacterSource source) throws FProParsingException, IOException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source can't be null");
 		}
@@ -203,7 +205,7 @@ public class FProVM implements IFProVM, IGentlemanSet {
 	}
 
 	@Override
-	public void save(final PrintWriter target) throws FProPrintingException, IOException {
+	public void save(final CharacterTarget target) throws FProPrintingException, IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target can't be null");
 		}

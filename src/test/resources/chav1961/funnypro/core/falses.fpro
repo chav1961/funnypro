@@ -1,0 +1,22 @@
+:-test(400).
+:-test(X),none(Y).
+:-test(X),var(X).
+:-test(X),atom(X).
+:-test(X),float(X).
+:-test(X),compound(X).
+:-"a"@<"a".
+:-"b"@<="a".
+:-"a"@>"a".
+:-"a"@>="b".
+:-test(100)@<test(100).
+:-test(200)@<=test(100).
+:-test(100)@>test(200).
+:-test(100)@>=test(200).
+:- not 10 < 15 .
+:-functor(test(100),test,2).
+:-arg(test(100),1,200).
+:-name(test(100),notest).
+:-bagof(newPred(X,100),notest(X),Y).
+:-retract(added(400)).
+:-memberOf([100,200,300],400).
+:-test(X),!,fail.

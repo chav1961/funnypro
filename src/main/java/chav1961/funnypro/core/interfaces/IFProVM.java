@@ -12,6 +12,8 @@ import java.util.Map;
 import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.exceptions.FProPrintingException;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 /**
  * <p>This interface describes IFPro VM</p>
@@ -126,7 +128,7 @@ public interface IFProVM extends AutoCloseable {
 	 * @throws FProParsingException
 	 * @throws IOException
 	 */
-	void consult(Reader source) throws FProParsingException, IOException;
+	void consult(CharacterSource source) throws FProParsingException, IOException;
 	
 	/**
 	 * <p>Save data from the fact/rule base</p>
@@ -134,7 +136,7 @@ public interface IFProVM extends AutoCloseable {
 	 * @throws FProPrintingException
 	 * @throws IOException
 	 */
-	void save(PrintWriter target) throws FProPrintingException, IOException;
+	void save(CharacterTarget target) throws FProPrintingException, IOException;
 	
 	/**
 	 * <p>Execute console for the VM</p>

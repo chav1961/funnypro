@@ -18,6 +18,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import com.google.common.io.CharSource;
+
 import chav1961.funnypro.core.FProVM;
 import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.exceptions.FProParsingException;
@@ -26,6 +28,8 @@ import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.purelib.basic.SystemErrLoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 /**
  * <p>This class implements engine for the Funny prolog interpreter. All requirements about it can be read in the {@link AbstractScriptEngine}
@@ -140,12 +144,12 @@ class FunnyProEngine extends AbstractScriptEngine implements Closeable, IFProVM 
 	}
 
 	@Override
-	public void consult(final Reader source) throws FProParsingException, IOException {
+	public void consult(final CharacterSource source) throws FProParsingException, IOException {
 		vm.consult(source);
 	}
 
 	@Override
-	public void save(final PrintWriter target) throws FProPrintingException, IOException {
+	public void save(final CharacterTarget target) throws FProPrintingException, IOException {
 		vm.save(target);
 	}
 

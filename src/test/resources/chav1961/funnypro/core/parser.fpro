@@ -1,0 +1,9 @@
+% dfdfdf
+% fdfdfdf
+ :- op(100,xfx,*****).
+ pred("123",123,123.456,_,X1,pred).
+ pred("456",123,[a,b,c]).
+ pred((32,"12",_),[a,b,c|_]).
+ a(X,Y,Z):-t(_),f(X);t(Y),f(Z).
+ ?- pred(Z).
+ :- pred(Z).

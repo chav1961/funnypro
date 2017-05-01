@@ -27,6 +27,8 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.charsource.StringCharSource;
+import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 
 
 public class VMTest {
@@ -79,12 +81,12 @@ public class VMTest {
 				Assert.fail("Mandatory exception was not detected (null parametetrs)");
 			} catch (IllegalArgumentException exc) {
 			}
-			vm.consult(new StringReader("predicate(100)."));
+			vm.consult(new StringCharSource("predicate(100)."));
 			
-			final ByteArrayOutputStream	baosSave = new ByteArrayOutputStream();
+			final StringBuilder	save = new StringBuilder();
 			
-			vm.save(new PrintWriter(baosSave));
-			Assert.assertEquals(baosSave.toString(),"predicate(100).");
+			vm.save(new StringBuilderCharTarget(save));
+			Assert.assertEquals(save.toString(),"predicate(100).");
 			
 			Assert.assertTrue(vm.question("?-predicate(X)",EMPTY));
 			try{vm.question(null,EMPTY);

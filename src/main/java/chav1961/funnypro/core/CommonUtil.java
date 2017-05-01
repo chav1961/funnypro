@@ -273,7 +273,7 @@ public class CommonUtil {
 			throw new IllegalArgumentException("Tree to serialize can't be null");
 		}
 		else {
-			writeLong(target,SERIALIZATION_TREE_MAGIC);			// Tree magic.
+			writeInt(target,SERIALIZATION_TREE_MAGIC);			// Tree magic.
 			writeLong(target,tree.size());						// Size of the tree
 			tree.walk(id -> {									// Upload all data in the loop
 				try{writeLong(target,id);
@@ -306,7 +306,7 @@ public class CommonUtil {
 		else if (tree == null) {
 			throw new IllegalArgumentException("Tree to deserialize to can't be null");
 		}
-		else if (readLong(source) != SERIALIZATION_TREE_MAGIC) {
+		else if (readInt(source) != SERIALIZATION_TREE_MAGIC) {
 			throw new IOException("Illegal magic naumber in the tree serialization stream");
 		}
 		else {

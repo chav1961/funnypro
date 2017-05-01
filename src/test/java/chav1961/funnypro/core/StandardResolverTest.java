@@ -27,7 +27,12 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.charsource.ReaderCharSource;
+import chav1961.purelib.streams.chartarget.WriterCharTarget;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class StandardResolverTest {
 
@@ -43,16 +48,21 @@ public class StandardResolverTest {
 			
 			IFProEntity					entity;
 
-			try(final InputStream		is = new FileInputStream("./src/test/resources/environment.fpro");
-				final Reader			rdr = new InputStreamReader(is);
-				final Writer			wr = new OutputStreamWriter(new OutputStream(){public void write(int data){}})) {	// Prepare environment
+			try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/environment.fpro");
+				final Reader			rdr = new InputStreamReader(is);) {	// Prepare environment
+				final CharacterSource	cs = new ReaderCharSource(rdr,false);
+				final CharacterTarget	ct = new WriterCharTarget(System.err,false);
 
-				pap.parseEntities(rdr,new FProParserCallback(){
+				pap.parseEntities(cs,new FProParserCallback(){
 											@Override
 											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
-												wr.write("Consult");
-												pap.putEntity(entity,wr);
-												wr.write("\n");
+												try{ct.put("Consult");
+													pap.putEntity(entity,ct);
+													ct.put("\n");
+												} catch (PrintingException e) {
+													e.printStackTrace();
+													throw new IOException(e.getMessage());
+												}
 												repo.predicateRepo().assertZ(entity);
 												return true;
 											}
@@ -60,16 +70,21 @@ public class StandardResolverTest {
 				);
 			}
 			
-			try(final InputStream		is = new FileInputStream("./src/test/resources/trues.fpro");
-				final Reader			rdr = new InputStreamReader(is);
-				final Writer			wr = new OutputStreamWriter(new OutputStream(){public void write(int data){}})) {	// Test true goals
+			try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/trues.fpro");
+				final Reader			rdr = new InputStreamReader(is);) {	// Test true goals
+				final CharacterSource	cs = new ReaderCharSource(rdr,false);
+				final CharacterTarget	ct = new WriterCharTarget(System.err,false);
 
-				pap.parseEntities(rdr,new FProParserCallback(){
+				pap.parseEntities(cs,new FProParserCallback(){
 											@Override
 											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
-												wr.write("Process true goal: ");
-												pap.putEntity(entity,wr);
-												wr.write("\n");
+												try{ct.put("Process true goal: ");
+													pap.putEntity(entity,ct);
+													ct.put("\n");
+												} catch (PrintingException e) {
+													e.printStackTrace();
+													throw new IOException(e.getMessage());
+												}
 												processing(sr,global,stack,entity,vars,true);
 												vars.clear();
 												return true;
@@ -78,22 +93,27 @@ public class StandardResolverTest {
 				);
 			}
 			
-			try(final InputStream		is = new FileInputStream("./src/test/resources/falses.fpro");
-					final Reader			rdr = new InputStreamReader(is);
-					final Writer			wr = new OutputStreamWriter(new OutputStream(){public void write(int data){}})) {	// test false goals
+			try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/falses.fpro");
+				final Reader			rdr = new InputStreamReader(is);) {	// test false goals
+				final CharacterSource	cs = new ReaderCharSource(rdr,false);
+				final CharacterTarget	ct = new WriterCharTarget(System.err,false);
 
-					pap.parseEntities(rdr,new FProParserCallback(){
-												@Override
-												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
-													wr.write("Process true goal: ");
-													pap.putEntity(entity,wr);
-													wr.write("\n");
-													processing(sr,global,stack,entity,vars,false);
-													vars.clear();
-													return true;
+				pap.parseEntities(cs,new FProParserCallback(){
+											@Override
+											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+												try{ct.put("Process true goal: ");
+													pap.putEntity(entity,ct);
+													ct.put("\n");
+												} catch (PrintingException e) {
+													e.printStackTrace();
+													throw new IOException(e.getMessage());
 												}
+												processing(sr,global,stack,entity,vars,false);
+												vars.clear();
+												return true;
 											}
-					);
+										}
+				);
 			}
 			sr.onRemove(global);
 		}

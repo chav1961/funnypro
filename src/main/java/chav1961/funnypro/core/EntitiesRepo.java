@@ -32,9 +32,15 @@ import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.purelib.basic.AndOrTree;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
+import chav1961.purelib.streams.charsource.ReaderCharSource;
+import chav1961.purelib.streams.chartarget.WriterCharTarget;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 	private static final int					SERIALIZATION_MAGIC = 0x12123000;
@@ -343,7 +349,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 	}
 	
 	@Override
-	public void consult(final Reader source) throws FProParsingException {
+	public void consult(final CharacterSource source) throws FProParsingException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source can't be null");
 		}
@@ -374,7 +380,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 										}
 									}
 				);
-			} catch (FProException | IOException e) {
+			} catch (FProException | IOException | ContentException e) {
 				e.printStackTrace();
 				throw new FProParsingException(0,0,e.getMessage()); 
 			} 
@@ -427,7 +433,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 	}
 
 	@Override
-	public void save(final Writer target) throws FProPrintingException {
+	public void save(final CharacterTarget target) throws FProPrintingException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target can't be null");
 		}
@@ -442,12 +448,12 @@ public class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 					
 					for (IFProEntity item : predicateRepo().call(new PredicateEntity(naa.getId(),parm))) {
 						pap.putEntity(item,target);
-						target.write(".");
+						target.put('.');
 						count++;
 					}
 				}
 				getDebug().message(Severity.info,"%1$d entities was saved",count);
-			} catch (FProException | IOException e) {
+			} catch (FProException | IOException | PrintingException e) {
 				throw new FProPrintingException(e.getMessage());
 			}
 		}
@@ -465,7 +471,8 @@ public class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 			String	result = "";
 			
 			try(final Writer	wr = new StringWriter()) {
-				save(wr);		wr.flush();
+				save(new WriterCharTarget(wr,false));
+				wr.flush();
 				result = wr.toString();			
 			} catch (IOException e) {
 				e.printStackTrace();

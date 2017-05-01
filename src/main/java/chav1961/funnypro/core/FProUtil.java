@@ -521,13 +521,13 @@ class FProUtil {
 		if (source == null) {
 			throw new IllegalArgumentException("Source string can't be null"); 
 		}
-		else if (location < 0 || location >= source.length) {
-			throw new IllegalArgumentException("Location ["+location+"] out of range 0.."+(source.length-1)); 
+		else if (location < 0 || location >= source.length + 1) {
+			throw new IllegalArgumentException("Location ["+location+"] out of range 0.."+source.length); 
 		}
 		else {
 			final int[]		result = new int[2];
 			
-			for (int index = location; index >= 0; index--) {
+			for (int index = Math.min(location,source.length-1); index >= 0; index--) {
 				if (source[index] == '\n') {
 					result[0]++;
 					result[1] = 0;

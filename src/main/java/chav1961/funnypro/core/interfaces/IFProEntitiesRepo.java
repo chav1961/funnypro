@@ -7,6 +7,8 @@ import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 /**
  * <p>This interface supports entities repo functionality</p>
@@ -95,7 +97,7 @@ public interface IFProEntitiesRepo extends IStreamSerializable, AutoCloseable {
 	 * @param source source to consult data from
 	 * @throws FProParsingException
 	 */
-	void consult(Reader source) throws FProParsingException;
+	void consult(CharacterSource source) throws FProParsingException;
 	
 	/**
 	 * <p>Consult data to the repo</p>
@@ -111,7 +113,7 @@ public interface IFProEntitiesRepo extends IStreamSerializable, AutoCloseable {
 	 * @param target target to save repo to
 	 * @throws FProPrintingException
 	 */
-	void save(Writer target) throws FProPrintingException;
+	void save(CharacterTarget target) throws FProPrintingException;
 
 	/**
 	 * <p>Save repo to the given target</p> 

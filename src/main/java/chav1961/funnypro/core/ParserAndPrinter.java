@@ -36,8 +36,12 @@ import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.purelib.basic.CharsUtil;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.growablearrays.GrowableCharArray;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	private final LoggerFacade		log;
@@ -77,7 +81,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	}
 
 	@Override
-	public void parseEntities(final Reader source, final FProParserCallback callback) throws FProException, IOException {
+	public void parseEntities(final CharacterSource source, final FProParserCallback callback) throws FProException, IOException, ContentException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source reader can't be null");
 		}
@@ -86,11 +90,10 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 		}
 		else {
 			final StringBuilder	sb = new StringBuilder();
-			final char[]		buffer = new char[8192];
-			int					len;
+			char				symbol;
 			
-			while ((len = source.read()) > 0) {
-				sb.append(buffer,0,len);
+			while ((symbol = source.next()) != CharacterSource.EOF) {
+				sb.append(symbol);
 			}
 			final char[]		result = new char[sb.length()];
 			
@@ -100,9 +103,28 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	}
 
 	@Override
-	public int parseEntities(final char[] source, final int from, final FProParserCallback callback)  throws FProException, IOException {
-		try(final VarRepo		varRepo = new VarRepo(new ArrayList<>())) {
-			return parse(source,from,repo.getOperatorPriorities(),IFProOperator.MAX_PRTY,varRepo,callback);
+	public int parseEntities(final char[] source, int from, final FProParserCallback callback)  throws FProException, IOException {
+		final List<IFProVariable>	vars = new ArrayList<>();
+		
+		try{final IFProEntity[]		result = new IFProEntity[1];
+			
+			while (from < source.length) {
+				try(final VarRepo	varRepo = new VarRepo(vars)) {
+					from = parse(source,from,repo.getOperatorPriorities(),IFProOperator.MAX_PRTY,varRepo,result);
+				}
+				if (result[0] != null) {
+					if (!callback.process(result[0],vars)) {
+						break;
+					}
+					else {
+						vars.clear();
+					}
+				}
+				else {
+					break;
+				}
+			}
+			return from;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new FProParsingException(0,0,e.getMessage(),e);
@@ -110,9 +132,9 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	}
 	
 	@Override
-	public void putEntity(final IFProEntity entity, final Writer target) throws IOException, FProPrintingException {
+	public void putEntity(final IFProEntity entity, final CharacterTarget target) throws IOException, PrintingException {
 		if (entity == null) {
-			throw new IllegalArgumentException("Entity places can't be null!"); 
+			throw new IllegalArgumentException("Entity to put can't be null!"); 
 		}
 		else if (target == null) {
 			throw new IllegalArgumentException("Target stream can't be null!"); 
@@ -120,61 +142,59 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 		else {
 			switch (entity.getEntityType()) {
 				case string				:
-					target.write("\"");
-					target.write(getRepo().stringRepo().getName(entity.getEntityId()));
-					target.write("\"");
+					target.put('\"').put(getRepo().stringRepo().getName(entity.getEntityId())).put('\"');
 					break;
 				case integer			:
-					target.write(String.valueOf(entity.getEntityId()));
+					target.put(String.valueOf(entity.getEntityId()));
 					break;
 				case real				:
-					target.write(String.valueOf(Double.longBitsToDouble(entity.getEntityId())));
+					target.put(String.valueOf(Double.longBitsToDouble(entity.getEntityId())));
 					break;
 				case anonymous			:
-					target.write('_');
+					target.put('_');
 					break;
 				case variable			:
-					target.write(getRepo().termRepo().getName(entity.getEntityId()));
+					target.put(getRepo().termRepo().getName(entity.getEntityId()));
 					break;
 				case list				:
 					if (((IFProList)entity).getChild() == null && ((IFProList)entity).getTail() == null) {
-						target.write("[]");
+						target.put("[]");
 					}
 					else {
 						char			start = '[';
 						IFProEntity		actual = entity;
 						
 						while (actual instanceof IFProList) {
-							target.write(start);		start = ',';
+							target.put(start);		start = ',';
 							putEntity(((IFProList)actual).getChild(),target);
 							actual = ((IFProList)actual).getTail();
 						}
 						
 						if (actual != null) {
-							target.write("|");	putEntity(((IFProList)entity).getTail(),target);
+							target.put('|');	putEntity(((IFProList)entity).getTail(),target);
 						}
-						target.write("]");
+						target.put("]");
 					}
 					break;
 				case operator			:
 					switch (((IFProOperator)entity).getType()) {
 						case xf : case yf :
 							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getLeft())) {
-								target.write("(");
+								target.put('(');
 								putEntity(((IFProOperator)entity).getLeft(),target);
-								target.write(")");
+								target.put(')');
 							}
 							else {
 								putEntity(((IFProOperator)entity).getLeft(),target);
 							}
-							target.write(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
+							target.put(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
 							break;
 						case fx : case fy :
-							target.write(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
+							target.put(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
 							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getRight())) {
-								target.write("(");
+								target.put('(');
 								putEntity(((IFProOperator)entity).getRight(),target);
-								target.write(")");
+								target.put(')');
 							}
 							else {
 								putEntity(((IFProOperator)entity).getRight(),target);
@@ -182,18 +202,18 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 							break;
 						case xfy : case yfx : case xfx :
 							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getLeft())) {
-								target.write("(");
+								target.put('(');
 								putEntity(((IFProOperator)entity).getLeft(),target);
-								target.write(")");
+								target.put(')');
 							}
 							else {
 								putEntity(((IFProOperator)entity).getLeft(),target);
 							}
-							target.write(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
+							target.put(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
 							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getRight())) {
-								target.write("(");
+								target.put("(");
 								putEntity(((IFProOperator)entity).getRight(),target);
-								target.write(")");
+								target.put(")");
 							}
 							else {
 								putEntity(((IFProOperator)entity).getRight(),target);
@@ -201,160 +221,37 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 							break;
 					}
 					if (((IFProRuledEntity)entity).getRule() != null) {
-						target.write(":-");
+						target.put(":-");
 						putEntity(((IFProRuledEntity)entity).getRule(),target);
 					}
 					break;
 				case predicate			:
-					target.write(getRepo().termRepo().getName(entity.getEntityId()));
+					target.put(getRepo().termRepo().getName(entity.getEntityId()));
 					if (((IFProPredicate)entity).getArity() > 0) {
 						String	prefix = "(";
 						
 						for (int index = 0; index < ((IFProPredicate)entity).getArity(); index++) {
-							target.write(prefix);	prefix = ",";
+							target.put(prefix);	prefix = ",";
 							putEntity(((IFProPredicate)entity).getParameters()[index],target);
 						}
-						target.write(")");
+						target.put(")");
 					}
 					if (((IFProRuledEntity)entity).getRule() != null) {
-						target.write(":-");
+						target.put(":-");
 						putEntity(((IFProRuledEntity)entity).getRule(),target);
 					}
 					break;
 				case operatordef		:
-					target.write(String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getType(),repo.termRepo().getName(entity.getEntityId())));
+					target.put(String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getType(),repo.termRepo().getName(entity.getEntityId())));
 					break;
 				case externalplugin		:
-					target.write(String.format("$external$(\"%1$s\",\"%2$s\",\"%3$s\")",((IFProExternalEntity)entity).getPluginName(),((IFProExternalEntity)entity).getPluginProducer(),((IFProExternalEntity)entity).getPluginVersion()));
+					target.put(String.format("$external$(\"%1$s\",\"%2$s\",\"%3$s\")",((IFProExternalEntity)entity).getPluginName(),((IFProExternalEntity)entity).getPluginProducer(),((IFProExternalEntity)entity).getPluginVersion()));
 					break;
 				default :
 					throw new UnsupportedOperationException("Unknown type ti upload: "+entity.getEntityType());
 			}
 		}
 	}
-
-	@Override
-	public void putEntity(final IFProEntity entity, final StringBuilder target) throws IOException, FProException {
-		if (entity == null) {
-			throw new IllegalArgumentException("Entity places can't be null!"); 
-		}
-		else if (target == null) {
-			throw new IllegalArgumentException("Target stream can't be null!"); 
-		}
-		else {
-			switch (entity.getEntityType()) {
-				case string				:
-					target.append("\"").append(getRepo().stringRepo().getName(entity.getEntityId())).append("\"");
-					break;
-				case integer			:
-					target.append(String.valueOf(entity.getEntityId()));
-					break;
-				case real				:
-					target.append(String.valueOf(Double.longBitsToDouble(entity.getEntityId())));
-					break;
-				case anonymous			:
-					target.append('_');
-					break;
-				case variable			:
-					target.append(getRepo().termRepo().getName(entity.getEntityId()));
-					break;
-				case list				:
-					if (((IFProList)entity).getChild() == null && ((IFProList)entity).getTail() == null) {
-						target.append("[]");
-					}
-					else {
-						char			start = '[';
-						IFProEntity		actual = entity;
-						
-						while (actual instanceof IFProList) {
-							target.append(start);		start = ',';
-							putEntity(((IFProList)actual).getChild(),target);
-							actual = ((IFProList)actual).getTail();
-						}
-						
-						if (actual != null) {
-							target.append("|");	putEntity(((IFProList)entity).getTail(),target);
-						}
-						target.append("]");
-					}
-					break;
-				case operator			:
-					switch (((IFProOperator)entity).getType()) {
-						case xf : case yf :
-							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getLeft())) {
-								target.append("(");
-								putEntity(((IFProOperator)entity).getLeft(),target);
-								target.append(")");
-							}
-							else {
-								putEntity(((IFProOperator)entity).getLeft(),target);
-							}
-							target.append(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
-							break;
-						case fx : case fy :
-							target.append(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
-							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getRight())) {
-								target.append("(");
-								putEntity(((IFProOperator)entity).getRight(),target);
-								target.append(")");
-							}
-							else {
-								putEntity(((IFProOperator)entity).getRight(),target);
-							}
-							break;
-						case xfy : case yfx : case xfx :
-							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getLeft())) {
-								target.append("(");
-								putEntity(((IFProOperator)entity).getLeft(),target);
-								target.append(")");
-							}
-							else {
-								putEntity(((IFProOperator)entity).getLeft(),target);
-							}
-							target.append(blankedName(getRepo().termRepo().getName(entity.getEntityId())));
-							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getRight())) {
-								target.append("(");
-								putEntity(((IFProOperator)entity).getRight(),target);
-								target.append(")");
-							}
-							else {
-								putEntity(((IFProOperator)entity).getRight(),target);
-							}
-							break;
-					}
-					if (((IFProRuledEntity)entity).getRule() != null) {
-						target.append(":-");
-						putEntity(((IFProRuledEntity)entity).getRule(),target);
-					}
-					break;
-				case predicate			:
-					target.append(getRepo().termRepo().getName(entity.getEntityId()));
-					if (((IFProPredicate)entity).getArity() > 0) {
-						String	prefix = "(";
-						
-						for (int index = 0; index < ((IFProPredicate)entity).getArity(); index++) {
-							target.append(prefix);	prefix = ",";
-							putEntity(((IFProPredicate)entity).getParameters()[index],target);
-						}
-						target.append(")");
-					}
-					if (((IFProRuledEntity)entity).getRule() != null) {
-						target.append(":-");
-						putEntity(((IFProRuledEntity)entity).getRule(),target);
-					}
-					break;
-				case operatordef		:
-					target.append(String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getType(),repo.termRepo().getName(entity.getEntityId())));
-					break;
-				case externalplugin		:
-					target.append(String.format("$external$(\"%1$s\",\"%2$s\",\"%3$s\")",((IFProExternalEntity)entity).getPluginName(),((IFProExternalEntity)entity).getPluginProducer(),((IFProExternalEntity)entity).getPluginVersion()));
-					break;
-				default :
-					throw new UnsupportedOperationException("Unknown type ti upload: "+entity.getEntityType());
-			}
-		}
-	}
-
 	
 	@Override
 	public int putEntity(final IFProEntity entity, final char[] target, int from) throws IOException, FProPrintingException {
@@ -363,20 +260,28 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 		return result > target.length ? -result : result;
 	}
 		
-	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final FProParserCallback callback) throws FProException, IOException {
+	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws FProException, IOException {
 		final IFProEntity[]	top = new IFProEntity[priorities.length+1];
-		final IFProEntity[]	entities = new IFProEntity[1];
-		final long[]		entityId = new long[0];
+		final long[]		entityId = new long[1];
 		final int			maxLen = source.length;
 		boolean				prefixNow = true, found;
 		int					actualMin = IFProOperator.MIN_PRTY, actualMax = maxPrty;
 		
 		while (from < maxLen && source[from] <= ' ') from++;
 		
-loop:	while (from < maxLen) {
+loop:	while (from < maxLen && source[from] != '.') {
+			while (from < maxLen && source[from] <= ' ') from++;
+			
 			switch (source[from]) {
+				case '%'	:
+					while (from < maxLen && source[from] != '\n') {
+						from++;
+					}
 				case '\n'	:
-					
+					continue loop;
+				case '\r'	:
+					from++;
+					continue loop;
 				case '['	:
 					from++;
 					if (!prefixNow) {
@@ -392,11 +297,11 @@ loop:	while (from < maxLen) {
 							prefixNow = false;
 						}
 						else {
-							from = parse(source,from,priorities,1151,vars,callback);
+							from = parse(source,from,priorities,1151,vars,result);
 							
 							if (from < maxLen && source[from] == ']') {
 								from++;
-								top[0] = convert2List(source,from,top[0]);
+								top[0] = convert2List(source,from,result[0]);
 								actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 								prefixNow = false;
 							}
@@ -412,12 +317,12 @@ loop:	while (from < maxLen) {
 						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
-						from = parse(source,from,priorities,1101,vars,callback);
+						from = parse(source,from,priorities,1101,vars,result);
 						
 						while (from < maxLen && source[from] <= ' ') from++;
 						if (from < maxLen && source[from] == ')') {
 							from++;
-							top[0] = top[0];
+							top[0] = result[0];
 							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 							prefixNow = false;
 						}
@@ -432,10 +337,12 @@ loop:	while (from < maxLen) {
 				case '\"'	:
 					final int	startConst = from++;
 					
-					while (from < maxLen && source[from] != '\"' && source[from] != '\n') from++;
+					while (from < maxLen && source[from] != '\"' && source[from] != '\n') {
+						from++;
+					}
 					
 					if (from < maxLen && source[from] == '\"') {
-						final long	stringId = getRepo().stringRepo().placeName(source,startConst+1,from-1,null);
+						final long	stringId = getRepo().stringRepo().placeName(source,startConst+1,from,null);
 						
 						if (!prefixNow) {
 							throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
@@ -444,6 +351,7 @@ loop:	while (from < maxLen) {
 							top[0] = new StringEntity(stringId);
 							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 							prefixNow = false;
+							from++;
 						}
 					}
 					else {
@@ -451,15 +359,19 @@ loop:	while (from < maxLen) {
 					}					
 					break;
 				case '0' : case '1' : case '2' : case '3' : case '4' : case '5' : case '6' : case '7' : case '8' : case '9' :
-					final double[]	value = new double[2];
+					final long[]	value = new long[2];
 					
-					from = CharsUtil.parseDouble(source,from,value,false);				
-					
+					from = CharsUtil.parseNumber(source,from,value,CharsUtil.PREF_ANY,false);
 					if (!prefixNow) {
 						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
-						top[0] = value[0] == value[1] ? new IntegerEntity((long)value[1]) : new RealEntity(value[0]);
+						switch ((int)value[1]) {
+							case CharsUtil.PREF_INT 	: top[0] = new IntegerEntity(value[0]); break;								
+							case CharsUtil.PREF_LONG 	: top[0] = new IntegerEntity(value[0]); break;
+							case CharsUtil.PREF_FLOAT 	: top[0] = new RealEntity(Float.intBitsToFloat((int)value[0])); break;
+							case CharsUtil.PREF_DOUBLE	: top[0] = new RealEntity(Double.longBitsToDouble(value[0])); break;
+						}
 						actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 						prefixNow = false;
 					}
@@ -469,7 +381,7 @@ loop:	while (from < maxLen) {
 				case 'q' : case 'r'	: case 's' : case 't' : case 'u' : case 'v' : case 'w' : case 'x'	:	
 				case 'y' : case 'z'	: case '_' :
 					final int	startName = from, endName = from = skipName(source,from);
-					final long	nameId = getRepo().termRepo().placeName(source,startName,endName-startName,null);
+					final long	nameId = getRepo().termRepo().placeName(source,startName,endName,null);
 					
 					switch (classifyName(source,startName,endName)) {
 						case anonymous	:
@@ -568,22 +480,14 @@ loop:	while (from < maxLen) {
 												from++;
 											}
 											else {
-												from = parse(source,from,priorities,1101,vars,
-														new FProParserCallback(){
-															@Override
-															public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
-																entities[0] = entity;
-																return true;
-															}
-														}
-												);
+												from = parse(source,from,priorities,1101,vars,result);
 												
 												while (from < maxLen && source[from] <= ' ') {
 													from++;
 												}
 												if (from < maxLen && source[from] == ')') {
 													from++;
-													((IFProPredicate)top[0]).setParameters(andChain2Array(entities[0],top[0]));
+													((IFProPredicate)top[0]).setParameters(andChain2Array(result[0],top[0]));
 												}
 												else {
 													throw new FProParsingException(FProUtil.toRowCol(source,from),"Close bracket ')' missing!"); 
@@ -599,8 +503,8 @@ loop:	while (from < maxLen) {
 										throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
 									}
 									else {
-										from = parseExtern(source,from,entities);
-										top[0] = entities[0];
+										from = parseExtern(source,from,result);
+										top[0] = result[0];
 										actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 										prefixNow = false;
 									}
@@ -610,8 +514,8 @@ loop:	while (from < maxLen) {
 										throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
 									}
 									else {
-										from = parseOp(source,from,entities);
-										top[0] = entities[0];
+										from = parseOp(source,from,result);
+										top[0] = result[0];
 										actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 										prefixNow = false;
 									}
@@ -629,7 +533,7 @@ loop:	while (from < maxLen) {
 				case 'Q' : case 'R'	: case 'S' : case 'T' : case 'U' : case 'V' : case 'W' : case 'X'	:	
 				case 'Y' : case 'Z'	:
 					final int	startVar = from, endVar = from = skipName(source,from);
-					final long	varId = getRepo().termRepo().placeName(source,startVar,endVar-startVar,null);
+					final long	varId = getRepo().termRepo().placeName(source,startVar,endVar,null);
 					final IFProVariable		var = new VariableEntity(varId); 
 					
 					if (!prefixNow) {
@@ -738,12 +642,11 @@ loop:	while (from < maxLen) {
 					break;
 			}
 			while (from < maxLen && source[from] <= ' ') from++;
-			
-			if (from < maxLen && source[from] == '.') {
-				from++;
-			}
-			callback.process(collapse(top,top.length-1),null);
 		}
+		if (from < maxLen && source[from] == '.') {
+			from++;
+		}
+		result[0] = collapse(top,top.length-1);
 		return from;
 	}
 
@@ -873,15 +776,16 @@ loop:	while (from < maxLen) {
 			}
 		}
 		else {
-			final int	startName = from, endName = from = skipName(source,from);
-			final long	maxLex = getRepo().termRepo().seekName(source,startName,endName-startName);
+			final int	startName = from, endName;
+			final long	maxLex = getRepo().termRepo().seekName(source,startName,source.length);
 						
-			if (maxLex < 0) {
-				throw new FProParsingException(FProUtil.toRowCol(source,from),"Unidentified id was detected!"); 
+			if (maxLex == -1) {
+				throw new FProParsingException(FProUtil.toRowCol(source,from),"Unknown term/operator was detected!"); 
 			}
 			else {
-				result[0] = maxLex;
-				return from;
+				endName = (int) (from - maxLex - 1);
+				result[0] = getRepo().termRepo().seekName(source,startName,endName);
+				return endName;
 			}
 		}
 	}
@@ -980,70 +884,25 @@ loop:	while (from < maxLen) {
 	}
 
 	private int parseOp(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException {
-//		skipBlank(source);
-//		if (source.last() == '(') {
-//			source.next();	skipBlank(source);
-//			
-//			final long		priority = FProUtil.parseLong(source);
-//			
-//			if (priority < IFProOperator.MIN_PRTY || priority > IFProOperator.MAX_PRTY) {
-//				throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal priority ["+priority+"]. Need be in "+IFProOperator.MIN_PRTY+".."+IFProOperator.MAX_PRTY);
-//			}
-//			else {
-//				skipBlank(source);
-//				
-//				if (source.last() == ',') {
-//					source.next();	skipBlank(source);
-//					
-//					final OperatorType 	type = getRepo().operatorType(getRepo().termRepo().placeName(chars.toArray(),0,fillArray(new NameCharSource(source)),null));
-//					
-//					if (type != null) {
-//						skipBlank(source);
-//						
-//						if (source.last() == ',') {
-//							source.next();	skipBlank(source);
-//
-//							final long		operatorId;
-//							
-//							if (source.last() == '\'') {
-//								operatorId = getRepo().termRepo().placeName(chars.toArray(),0,fillArray(new StringConstantCharSource(source,'\'')),null);
-//								skipBlank(source);
-//							}
-//							else {
-//								operatorId = getRepo().termRepo().placeName(chars.toArray(),0,fillArray(new TerminatedCharSource(source,')',' ','\t','\n')),null);
-//							}
-//							
-//							if (source.last() == ')') {
-//								source.next();
-//								
-//								return new OperatorDefEntity((int)priority,type,operatorId);
-//							}
-//							else {
-//								throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing close bracket for the extern descriptor");
-//							}
-//						}
-//						else {
-//							throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing comma for the op descriptor");
-//						}
-//					}
-//					else {
-//						throw new FProParsingException(FProUtil.toRowCol(source,from),"Unknown operator type");
-//					}
-//				}
-//				else {
-//					throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing comma for the op descriptor");
-//				}
-//			}
-//		}
-//		else {
-//			throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing open bracket for the op descriptor");
-//		}
-		return from;
+		final int[]	locations[] = new int[3][2], forPrty = new int[2];
+		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b%0d%b,%b%1c%b,%b%2c%b)",locations);
+		
+		if (parsed > from) {
+			CharsUtil.parseInt(source,locations[0][0],forPrty,false);
+			final OperatorType	type = getRepo().operatorType(getRepo().termRepo().placeName(source,locations[1][0],locations[1][1],null));
+			final long			operatorId = getRepo().termRepo().placeName(source,locations[2][0],locations[2][1],null);
+			
+			result[0] = new OperatorDefEntity(forPrty[0],type,operatorId);
+			return parsed;
+		}
+		else {
+			throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal operator definition format!");
+		}
 	}	
 
-	private int skipName(final char[] source, int from) {
+	private int skipName(final char[] source, final int from) {
 		for (int index = from, maxIndex = source.length; index < maxIndex; index++) {
-			if (!(source[from] >= 'a' && source[from] <= 'z' || source[from] >= 'A' && source[from] <= 'Z' || source[from] >= '0' && source[from] <= '9' || source[from] == '_')) {
+			if (!(source[index] >= 'a' && source[index] <= 'z' || source[index] >= 'A' && source[index] <= 'Z' || source[index] >= '0' && source[index] <= '9' || source[index] == '_')) {
 				return index;
 			}
 		}
@@ -1397,6 +1256,11 @@ class VarRepo implements AutoCloseable {
 		}
 	}	
 	
+	@Override
+	public String toString() {
+		return "VarRepo [vars=" + vars + ", varRepo=" + Arrays.toString(varRepo) + ", varCount=" + varCount + "]";
+	}
+
 	private static class VariableChain implements Comparable<VariableChain>{
 		public long				id;
 		public IFProVariable	chain = null;

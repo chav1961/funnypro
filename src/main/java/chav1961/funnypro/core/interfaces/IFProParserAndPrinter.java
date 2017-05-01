@@ -8,6 +8,10 @@ import java.util.List;
 import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.exceptions.FProPrintingException;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 /**
  * <p>This interface supports parsing and printing for the FPro entities</p>
@@ -25,9 +29,10 @@ public interface IFProParserAndPrinter {
 	 * @param source input stream containing entities
 	 * @param callback callback to process parsed entity
 	 * @throws FProParsingException
+	 * @throws ContentException
 	 * @throws IOException
 	 */
-	void parseEntities(Reader source, FProParserCallback callback) throws FProException, IOException ;
+	void parseEntities(CharacterSource source, FProParserCallback callback) throws FProException, ContentException, IOException ;
 
 	/**
 	 * <p>Parse entities from input char array and process it</p>
@@ -45,19 +50,11 @@ public interface IFProParserAndPrinter {
 	 * @param entity entity to put
 	 * @param target target to put to
 	 * @throws IOException
+	 * @throws PrintingException
 	 * @throws FProPrintingException
 	 */
-	void putEntity(IFProEntity entity, Writer target) throws IOException, FProException;
+	void putEntity(IFProEntity entity, CharacterTarget target) throws IOException, PrintingException, FProException;
 
-	/**
-	 * <p>Put entity to the output stream</p>
-	 * @param entity entity to put
-	 * @param target target to put to
-	 * @throws IOException
-	 * @throws FProPrintingException
-	 */
-	void putEntity(IFProEntity entity, StringBuilder target) throws IOException, FProException;
-	
 	/**
 	 * <p>Put entity to the char array
 	 * @param entity entity to put

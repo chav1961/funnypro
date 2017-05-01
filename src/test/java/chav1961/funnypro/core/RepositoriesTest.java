@@ -39,7 +39,13 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.charsource.ReaderCharSource;
+import chav1961.purelib.streams.chartarget.WriterCharTarget;
+import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 
 public class RepositoriesTest {
@@ -228,20 +234,26 @@ public class RepositoriesTest {
 	
 	
 	@Test
-	public void parsersTest() throws IOException, FProException {
+	public void parsersTest() throws IOException, FProException, ContentException, PrintingException {
 		final LoggerFacade			log = new DefaultLoggerFacade();
 		final EntitiesRepo			repo = new EntitiesRepo(log,new Properties());
 		final ParserAndPrinter		pap = new ParserAndPrinter(log,new Properties(),repo);
 		final List<IFProEntity>		data = new ArrayList<IFProEntity>(); 
 		
-		try(final InputStream		is = new FileInputStream("./src/test/resources/parser.fpro");
+		try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/parser.fpro");
 			final Reader			rdr = new InputStreamReader(is);
 			final Writer			wr = new OutputStreamWriter(System.err)) {
+			final CharacterSource	cs = new ReaderCharSource(rdr,false);
+			final CharacterTarget	ct = new WriterCharTarget(wr,false);
 			
-			pap.parseEntities(rdr,new FProParserCallback(){
+			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
 										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
-											pap.putEntity(entity,wr);
+											try{pap.putEntity(entity,ct);
+											} catch (PrintingException e) {
+												e.printStackTrace();
+												throw new IOException(e.getMessage());
+											}
 											data.add(entity);
 											return true;
 										}
@@ -251,8 +263,10 @@ public class RepositoriesTest {
 		Assert.assertEquals(data.size(),7); 
 		
 		try(final Writer			wr = new StringWriter()) {
+			final CharacterTarget	ct = new WriterCharTarget(wr,false);
+			
 			for (IFProEntity item : data) {
-				pap.putEntity(item,wr);
+				pap.putEntity(item,ct);
 			}
 			wr.flush();
 			System.err.println("Printed data is: "+wr.toString());

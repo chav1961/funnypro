@@ -1,0 +1,10 @@
+test(100).
+test(200).
+test(300).
+test.
+
+predicate(100).
+predicate(200).
+predicate(300).
+predicate("string").
+predicate(X):-test(X),test;test(100),test.
