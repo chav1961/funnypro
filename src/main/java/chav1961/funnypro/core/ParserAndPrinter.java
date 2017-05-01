@@ -43,7 +43,7 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
-public class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
+class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
@@ -791,96 +791,21 @@ loop:	while (from < maxLen && source[from] != '.') {
 	}
 	
 	private int parseExtern(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException {
-//		final int	maxLen = source.length;
-//
-//		while (from < maxLength && source[from]) {
-//			
-//		}
-//		if (source.last() == '(') {
-//			source.next();	skipBlank(source);
-//			
-//			if (source.last() == '\"') {
-//				final String	plugin = readString(source,'\"');
-//				
-//				skipBlank(source);				
-//				if (source.last() == ',') {
-//					source.next();	skipBlank(source);
-//					
-//					if (source.last() == '\"') {
-//						final String	producer = readString(source,'\"');
-//						
-//						skipBlank(source);						
-//						if (source.last() == ',') {
-//							source.next();	skipBlank(source);
-//
-//							if (source.last() == '[') {
-//								final List<Long>	container = new ArrayList<>();
-//								
-//								do{ source.next();
-//									container.add(FProUtil.parseLong(source));
-//								    skipBlank(source);
-//								} while (source.last() == ',');
-//								
-//								if (source.last() == ']') {
-//									source.next();	skipBlank(source);
-//									
-//									final int[]		versions = new int[container.size()];
-//									for (int index = 0; index < versions.length; index++) {
-//										versions[index] = container.get(index).intValue();
-//									}
-//									
-//									if (source.last() == ',') {
-//										source.next();	skipBlank(source);
-//										
-//										final long		pluginId = FProUtil.parseLong(source);
-//										skipBlank(source);
-//										
-//										if (source.last() == ')') {
-//											source.next();
-//											
-//											for (PluginItem item : repo.pluginsRepo().seek(plugin,producer,versions)) {
-//												if (item.getDescriptor().getPluginEntity().getEntityId() == pluginId) {
-//													return new EnternalPluginEntity(item.getDescriptor().getPluginEntity());												
-//												}
-//											}
-//											throw new FProParsingException(FProUtil.toRowCol(source,from),"External plugin was not found in the external plugin repo!");
-//										}
-//										else {
-//											throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing close bracket for the extern descriptor");
-//										}
-//									}
-//									else {
-//										throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing comma for the extern descriptor");
-//									}
-//								}
-//								else {
-//									throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing close bracket for the extern descriptor");
-//								}
-//							}
-//							else {
-//								throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing open bracket for the extern descriptor");
-//							}
-//						}
-//						else {
-//							throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing comma for the extern descriptor");
-//						}
-//					}
-//					else {
-//						throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing quotas (\") for the extern descriptor");
-//					}
-//				}
-//				else {
-//					throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing comma for the extern descriptor");
-//				}
-//			}
-//			else {
-//				throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing quotas (\") for the extern descriptor");
-//			}
-//		}
-//		else {
-//			throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing open bracket for the extern descriptor");
-//		}
-		return from;
+		final int[]	locations[] = new int[3][2], forPrty = new int[2];
+		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b\"%0c\"%b,%b\"%1c\"%b,%b\"%2d\"%b)",locations);
+		
+		if (parsed > from) {
+			for (PluginItem item : repo.pluginsRepo().seek(new String(source,locations[0][0],locations[0][1])
+														  ,new String(source,locations[1][0],locations[1][1])
+														  ,new int[]{Integer.valueOf(new String(source,locations[2][0],locations[2][1]))})) {
+				result[0] = new EnternalPluginEntity(item.getDescriptor().getPluginEntity());
+				return parsed;
+			}
+			throw new FProParsingException(FProUtil.toRowCol(source,from),"External plugin ["+new String(source,locations[0][0],locations[0][1])+"] was not found in the external plugin repo!");
+		}
+		else {
+			throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal external plugin definition format!");
+		}
 	}
 
 	private int parseOp(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException {

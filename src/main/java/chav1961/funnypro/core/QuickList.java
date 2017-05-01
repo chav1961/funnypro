@@ -6,7 +6,7 @@ import java.util.List;
 
 import chav1961.funnypro.core.interfaces.IFProQuickList;
 
-public class QuickList<D> implements IFProQuickList<D> {
+class QuickList<D> implements IFProQuickList<D> {
 	private final Content<D>	fill = new Content<D>(-Integer.MAX_VALUE,null); 
 	private Content<D>[]		list = new Content[16]; 		
 	private int					amount = 0;

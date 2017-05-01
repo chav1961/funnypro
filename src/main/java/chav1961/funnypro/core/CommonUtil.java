@@ -4,18 +4,14 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Properties;
 
-import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.SerializableString;
 import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 
-import com.google.gson.stream.JsonReader;
-
-public class CommonUtil {
+class CommonUtil {
 	private static final int					SERIALIZATION_TREE_MAGIC = 0x12123030;
 
 	/**
@@ -76,34 +72,6 @@ public class CommonUtil {
 		}
 	}
 	
-	/**
-	 * <p>Convert JSON data to the given enumeration</p>
-	 * @param key key in the JSON stream
-	 * @param rdr JSON stream reader
-	 * @param enumType enumeration awaited
-	 * @return converted value
-	 */
-	public static <T extends Enum<?>> T toEnum(final String key, final JsonReader rdr, final Class<T> enumType) {
-		if (key == null || key.isEmpty()) {
-			throw new IllegalArgumentException("Key field can't be null or empty!");
-		}
-		else if (rdr == null) {
-			throw new IllegalArgumentException("Json reader can't be null!");
-		}
-		else if (enumType == null) {
-			throw new IllegalArgumentException("Enum type can't be null!");
-		}
-		else {
-			String	value = null;
-			try{value = rdr.nextString();
-				return (T) enumType.getMethod("valueOf",String.class).invoke(null,value);
-			} catch (IOException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException exc) {
-				throw new IllegalArgumentException("Error converting ["+key+"]=["+value+"] to type ["+enumType.getSimpleName()+"]: "+exc.getMessage());
-			}
-		}
-	}
-
-
 	/**
 	 * <pSerialize string to the output stream</p>
 	 * @param target output stream to serialize string to

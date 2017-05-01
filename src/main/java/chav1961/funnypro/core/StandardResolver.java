@@ -19,6 +19,7 @@ import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
 import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
+import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -44,7 +45,7 @@ import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 
-public class StandardResolver implements IResolvable {
+public class StandardResolver implements IResolvable, FProPluginList {
 	public static final String					PLUGIN_NAME	= "StandardResolver";
 	public static final String					PLUGIN_PRODUCER	= "internal";
 	public static final int[]					PLUGIN_VERSION	= new int[]{0};
@@ -181,7 +182,8 @@ public class StandardResolver implements IResolvable {
 		Others
 	};
 
-	public static PluginDescriptor[] getPluginDescriptors() {
+	@Override
+	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
 					@Override public IFProExternalEntity getPluginEntity() {return new EnternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StandardResolver());}

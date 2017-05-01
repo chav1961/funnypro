@@ -9,7 +9,7 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
-public class GlobalStack implements IFProGlobalStack, IGentlemanSet {
+class GlobalStack implements IFProGlobalStack, IGentlemanSet {
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;

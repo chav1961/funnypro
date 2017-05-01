@@ -4,11 +4,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.Writer;
 import java.util.Properties;
 
 import javax.script.AbstractScriptEngine;
@@ -17,8 +15,6 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
-
-import com.google.common.io.CharSource;
 
 import chav1961.funnypro.core.FProVM;
 import chav1961.funnypro.core.exceptions.FProException;

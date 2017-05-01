@@ -1,14 +1,11 @@
 package chav1961.funnypro.core;
 
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.util.Arrays;
 
-import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;

@@ -2,7 +2,6 @@ package chav1961.funnypro.core;
 
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,23 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-//import org.reflections.Reflections;
-
-
-
-
-import org.reflections.Reflections;
+import java.util.ServiceLoader;
 
 import chav1961.funnypro.core.exceptions.FProException;
+import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
-import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
-import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 
-public class ExternalPluginsRepo implements IFProExternalPluginsRepo, IGentlemanSet {
+class ExternalPluginsRepo implements IFProExternalPluginsRepo, IGentlemanSet {
 	public static final String						PLUGIN_PACKAGES = "pluginPackages";
 	
 	private final LoggerFacade						log;
@@ -44,21 +36,15 @@ public class ExternalPluginsRepo implements IFProExternalPluginsRepo, IGentleman
 			this.log = log;				this.props = prop;
 			for (String packName : (this.getClass().getPackage().getName()+';'+prop.getProperty(PLUGIN_PACKAGES,"")).split("\\;")) {
 				if (packName != null && !packName.isEmpty()) {
-					final Reflections 	reflections = new Reflections(packName);
 
-					for (Class<?> clazz : reflections.getSubTypesOf(IResolvable.class)) {
-						try{for (PluginDescriptor item : (PluginDescriptor[])clazz.getMethod("getPluginDescriptors").invoke(null)) {
-								final PluginKey		key = new PluginKey(item.getPluginEntity().getPluginName(),item.getPluginEntity().getPluginProducer(),item.getPluginEntity().getPluginVersion());
-								
-								if (!plugins.containsKey(key)) {
-									plugins.put(key,new ArrayList<PluginItem>());
-								}
-								plugins.get(key).add(new PluginItemImpl(item,null));
+					for (FProPluginList 		desc : ServiceLoader.load(FProPluginList.class)) {
+						for (PluginDescriptor	item : desc.getPluginDescriptors()) {
+							final PluginKey		key = new PluginKey(item.getPluginEntity().getPluginName(),item.getPluginEntity().getPluginProducer(),item.getPluginEntity().getPluginVersion());
+							
+							if (!plugins.containsKey(key)) {
+								plugins.put(key,new ArrayList<PluginItem>());
 							}
-						} catch (NoSuchMethodException e) {
-							getDebug().message(Severity.warning,"Plugin class [%1$s] not contains mandatory static method 'getPluginDescriptors'. Plugin will not be included into the plugins repo",clazz.getName());
-						} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-							getDebug().message(Severity.warning,"Plugin class [%1$s] rejected by the security system: %2$s",clazz.getName(),e.getMessage());
+							plugins.get(key).add(new PluginItemImpl(item,null));
 						}
 					}
 				}

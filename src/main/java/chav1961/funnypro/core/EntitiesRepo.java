@@ -4,7 +4,6 @@ package chav1961.funnypro.core;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -13,12 +12,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
 import chav1961.funnypro.core.entities.PredicateEntity;
+import chav1961.funnypro.core.exceptions.FProException;
+import chav1961.funnypro.core.exceptions.FProParsingException;
+import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
@@ -37,12 +36,11 @@ import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
-import chav1961.purelib.streams.charsource.ReaderCharSource;
 import chav1961.purelib.streams.chartarget.WriterCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
-public class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
+class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 	private static final int					SERIALIZATION_MAGIC = 0x12123000;
 	
 	private final LoggerFacade					log;

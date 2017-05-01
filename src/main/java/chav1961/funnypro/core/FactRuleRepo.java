@@ -21,7 +21,7 @@ import chav1961.funnypro.core.interfaces.IStreamSerializable;
 import chav1961.funnypro.core.CommonUtil;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
-public class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
+class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 	private static final int					SERIALIZATION_MAGIC = 0x12122080;
 	
 	private final LoggerFacade					log;
