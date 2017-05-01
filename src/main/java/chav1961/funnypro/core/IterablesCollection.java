@@ -14,7 +14,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 
-public class Iterables {
+class IterablesCollection { 
 	public static class IterableNameAndArity implements Iterable<IFProEntity> {
 		private final Iterator<NameAndArity>		iterator;
 		private final IFProOperator					def;

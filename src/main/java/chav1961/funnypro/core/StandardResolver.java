@@ -423,7 +423,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 				case Op700xfxIs			:
 					return unify(entity,((IFProOperator)entity).getLeft(),calculate(((GlobalDescriptor)global),((IFProOperator)entity).getRight()),((LocalDescriptor)local).stack) ? ResolveRC.True : ResolveRC.False;
 				case Op400yfxDivide		:
-					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,entity,new Iterables.IterableNameAndArity(((GlobalDescriptor)global).repo,(IFProOperator)entity));
+					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,entity,new IterablesCollection.IterableNameAndArity(((GlobalDescriptor)global).repo,(IFProOperator)entity));
 				case PredTrace			:
 					((LocalDescriptor)local).trace = true;
 					return ResolveRC.True;
@@ -449,7 +449,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 				case PredRetract		:
 					return ((GlobalDescriptor)global).repo.predicateRepo().retractFirst(((IFProPredicate)entity).getParameters()[0]) ? ResolveRC.True : ResolveRC.False;
 				case PredCall			:
-					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,((IFProPredicate)entity).getParameters()[0],new Iterables.IterableCall(((GlobalDescriptor)global).repo,(IFProPredicate)entity));
+					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,((IFProPredicate)entity).getParameters()[0],new IterablesCollection.IterableCall(((GlobalDescriptor)global).repo,(IFProPredicate)entity));
 				case PredVar			:
 					return FProUtil.isEntityA(((IFProPredicate)entity).getParameters()[0],FProUtil.ContentType.Var) ? ResolveRC.True : ResolveRC.False;
 				case PredNonVar			:
@@ -526,7 +526,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 				case PredFindAll		:
 					return unify(entity, ((IFProPredicate)entity).getParameters()[2],getBagof(((GlobalDescriptor)global).repo,(IFProPredicate)entity),((LocalDescriptor)local).stack) ? ResolveRC.True : ResolveRC.False;
 				case PredMemberOf		:
-					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,((IFProPredicate)entity).getParameters()[1],new Iterables.IterableList((IFProPredicate) entity));
+					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,((IFProPredicate)entity).getParameters()[1],new IterablesCollection.IterableList((IFProPredicate) entity));
 				default :
 					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,entity,((GlobalDescriptor)global).repo.predicateRepo().call(entity));
 			}
@@ -1278,7 +1278,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 	private IFProList getBagof(final IFProEntitiesRepo repo, final IFProPredicate bagof) {
 		IFProList	start = new ListEntity(null,null), actual = start; 
 		
-		for (IFProEntity item : new Iterables.IterableCallBagof(repo,bagof)) {
+		for (IFProEntity item : new IterablesCollection.IterableCallBagof(repo,bagof)) {
 			actual.setChild(item);		item.setParent(actual);		
 			actual.setTail(new ListEntity(null,null).setParent(actual));
 			actual = (IFProList) actual.getTail();
