@@ -7,9 +7,12 @@ import javax.script.ScriptException;
 public class Application {
 
 	public static void main(String[] args) throws ScriptException {
-		final ScriptEngineManager 	factory = new ScriptEngineManager();
-		final ScriptEngine 			engine = factory.getEngineByName("myLang");
+		try{final ScriptEngineManager 	factory = new ScriptEngineManager();
+			final ScriptEngine 			engine = factory.getEngineByName("FunnyProlog");
 
-		engine.eval("print('Hello, World')");	
+			engine.eval("print('Hello, World')");
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}
 	}
 }

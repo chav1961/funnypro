@@ -1,22 +1,40 @@
 package chav1961.funnypro;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
+import chav1961.funnypro.core.exceptions.FProException;
+
+/**
+ * <p>This class implements engine factory for the Funny prolog interpreter. All requirements about it can be read in the {@link ScriptEngineFactory}
+ * description. This factory use SPI protocol to incorporate into JRE and uses <b>META-INF\services\javax.script.ScriptEngineFactory</b> file for it</p>
+ * 
+ * <p>This class is not thread-safe.</p>
+ * 
+ * @see chav1961.purelib.basic JUnit tests
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class FunnyProEngineFactory implements ScriptEngineFactory {
-	private static final String			ENGINE_NAME = "MyEngineName";
+	private static final String			ENGINE_NAME = "Funny Prolog interpreter engine";
 	private static final String			ENGINE_VERSION = "1.0";
-	private static final String			LANG_NAME = "myLang";
+	private static final String			LANG_NAME = "FunnyProlog";
 	private static final String			LANG_VERSION = "1.0";
-	private static final List<String>	SCRIPT_EXTENSIONS = new ArrayList<String>(){{add("mxt");}};
-	private static final List<String>	SCRIPT_MIMES = new ArrayList<String>(){{add("text/mxt");}};
-	private static final List<String>	SCRIPT_NAMES = new ArrayList<String>(){{add(LANG_NAME);}};
+	private static final List<String>	SCRIPT_EXTENSIONS = new ArrayList<>();
+	private static final List<String>	SCRIPT_MIMES = new ArrayList<>();
+	private static final List<String>	SCRIPT_NAMES = new ArrayList<>();
+	
+	static {
+		SCRIPT_EXTENSIONS.add("fpro");
+		SCRIPT_MIMES.add("text/funnyprolog");
+		SCRIPT_NAMES.add(LANG_NAME);
+	}
 	
 	public FunnyProEngineFactory() {
-		System.err.println("Call");
 	}
 	
 	@Override public String getEngineName() {return ENGINE_NAME;}
@@ -76,6 +94,10 @@ public class FunnyProEngineFactory implements ScriptEngineFactory {
 
 	@Override
 	public ScriptEngine getScriptEngine() {
-		return new FunnyProEngine(this);
+		try{return new FunnyProEngine(this);
+		} catch (FProException | IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
