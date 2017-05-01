@@ -39,6 +39,7 @@ public class QuickListTest {
 		
 		int count = 0;
 		for (Long item : list.content()) {
+			Assert.assertNotNull(item);
 			count++;
 		}
 		Assert.assertEquals(count,18);

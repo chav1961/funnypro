@@ -60,8 +60,8 @@ public class GlobalStackTest {
 		final LoggerFacade			log = new DefaultLoggerFacade();
 		final IFProEntity			entity1 = new AnonymousEntity(), entity2 = new IntegerEntity(100);	
 		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final IFProGlobalStack	stack = new GlobalStack(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties());
+			final IFProGlobalStack	stack = new GlobalStack(log,new Properties(),repo)) {
 		
 			Assert.assertTrue(stack.isEmpty());
 			

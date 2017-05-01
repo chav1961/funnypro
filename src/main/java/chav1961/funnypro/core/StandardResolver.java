@@ -533,6 +533,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public ResolveRC nextResolve(final Object global, final Object local, IFProEntity entity) throws FProException {
 		if (global == null) {
@@ -689,6 +690,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void endResolve(final Object global, final Object local, final IFProEntity entity) throws FProException {
 		if (global == null) {
@@ -992,6 +994,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		}
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void releaseTemporaries(final IFProEntity mark, final IFProGlobalStack stack) {
 		if (!stack.isEmpty() && stack.peek().getTopType() == StackTopType.temporary) {
 			FProUtil.removeEntity(((TemporaryStackTop)stack.pop()).getEntity());
@@ -1177,6 +1180,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 	}
 	
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ResolveRC iterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity, final Iterable<IFProEntity> iterable) throws FProException {
 		local.stack.push(GlobalStack.getIteratorStackTop(iterable,IFProEntity.class));
 		while ((((Iterable)((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator()).iterator().hasNext())) {
@@ -1206,6 +1210,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		return ResolveRC.False;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private ResolveRC continueIterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity) throws FProException {
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.temporary) {
 			IFProEntity		rule = ((TemporaryStackTop)local.stack.pop()).getEntity();
@@ -1260,6 +1265,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		}
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void endIterate(final IFProEntity entity, final IFProGlobalStack stack) {
 		if (!stack.isEmpty() && stack.peek().getTopType() == StackTopType.temporary) {
 			stack.pop();

@@ -6,11 +6,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,10 +27,9 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
-import chav1961.funnypro.core.interfaces.IGentlemanSet;
-import chav1961.funnypro.core.CommonUtil;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -223,8 +219,6 @@ public class FProVM implements IFProVM, IGentlemanSet {
 			throw new IllegalStateException("VM is not turned on. Turn on it firstly!");
 		}
 		else {
-			IFProEntity			entity;
-			
 			try{final BufferedReader		brdr = new BufferedReader(source);	// Don't close!!!
 				final IFProParserAndPrinter pap = new ParserAndPrinter(getDebug(), getParameters(), repo);
 				final boolean[]				continuation = new boolean[]{true};
@@ -310,7 +304,6 @@ public class FProVM implements IFProVM, IGentlemanSet {
 		}
 		else {
 			final IFProParserAndPrinter	pap = new ParserAndPrinter(getDebug(), getParameters(), repo);
-			final List<IFProVariable>	vars = new ArrayList<>();
 			final boolean[]				result = new boolean[1];
 			
 			pap.parseEntities(source.toCharArray(),0,new FProParserCallback(){

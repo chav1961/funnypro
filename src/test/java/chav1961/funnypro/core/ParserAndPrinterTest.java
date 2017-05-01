@@ -3,7 +3,6 @@ package chav1961.funnypro.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -23,12 +22,11 @@ import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
-import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
-import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
+import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
@@ -411,7 +409,7 @@ public class ParserAndPrinterTest {
 			Assert.assertEquals(((IFProList)sameVariable).getChild().getEntityId(),((IFProList)sameVariable).getTail().getEntityId());
 			
 			list.clear();
-			final IFProEntity		chain = buildEntity(pap,"[Variable|Variable].",list);
+			buildEntity(pap,"[Variable|Variable].",list);
 			Assert.assertEquals(list.size(),1);
 			
 			int				count = 0;

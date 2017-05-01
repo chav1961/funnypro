@@ -8,6 +8,7 @@ import chav1961.funnypro.core.interfaces.IFProQuickList;
 
 class QuickList<D> implements IFProQuickList<D> {
 	private final Content<D>	fill = new Content<D>(-Integer.MAX_VALUE,null); 
+	@SuppressWarnings("unchecked")
 	private Content<D>[]		list = new Content[16]; 		
 	private int					amount = 0;
 	
@@ -61,6 +62,7 @@ class QuickList<D> implements IFProQuickList<D> {
 		
 		if (found < 0) {
 			if (amount >= list.length) {
+				@SuppressWarnings("unchecked")
 				final Content<D>[]	newList = new Content[2*list.length];
 				
 				Arrays.fill(newList,fill);

@@ -233,7 +233,7 @@ class CommonUtil {
 	 * @param tree three to serialize
 	 * @throws IOException
 	 */
-	public static void writeTree(final OutputStream target, final SyntaxTreeInterface tree) throws IOException {
+	public static void writeTree(final OutputStream target, final SyntaxTreeInterface<?> tree) throws IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target stream can't be null");
 		}
@@ -267,7 +267,8 @@ class CommonUtil {
 	 * @param tree tree to deserialize content to
 	 * @throws IOException 
 	 */
-	public static void readTree(final InputStream source, final SyntaxTreeInterface tree, final Class content) throws IOException {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void readTree(final InputStream source, final SyntaxTreeInterface tree, final Class<?> content) throws IOException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source stream can't be null");
 		}

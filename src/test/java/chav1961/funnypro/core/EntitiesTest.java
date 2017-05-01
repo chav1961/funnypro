@@ -64,7 +64,7 @@ public class EntitiesTest {
 		Assert.assertEquals(list.getTail(),real);
 		Assert.assertEquals(serializeAndDeserialize(list),list);
 
-		OperatorEntity	op = new OperatorEntity(100,OperatorType.xfx,12345), op1;
+		OperatorEntity	op = new OperatorEntity(100,OperatorType.xfx,12345);
 		
 		op.setLeft(anon).setRight(string);
 		

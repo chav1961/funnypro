@@ -1,16 +1,11 @@
 package chav1961.funnypro.core;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.EnternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
@@ -21,6 +16,9 @@ import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
+import chav1961.funnypro.core.exceptions.FProException;
+import chav1961.funnypro.core.exceptions.FProParsingException;
+import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -38,7 +36,6 @@ import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.purelib.basic.CharsUtil;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
-import chav1961.purelib.basic.growablearrays.GrowableCharArray;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -47,8 +44,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
-	private final long				colonId, tailId, ruleId;
-	private final GrowableCharArray	chars = new GrowableCharArray(true); 
+	private final long				colonId, tailId;
 
 	private enum NameClassification {
 		anonymous, term
@@ -69,7 +65,6 @@ class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 			this.repo = repo;		
 			this.colonId = repo.termRepo().seekName(",");
 			this.tailId = repo.termRepo().seekName("|");
-			this.ruleId = repo.termRepo().seekName(":-");
 		}
 	}
 	
@@ -791,7 +786,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 	}
 	
 	private int parseExtern(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException {
-		final int[]	locations[] = new int[3][2], forPrty = new int[2];
+		final int[]	locations[] = new int[3][2];
 		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b\"%0c\"%b,%b\"%1c\"%b,%b\"%2d\"%b)",locations);
 		
 		if (parsed > from) {

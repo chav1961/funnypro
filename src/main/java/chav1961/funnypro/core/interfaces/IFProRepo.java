@@ -1,7 +1,5 @@
 package chav1961.funnypro.core.interfaces;
 
-import java.util.List;
-
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 
 /**

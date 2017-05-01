@@ -1,7 +1,6 @@
 package chav1961.funnypro.core.interfaces;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import chav1961.funnypro.core.exceptions.FProException;

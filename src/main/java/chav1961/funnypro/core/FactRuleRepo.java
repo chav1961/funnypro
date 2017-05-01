@@ -26,6 +26,7 @@ class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 	
 	private final LoggerFacade					log;
 	private final Properties					props;
+	@SuppressWarnings("unchecked")
 	private IFProQuickList<ChainDescriptor>[]	predicates = new QuickList[IFProPredicate.MAX_ARITY];
 
 	public FactRuleRepo(final LoggerFacade log, final Properties prop) {
@@ -242,6 +243,7 @@ class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void deserialize(final InputStream source) throws IOException {
 		if (source == null) {
@@ -419,7 +421,7 @@ class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 		@Override public String toString() {return "ChainDescriptor [predicateId=" + predicateId + ", start=" + start + ", end=" + end + "]";}
 	}
 	
-	private static class Chain {
+	static class Chain {
 		public ChainDescriptor[] data;
 		
 		public Chain() {

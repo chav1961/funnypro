@@ -5,11 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -46,8 +42,6 @@ public class StandardResolverTest {
 			final StandardResolver		sr = new StandardResolver();
 			final Object				global = sr.onLoad(log,new Properties(),repo);
 			
-			IFProEntity					entity;
-
 			try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/environment.fpro");
 				final Reader			rdr = new InputStreamReader(is);) {	// Prepare environment
 				final CharacterSource	cs = new ReaderCharSource(rdr,false);

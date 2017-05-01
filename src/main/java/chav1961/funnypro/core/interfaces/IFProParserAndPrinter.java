@@ -1,8 +1,6 @@
 package chav1961.funnypro.core.interfaces;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.List;
 
 import chav1961.funnypro.core.exceptions.FProException;

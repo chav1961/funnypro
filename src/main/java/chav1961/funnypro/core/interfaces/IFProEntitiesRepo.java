@@ -1,8 +1,5 @@
 package chav1961.funnypro.core.interfaces;
 
-import java.io.Reader;
-import java.io.Writer;
-
 import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
