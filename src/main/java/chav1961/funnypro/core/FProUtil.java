@@ -533,6 +533,8 @@ class FProUtil {
 					result[1]++;
 				}
 			}
+			result[0]++;
+			result[1]++;
 			return result;
 		}
 	}

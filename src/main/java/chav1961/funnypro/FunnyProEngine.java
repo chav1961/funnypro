@@ -4,9 +4,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.util.Properties;
 
 import javax.script.AbstractScriptEngine;
@@ -72,12 +72,7 @@ class FunnyProEngine extends AbstractScriptEngine implements Closeable, IFProVM 
 
 	@Override
 	public Object eval(Reader reader, ScriptContext context) throws ScriptException {
-		try(final PrintWriter	out = new PrintWriter(context.getWriter());
-			final PrintWriter	err = new PrintWriter(context.getErrorWriter());) {
-			
-			console(reader,out,err);
-			out.flush();
-			err.flush();
+		try{console(reader,context.getWriter(),context.getErrorWriter());
 		} catch (FProException e) {
 			throw new ScriptException(e);
 		}
@@ -150,7 +145,7 @@ class FunnyProEngine extends AbstractScriptEngine implements Closeable, IFProVM 
 	}
 
 	@Override
-	public void console(final Reader source, final PrintWriter target, final PrintWriter errors) throws FProException {
+	public void console(final Reader source, final Writer target, final Writer errors) throws FProException {
 		vm.console(source, target, errors);
 	}
 }

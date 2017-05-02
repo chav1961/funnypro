@@ -6,8 +6,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,7 +31,9 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IGentlemanSet;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
+import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
@@ -214,7 +217,7 @@ public class FProVM implements IFProVM, IGentlemanSet {
 	}
 
 	@Override
-	public void console(Reader source, PrintWriter target, PrintWriter errors) throws FProException {
+	public void console(final Reader source, final Writer target, final Writer errors) throws FProException {
 		if (!isTurnedOn()) {
 			throw new IllegalStateException("VM is not turned on. Turn on it firstly!");
 		}
@@ -226,33 +229,42 @@ public class FProVM implements IFProVM, IGentlemanSet {
 				
 				final long	quit = repo.termRepo().placeName("quit",null);
 				
+				target.write("Funny prolog console...\n>");
+				target.flush();
 				while (continuation[0] && (command = brdr.readLine()) != null) {
 					try{pap.parseEntities(command.toCharArray(),0,new FProParserCallback() {
 											@Override
 											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
 												try{
 												if (entity.getEntityId() == quit && entity.getEntityType().equals(EntityType.predicate) && ((IFProPredicate)entity).getArity() == 0) {
-													target.println("quit successful!");
+													target.write("quit successful!\n");
 													continuation[0] = false;
 													return false;
 												}
 												else if (entity.getEntityId() == goal && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getType().equals(OperatorType.fx)) {
-													target.println(inference(entity,vars,repo,new IFProCallback(){
+													target.write(String.valueOf(inference(entity,vars,repo,new IFProCallback(){
 														@Override public void beforeFirstCall() {}
 														@Override public boolean onResolution(Map<String, Object> resolvedVariables) {return true;}
 														@Override public void afterLastCall() {}
-													}));
+													}))+"\n>");
 												}
 												else if (entity.getEntityId() == question && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getType().equals(OperatorType.fx)) {
-													target.println(inference(entity,vars,repo,new IFProCallback(){
+													target.write("Answer="+String.valueOf(inference(entity,vars,repo,new IFProCallback(){
 														@Override public void beforeFirstCall() {}
 														
 														@Override 
 														public boolean onResolution(final Map<String, Object> resolvedVariables) throws FProPrintingException, FProParsingException {
-															for (Entry<String, Object> item : resolvedVariables.entrySet()) {
-																target.println(String.format("%1$s = %2%s\n",item.getKey(),item.getValue()));
+															try{for (Entry<String, Object> item : resolvedVariables.entrySet()) {
+																	final StringBuilder	sb = new StringBuilder();
+																	
+																	pap.putEntity((IFProEntity)item.getValue(),new StringBuilderCharTarget(sb));
+																	target.write(String.format("%1$s = %2$s\n",item.getKey(),sb));
+																}
+																target.write("proceed? ");
+																target.flush();
+															} catch (IOException | PrintingException | FProException e) {
+																throw new FProPrintingException(e);
 															}
-															target.println("proceed? ");
 
 															try{final String	buffer = brdr.readLine();
 																return "yY+tT".indexOf(buffer == null ? "" : buffer) >= 0;
@@ -262,23 +274,27 @@ public class FProVM implements IFProVM, IGentlemanSet {
 														}
 														
 														@Override public void afterLastCall() {}
-													}));
+													}))+"\n>");
 												}
 												else {
 													repo.predicateRepo().assertZ(entity);
+													target.write("Predicate was asserted\n>");
 												}
 												} catch (FProException exc) {
-													exc.printStackTrace();
-													errors.println(String.format("Error executing input: "+exc.getMessage()));
+//													exc.printStackTrace();
+													errors.write(String.format("Error executing input: "+exc.getMessage()));
 													return false;
 												}
 												return true;
 											}
 										}
-					);
-					
+							);
 					} catch (FProParsingException e) {
-						errors.println(String.format("Error parsing input: "+e.getMessage()));
+						e.printStackTrace();
+						errors.write(e.getMessage());
+					} finally {
+						target.flush();
+						errors.flush();
 					}
 				}				
 			} catch (Exception e) {
@@ -312,7 +328,7 @@ public class FProVM implements IFProVM, IGentlemanSet {
 												if (entity.getEntityId() == opId && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getType().equals(OperatorType.fx)) {
 													try{result[0] = inference(entity,vars,repo,callback);
 													} catch (FProException e) {
-														e.printStackTrace();
+//														e.printStackTrace();
 														throw new FProParsingException(0,0,e.getMessage());
 													}
 												}

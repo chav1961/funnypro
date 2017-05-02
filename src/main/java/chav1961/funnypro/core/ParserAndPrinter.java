@@ -121,8 +121,13 @@ class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 			}
 			return from;
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new FProParsingException(0,0,e.getMessage(),e);
+			if (e instanceof FProParsingException) {
+				throw (FProParsingException)e;
+			}
+			else {
+				e.printStackTrace();
+				throw new FProParsingException(0,0,e.getMessage(),e);
+			}
 		}
 	}
 	
@@ -166,7 +171,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 						}
 						
 						if (actual != null) {
-							target.put('|');	putEntity(((IFProList)entity).getTail(),target);
+							target.put('|');	putEntity(actual,target);
 						}
 						target.put("]");
 					}

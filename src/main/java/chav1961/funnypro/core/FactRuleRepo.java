@@ -66,7 +66,7 @@ class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 					assertValue(((IFProPredicate)value).getArity(),true,value);
 					break;
 				default :
-					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directory to the fact/rule base");
+					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directly to the fact/rule base");
 			}
 		}
 	}
@@ -92,7 +92,7 @@ class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 					assertValue(((IFProPredicate)value).getArity(),false,value);
 					break;
 				default :
-					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directory to the fact/rule base");
+					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directly to the fact/rule base");
 			}
 		}
 	}
@@ -117,7 +117,7 @@ class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 					removeChain(((IFProPredicate)value).getArity(),value.getEntityId());
 					break;
 				default :
-					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directory to the fact/rule base");
+					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be removed directly from the fact/rule base");
 			}
 		}
 	}
@@ -149,7 +149,7 @@ class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
 				case predicate :
 					return removeFromChain(((IFProPredicate)value).getArity(),value.getEntityId(),value);
 				default :
-					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directory to the fact/rule base");
+					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be removed directly from the fact/rule base");
 			}
 		}
 	}

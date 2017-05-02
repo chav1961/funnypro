@@ -379,7 +379,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 									}
 				);
 			} catch (FProException | IOException | ContentException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 				throw new FProParsingException(0,0,e.getMessage()); 
 			} 
 			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted",count[0],ops[0]);
@@ -422,7 +422,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 									}
 				);
 			} catch (FProException | IOException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 				throw new FProParsingException(0,0,e.getMessage()); 
 			} 
 			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted",count[0],ops[0]);
@@ -473,7 +473,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 				wr.flush();
 				result = wr.toString();			
 			} catch (IOException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 				throw new FProPrintingException(e.getMessage());
 			}
 			

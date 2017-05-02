@@ -240,7 +240,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 												}
 						);
 					} catch (FProParsingException | IOException exc) {
-						exc.printStackTrace();
+//						exc.printStackTrace();
 						actualLog.message(Severity.info,"Predicate registration failed for %1$s: %2$s", item.text, exc.getMessage());
 						throw new IllegalArgumentException("Attempt to register predicate ["+item+"] failed: "+exc.getMessage(),exc); 
 					}
@@ -1276,18 +1276,22 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		if (!stack.isEmpty() && stack.peek().getTopType() == StackTopType.iterator) {
 			stack.pop();
 		}
-		else {
-			throw new IllegalStateException();
-		}
+//		else {
+//			throw new IllegalStateException();
+//		}
 	}
 	
 	private IFProList getBagof(final IFProEntitiesRepo repo, final IFProPredicate bagof) {
-		IFProList	start = new ListEntity(null,null), actual = start; 
+		IFProList	start = new ListEntity(null,null), actual = start, pred = null; 
 		
 		for (IFProEntity item : new IterablesCollection.IterableCallBagof(repo,bagof)) {
 			actual.setChild(item);		item.setParent(actual);		
 			actual.setTail(new ListEntity(null,null).setParent(actual));
+			pred = actual;
 			actual = (IFProList) actual.getTail();
+		}
+		if (pred != null) {	// The same last element in the list is always empty
+			pred.setTail(null);
 		}
 		return start;
 	}
@@ -1354,7 +1358,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		final Map<String,Object>	resolved = new HashMap<>();
 		
 		for (IFProVariable var : vars) {
-			resolved.put(repo.termRepo().getName(var.getEntityId()),var.getParent());
+			resolved.put(repo.termRepo().getName(var.getEntityId()),var.getParent() == null ? var : var.getParent());
 		}
 		return callback.onResolution(resolved);
 	}

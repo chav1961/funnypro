@@ -3,8 +3,8 @@ package chav1961.funnypro.core.interfaces;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.Map;
 
 import chav1961.funnypro.core.exceptions.FProException;
@@ -143,5 +143,5 @@ public interface IFProVM extends AutoCloseable {
 	 * @param errors target error output
 	 * @throws FProException
 	 */
-	void console(Reader source, PrintWriter target, PrintWriter errors) throws FProException;
+	void console(Reader source, Writer target, Writer errors) throws FProException;
 }
