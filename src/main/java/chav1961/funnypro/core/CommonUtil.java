@@ -10,6 +10,7 @@ import java.util.Properties;
 import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface.Walker;
 
 class CommonUtil {
 	private static final int					SERIALIZATION_TREE_MAGIC = 0x12123030;
@@ -243,18 +244,22 @@ class CommonUtil {
 		else {
 			writeInt(target,SERIALIZATION_TREE_MAGIC);			// Tree magic.
 			writeLong(target,tree.size());						// Size of the tree
-			tree.walk(id -> {									// Upload all data in the loop
-				try{writeLong(target,id);
-					writeString(target,tree.getName(id));
-					if (tree.getCargo(id) != null && (tree.getCargo(id) instanceof IFProStreamSerializable)) {
-						writeInt(target,10);
-						((IFProStreamSerializable)tree.getCargo(id)).serialize(target);
+			tree.walk(new Walker(){								// Tree content
+				@Override
+				public boolean process(char[] name, int len, long id, Object cargo) {
+					try{writeLong(target,id);
+						writeString(target,tree.getName(id));
+						if (tree.getCargo(id) != null && (tree.getCargo(id) instanceof IFProStreamSerializable)) {
+							writeInt(target,10);
+							((IFProStreamSerializable)tree.getCargo(id)).serialize(target);
+						}
+						else {
+							writeInt(target,0);
+						}
+						return true;
+					} catch (Exception e) {
+						throw new RuntimeException(e);
 					}
-					else {
-						writeInt(target,0);
-					}
-				} catch (Exception e) {
-					throw new RuntimeException(e);
 				}
 			});
 			writeLong(target,SERIALIZATION_TREE_MAGIC);			// Tree magic end.

@@ -783,7 +783,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				throw new FProParsingException(FProUtil.toRowCol(source,from),"Unknown term/operator was detected!"); 
 			}
 			else {
-				endName = (int) (from - maxLex - 1);
+				endName = (int) - maxLex - 1;
 				result[0] = getRepo().termRepo().seekName(source,startName,endName);
 				return endName;
 			}

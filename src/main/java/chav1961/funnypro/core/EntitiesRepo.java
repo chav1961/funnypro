@@ -73,8 +73,8 @@ class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
 			this.log = log;			this.props = prop;
 			
 			Arrays.fill(this.operators,fill);
-			this.stringRepo = new AndOrTree<SerializableString>(1); 
-			this.termRepo = new AndOrTree<SerializableString>(2); 
+			this.stringRepo = new AndOrTree<SerializableString>(1,16); 
+			this.termRepo = new AndOrTree<SerializableString>(2,16); 
 			this.frRepo = new FactRuleRepo(log,props);
 			this.epRepo = new ExternalPluginsRepo(log, props);
 			this.epRepo.prepare(this);
