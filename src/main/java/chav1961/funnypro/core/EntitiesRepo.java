@@ -29,7 +29,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProRepo;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.funnypro.core.interfaces.IGentlemanSet;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.AndOrTree;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -40,7 +40,7 @@ import chav1961.purelib.streams.chartarget.WriterCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
-class EntitiesRepo implements IFProEntitiesRepo, IGentlemanSet {
+class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	private static final int					SERIALIZATION_MAGIC = 0x12123000;
 	
 	private final LoggerFacade					log;

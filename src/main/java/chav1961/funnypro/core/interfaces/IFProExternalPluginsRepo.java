@@ -2,8 +2,8 @@ package chav1961.funnypro.core.interfaces;
 
 /**
  * <p>This interface describes all external plugins in the system</p> 
- * @author chav1961
- *
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProExternalPluginsRepo extends AutoCloseable {
 	/**

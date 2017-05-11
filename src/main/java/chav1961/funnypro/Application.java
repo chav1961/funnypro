@@ -9,8 +9,12 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+/**
+ * <p>This class implements stand-alone console-oriented application for the Funny Prolog interpreter</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class Application {
-
 	public static void main(String[] args) throws ScriptException {
 		try(final Reader	in = new InputStreamReader(System.in);
 			final Writer	out = new OutputStreamWriter(System.out); 

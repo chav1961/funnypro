@@ -4,21 +4,22 @@ import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 
 /**
  * <p>This interface collects all strings</p>
- * @author chav1961
- *
+ * 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProStringRepo {
 	/**
 	 * <p>Put string into the repo and get it's id</p> 
 	 * @param source string to put
-	 * @return string id. If the string exists, returns existent id</p>
+	 * @return string id. If the string exists, returns existent id
 	 */
 	long putString(String source);
 
 	/**
 	 * <p>Parse string escaping, put string into the repo and get it's id</p> 
 	 * @param source string to parse ant put
-	 * @return string id. If the string exists, returns existent id</p>
+	 * @return string id. If the string exists, returns existent id
 	 */
 	long putEscapedString(String source);
 
@@ -27,7 +28,7 @@ public interface IFProStringRepo {
 	 * @param source string to put
 	 * @param from position from the source
 	 * @param to position to the source
-	 * @return string id. If the string exists, returns existent id</p>
+	 * @return string id. If the string exists, returns existent id
 	 */
 	long putString(char[] source, int from, int to);
 
@@ -36,7 +37,7 @@ public interface IFProStringRepo {
 	 * @param source string to parse ant put
 	 * @param from position from the source
 	 * @param to position to the source
-	 * @return string id. If the string exists, returns existent id</p>
+	 * @return string id. If the string exists, returns existent id
 	 */
 	long putEscapedString(char[] source, int from, int to);
 	
@@ -65,6 +66,4 @@ public interface IFProStringRepo {
 	IFProOperator getOperator(long id);
 	
 	SyntaxTreeInterface<?> getOperatorTree();
-
-	
 }

@@ -2,8 +2,8 @@ package chav1961.funnypro.core.interfaces;
 
 /**
  * <p>This interface describes FPro list entities</p>
- * @author chav1961
- *
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProList extends IFProEntity {
 	/**

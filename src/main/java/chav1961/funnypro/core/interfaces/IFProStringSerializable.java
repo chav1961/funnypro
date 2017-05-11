@@ -7,9 +7,9 @@ import java.io.Writer;
 import chav1961.funnypro.core.exceptions.FProParsingException;
 
 /**
- * <p>THis interface describes string serializable items</p>
- * @author chav1961
- *
+ * <p>This interface describes string serializable items</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProStringSerializable {
 	/**
@@ -21,7 +21,7 @@ public interface IFProStringSerializable {
 	/**
 	 * <p>Serialize item to string builder</p>
 	 * @param sb string builder to put serialized data
-	 * @returns actual position below the end string
+	 * @return actual position below the end string
 	 */
 	int serialize(StringBuilder sb); 
 	
@@ -36,14 +36,14 @@ public interface IFProStringSerializable {
 	/**
 	 * <p>Serialize item to writer</p>
 	 * @param target writer to serialize item to
-	 * @throws IOException
+	 * @throws IOException any I/O exceptions
 	 */
 	void serialize(Writer target) throws IOException;
 	
 	/**
 	 * <p>Deserialize item from string</p>
 	 * @param source char source containing item
-	 * @throws FProParsingException
+	 * @throws FProParsingException any data structure problems were detected
 	 */
 	void deserialize(Reader source) throws FProParsingException;
 }

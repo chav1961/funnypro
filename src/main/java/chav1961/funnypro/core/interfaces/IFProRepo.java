@@ -4,8 +4,8 @@ import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 
 /**
  * <p>This interface describes FPro repository.</p>
- * @author chav1961
- *
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProRepo {
 	/**

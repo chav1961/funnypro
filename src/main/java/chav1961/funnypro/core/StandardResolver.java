@@ -45,6 +45,14 @@ import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 
+/**
+ * <p>This class is a standard resolver for all built-in predicates and operators, described in I.Bratko.
+ * Use this class as an example for development your own plugins</p>
+ * 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
+
 public class StandardResolver implements IResolvable, FProPluginList {
 	public static final String					PLUGIN_NAME	= "StandardResolver";
 	public static final String					PLUGIN_PRODUCER	= "internal";

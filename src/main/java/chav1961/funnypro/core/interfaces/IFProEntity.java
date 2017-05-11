@@ -2,8 +2,8 @@ package chav1961.funnypro.core.interfaces;
 
 /**
  * <p>This interface describes FPro entities</p>
- * @author chav1961
- *
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProEntity {
 	static final int		ANON_ENTITY_ID = -2; 
@@ -30,7 +30,7 @@ public interface IFProEntity {
 	
 	/**
 	 * <p>Set entity id for the given entity type</p>
-	 * @param entityId
+	 * @param entityId new id for the entity
 	 * @return self
 	 */
 	IFProEntity setEntityId(long entityId);

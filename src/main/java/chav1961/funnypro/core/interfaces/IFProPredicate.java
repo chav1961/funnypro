@@ -2,6 +2,8 @@ package chav1961.funnypro.core.interfaces;
 
 /**
  * <p>This interface describes predicate definitions</p> 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProPredicate extends IFProEntity, IFProRuledEntity {
 	public static final int		MIN_ARITY = 0;

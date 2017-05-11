@@ -32,7 +32,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.funnypro.core.interfaces.IGentlemanSet;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.CharsUtil;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -40,7 +40,7 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
-class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
+class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
@@ -76,7 +76,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	}
 
 	@Override
-	public void parseEntities(final CharacterSource source, final FProParserCallback callback) throws FProException, IOException, ContentException {
+	public void parseEntities(final CharacterSource source, final FProParserCallback callback) throws FProParsingException, IOException, ContentException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source reader can't be null");
 		}
@@ -98,7 +98,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IGentlemanSet {
 	}
 
 	@Override
-	public int parseEntities(final char[] source, int from, final FProParserCallback callback)  throws FProException, IOException {
+	public int parseEntities(final char[] source, int from, final FProParserCallback callback)  throws FProParsingException, IOException {
 		final List<IFProVariable>	vars = new ArrayList<>();
 		
 		try{final IFProEntity[]		result = new IFProEntity[1];

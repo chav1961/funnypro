@@ -15,10 +15,10 @@ import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
-import chav1961.funnypro.core.interfaces.IGentlemanSet;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
-class ExternalPluginsRepo implements IFProExternalPluginsRepo, IGentlemanSet {
+class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	public static final String						PLUGIN_PACKAGES = "pluginPackages";
 	
 	private final LoggerFacade						log;

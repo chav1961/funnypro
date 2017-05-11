@@ -1,15 +1,16 @@
 package chav1961.funnypro.core.interfaces;
 
 /**
- * <p>THis interface describes quick array-based ordered list to use</p>
- * @author chav1961
- *
- * @param <T>
+ * <p>This interface describes quick array-based ordered list to use</p>
+ * 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ * @param <D> quick list content
  */
 public interface IFProQuickList<D> {
 	/**
 	 * <p>Test that array contains the given element</p> 
-	 * @param data element to test
+	 * @param key element to test
 	 * @return true if contains
 	 */
 	boolean contains(long key);
@@ -35,7 +36,8 @@ public interface IFProQuickList<D> {
 	
 	/**
 	 * <p>Insert new data into array</p> 
-	 * @param data
+	 * @param key data key do insert 
+	 * @param data data value to insert
 	 */
 	void insert(long key, D data);
 }

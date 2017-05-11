@@ -2,7 +2,8 @@ package chav1961.funnypro.core.interfaces;
 
 /**
  * <p>This interface describes any ruled entity</p>
- * @author chav1961
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProRuledEntity {
 	/**
@@ -13,7 +14,7 @@ public interface IFProRuledEntity {
 	
 	/**
 	 * <p>Associate rule with the entity</p>
-	 * @param rule
+	 * @param rule rule description for the given entity
 	 */
 	void setRule(IFProEntity rule);
 }

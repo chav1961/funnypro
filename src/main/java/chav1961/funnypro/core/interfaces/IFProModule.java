@@ -6,9 +6,10 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 /**
  * <p>This interface describes the minimal functionality for the modules</p>
- * @author chav1961
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
-public interface IGentlemanSet {
+public interface IFProModule {
 	/**
 	 * <p>Get debug anf log associated with this module</p>
 	 * @return debug ang log associated. Can't be null

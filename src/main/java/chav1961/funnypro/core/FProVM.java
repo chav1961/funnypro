@@ -1,12 +1,9 @@
 package chav1961.funnypro.core;
 
-
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
@@ -28,7 +25,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.funnypro.core.interfaces.IGentlemanSet;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -37,7 +34,14 @@ import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
-public class FProVM implements IFProVM, IGentlemanSet {
+/**
+ * <p>This class is a Funny Prolog Virtual machine implementation</p>
+ * 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
+
+public class FProVM implements IFProVM, IFProModule {
 	private static final int			SERIALIZATION_MAGIC = 0x12120000;
 	private static final int			SERIALIZATION_VERSION = 0x00010001;
 
@@ -372,7 +376,7 @@ public class FProVM implements IFProVM, IGentlemanSet {
 		}
 	}
 	
-	public static class ResolvableAndGlobal {
+	static class ResolvableAndGlobal {
 		public IResolvable	resolver;
 		public Object		global;
 		

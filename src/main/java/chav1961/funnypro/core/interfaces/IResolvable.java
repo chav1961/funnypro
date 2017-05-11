@@ -3,14 +3,56 @@ package chav1961.funnypro.core.interfaces;
 import java.util.List;
 import java.util.Properties;
 
+import chav1961.funnypro.core.StandardResolver;
 import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 /**
- * <p>This interface describes any external predicates/operators</p>
+ * <p>This interface describes any external predicates/operators plugin. Life cycle of every plugin is:</p>
+ * <h3>Plugin loading</h3>
+ * <p>Load plugin and call its {@link IResolvable#onLoad(LoggerFacade, Properties, IFProEntitiesRepo)} method.
+ * Common practice is to register all predicates and operators that the given plugin supports (see {@link StandardResolver}
+ * class source code for example). The plugin also can create any structure for it's own purposes and return it as a result
+ * of calling this method. This structure will be passed to all other methods in the 'global' parameter.</p>  
+ * <h3>Resolving predicate</h3>
+ * <p>A life cycle to resolve one of the registered predicates (see below)</p>
+ * <h3>Plugin removing</h3>
+ * <p>Remove plugin and free it's resources. Common practice is to deregister all the registered predicates and operators and
+ * free global structure, created by {@link IResolvable#onLoad(LoggerFacade, Properties, IFProEntitiesRepo)} method.</p>
+ * <p>The life cycle of the resolving predicate is:</p>
+ * <h3>Preparing resolving</h3>
+ * <p>Prepare resolving process and call {@link IResolvable#beforeCall(Object, IFProGlobalStack, List, IFProCallback)} method.
+ * Plugin can create any structure for it's own purposes and return it as a result of calling method. This structure will be 
+ * passed to all other methods in the 'local' parameter.</p>   
+ * <h3>The first resolution</h3>
+ * <p>Forward resolution of the predicate/operator by calling {@link IResolvable#firstResolve(Object, Object, IFProEntity)}. Returns
+ * {@link ResolveRC} instance as a result.</p>
+ * <h3>The backtrace</h3>
+ * <p>This is an optional step and executes only if the first resolution was successful. Calling {@link IResolvable#nextResolve(Object, Object, IFProEntity)} method.
+ * Returns {@link ResolveRC} instance as a result.</p>
+ * <h3>End resolving</h3>
+ * <p>Finish resolving the given predicate/operator and call {@link IResolvable#endResolve(Object, Object, IFProEntity)}.</p>
+ * <p>Unprepare resolving</p>
+ * <p>Calling {@link IResolvable#afterCall(Object, Object)}. Common practice is to free structures returning by {@link IResolvable#beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
+ * method</p>     
+ * 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IResolvable {
+	/**
+	 * <p>This enumeration describes return codes from resolving results. They can be:</p>
+	 * <ul>
+	 * <li>False - resolution unsuccessful.</li> 
+	 * <li>True - resolution successful.</li> 
+	 * <li>FalseWithoutBacktracking - resolution unsuccessful, backtracking need be rejected.</li> 
+	 * <li>UltimateFalse - a special code for cutting predicate (!). Avoid using it in your own plugins.</li> 
+	 * </ul>
+	 * 
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
+	 */
 	public enum ResolveRC {
 		False, True, FalseWithoutBacktracking, UltimateFalse
 	}
@@ -31,64 +73,64 @@ public interface IResolvable {
 	 * <p>This method will be called after load</p>
 	 * @param debug log to use
 	 * @param parameters to use
-	 * @param entites repo to use with. Can be stored in the plugin for longer using
+	 * @param repo entities repo to use with. Can be stored in the plugin for longer using
 	 * @return global object to use with longer calls
-	 * @throws FProException
+	 * @throws FProException any plugin loading problem
 	 */
 	Object onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws FProException;
 	
 	/**
 	 * <p>This method will be called before removing</p>
-	 * @param global object to use with longer calls 
-	 * @throws FProException
+	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
+	 * @throws FProException any plugin removing problem
 	 */
 	void onRemove(Object global) throws FProException;
 	
 	/**
-	 * <p>This method will be called
-	 * @return global object to use with longer calls
+	 * <p>This method will be called before first call of the predicate</p>
+	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
 	 * @param gs global stack for the resolving
 	 * @param vars variables from the predicate to use. Can be null
 	 * @param callback to use for the inference
 	 * @return local object to use with longer calls
-	 * @throws FProException
+	 * @throws FProException if any problems was detected
 	 */
 	Object beforeCall(Object global, IFProGlobalStack gs, List<IFProVariable> vars, IFProCallback callback) throws FProException;
 	
 	/**
 	 * <p>This method will be called on the first resolution</p>
-	 * @return global object to use with longer calls
-	 * @return local object to use with longer calls
+	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)})
+	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)})
 	 * @param entity entity to resolve
-	 * @return true if resolution is successful
-	 * @throws FProException
+	 * @return resolution result (see {@link ResolveRC})
+	 * @throws FProException if any problems was detected
 	 */
 	ResolveRC firstResolve(Object global, Object local, IFProEntity entity) throws FProException;
 	
 	/**
 	 * <p>This method will be called on the sequential next resolution. Optional (if firstResolve was false, will not be called)</p>
-	 * @return global object to use with longer calls
-	 * @return local object to use with longer calls
+	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
+	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
 	 * @param entity entity to resolve
-	 * @return true if resolution is successful
-	 * @throws FProException
+	 * @return resolution result (see {@link ResolveRC})
+	 * @throws FProException if any problems was detected
 	 */
 	ResolveRC nextResolve(Object global, Object local, IFProEntity entity) throws FProException;
 	
 	/**
 	 * <p>This method ends resolution loop</p> 
-	 * @return global object to use with longer calls
-	 * @return local object to use with longer calls
+	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
+	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
 	 * @param entity entity to resolve
-	 * @throws FProException
+	 * @throws FProException if any problems was detected
 	 */
 	void endResolve(Object global, Object local, IFProEntity entity) throws FProException;
 	
 	/**
 	 * <p>This method calls after resolution loop</p>  
-	 * @return global object to use with longer calls
-	 * @return local object to use with longer calls
-	 * @throws FProException
+	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
+	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
+	 * @throws FProException if any problems was detected
 	 */
 	void afterCall(Object global, Object local) throws FProException;
 }

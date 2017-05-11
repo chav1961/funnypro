@@ -2,8 +2,8 @@ package chav1961.funnypro.core.interfaces;
 
 /**
  * <p>This interface describes FPro operator definitions</p>
- * @author chav1961
- *
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 	public static final int		MIN_PRTY = 0;
@@ -20,7 +20,7 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 	
 	/**
 	 * <p>Get operator type</p>
-	 * @return
+	 * @return type of the operator
 	 */
 	OperatorType getType();
 	

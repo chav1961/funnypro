@@ -9,10 +9,11 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 /**
  * <p>This interface supports entities repo functionality</p>
- * @author chav1961
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
-public interface IFProEntitiesRepo extends IStreamSerializable, AutoCloseable {
-	public interface SerializableString extends IStreamSerializable, IFProStringSerializable {
+public interface IFProEntitiesRepo extends IFProStreamSerializable, AutoCloseable {
+	public interface SerializableString extends IFProStreamSerializable, IFProStringSerializable {
 	}
 
 	public enum Classification {
@@ -45,23 +46,23 @@ public interface IFProEntitiesRepo extends IStreamSerializable, AutoCloseable {
 
 	/**
 	 * <p>Classify the given entity id</p>
-	 * @param id entity id to classify</p>
-	 * @return
+	 * @param id entity id to classify
+	 * @return classification result
 	 */
 	Classification classify(long id);
 	
 	/**
-	 * <p>CLassify id as operator type</p>
+	 * <p>Classify id as operator type</p>
 	 * @param id id to classify
 	 * @return operator type or null if classification failed 
 	 */
 	OperatorType operatorType(long id);
 	
 	/**
-	 * <p.Get operator definitions under the given condition. Returned set will be ordered by priority:</p>
+	 * <p>Get operator definitions under the given condition. Returned set will be ordered by priority:</p>
 	 * <ul>
-	 * <li>from min to max value, if minPrty < maxPrty</li>
-	 * <li>from max to min value, if minPrty > maxPrty</li>
+	 * <li>from min to max value, if minPrty &lt; maxPrty</li>
+	 * <li>from max to min value, if minPrty &gt; maxPrty</li>
 	 * </ul> 
 	 * @param id operator id to get definitions
 	 * @param minPrty min available operator priority. See remarks above 
@@ -92,7 +93,7 @@ public interface IFProEntitiesRepo extends IStreamSerializable, AutoCloseable {
 	/**
 	 * <p>Consult data to the repo</p>
 	 * @param source source to consult data from
-	 * @throws FProParsingException
+	 * @throws FProParsingException if any parsing data problems were detected
 	 */
 	void consult(CharacterSource source) throws FProParsingException;
 	
@@ -101,14 +102,14 @@ public interface IFProEntitiesRepo extends IStreamSerializable, AutoCloseable {
 	 * @param source source to consult data from
 	 * @param from start position to consult data
 	 * @return end position after consulting data
-	 * @throws FProParsingException
+	 * @throws FProParsingException if any parsing data problems were detected
 	 */
 	int consult(char[] source, int from) throws FProParsingException;
 	
 	/**
 	 * <p>Save repo to the given target</p> 
 	 * @param target target to save repo to
-	 * @throws FProPrintingException
+	 * @throws FProPrintingException if any data printing problems were detected
 	 */
 	void save(CharacterTarget target) throws FProPrintingException;
 
@@ -117,7 +118,7 @@ public interface IFProEntitiesRepo extends IStreamSerializable, AutoCloseable {
 	 * @param target target to save repo to
 	 * @param from start position to save repo
 	 * @return end position after repo saving
-	 * @throws FProPrintingException
+	 * @throws FProPrintingException if any data printing problems were detected
 	 */
 	int save(char[] target, int from) throws FProPrintingException;
 }

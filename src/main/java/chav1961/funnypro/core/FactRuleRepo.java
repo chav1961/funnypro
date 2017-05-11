@@ -1,5 +1,6 @@
 package chav1961.funnypro.core;
 
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,12 +17,12 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProQuickList;
 import chav1961.funnypro.core.interfaces.IFProRepo;
-import chav1961.funnypro.core.interfaces.IGentlemanSet;
-import chav1961.funnypro.core.interfaces.IStreamSerializable;
+import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.CommonUtil;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
-class FactRuleRepo implements IFProRepo, IStreamSerializable, IGentlemanSet {
+class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	private static final int					SERIALIZATION_MAGIC = 0x12122080;
 	
 	private final LoggerFacade					log;

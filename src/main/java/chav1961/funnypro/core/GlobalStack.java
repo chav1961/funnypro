@@ -6,10 +6,10 @@ import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
-import chav1961.funnypro.core.interfaces.IGentlemanSet;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
-class GlobalStack implements IFProGlobalStack, IGentlemanSet {
+class GlobalStack implements IFProGlobalStack, IFProModule {
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;

@@ -3,8 +3,8 @@ package chav1961.funnypro.core.interfaces;
 
 /**
  * <p>This interface extends operator description with it's mutability </p>
- * @author chav1961
- *
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProMutableOperator extends IFProOperator {
 	/**

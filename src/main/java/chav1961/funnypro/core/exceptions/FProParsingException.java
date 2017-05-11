@@ -1,5 +1,11 @@
 package chav1961.funnypro.core.exceptions;
 
+/**
+ * <p>This is a specific exception for any parsing problems. It uses row and column location to fire parsing problems</p>
+ * 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class FProParsingException extends FProException {
 	private static final long 		serialVersionUID = 6747558191548783494L;
 	private static final String		MESSAGE_FORMAT = "Parse error at %1$d:%2$d : %3$s";

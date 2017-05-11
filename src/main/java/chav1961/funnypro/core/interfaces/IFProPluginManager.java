@@ -1,9 +1,10 @@
 package chav1961.funnypro.core.interfaces;
 
 /**
- * <p>This interface describes FPro plugin manager</p>
- * @author chav1961
- *
+ * <p>This interface describes FProVM external plugin manager</p>
+ * 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
  */
 public interface IFProPluginManager {
 	/**
@@ -33,6 +34,7 @@ public interface IFProPluginManager {
 	/**
 	 * <p>Uninstall external plugin module to process predicate</p>
 	 * @param predicate pedicate header (same as previous call)
+	 * @param arity arity of the predicate
 	 */
 	void uninstallPredicate(String predicate, int arity);
 	
