@@ -3,16 +3,29 @@ package chav1961.funnypro.core.entities;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 
+/**
+ * <p>This class describes string entity</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class VariableEntity implements IFProVariable {
 	private long			id;
 	private IFProEntity		parent = null;
 	private IFProVariable	chain = this;
 	
-
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param id variable name id (need be registered in the term tree)
+	 * @param parent parent node
+	 */
 	public VariableEntity(final long id, final IFProEntity parent) {
 		this.id = id;	this.parent = parent;
 	}	
 	
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param id variable name id (need be registered in the term tree)
+	 */
 	public VariableEntity(final long id) {
 		this.id = id;
 	}

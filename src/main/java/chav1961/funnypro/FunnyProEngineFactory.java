@@ -10,12 +10,13 @@ import javax.script.ScriptEngineFactory;
 import chav1961.funnypro.core.exceptions.FProException;
 
 /**
- * <p>This class implements engine factory for the Funny prolog interpreter. All requirements about it can be read in the {@link ScriptEngineFactory}
+ * <p>This class implements engine factory for the Funny Prolog interpreter. All requirements about it can be read in the {@link ScriptEngineFactory}
  * description. This factory use SPI protocol to incorporate into JRE and uses <b>META-INF\services\javax.script.ScriptEngineFactory</b> file for it</p>
  * 
  * <p>This class is not thread-safe.</p>
  * 
  * @see chav1961.purelib.basic JUnit tests
+ * @see FunnyProEngine
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
  */

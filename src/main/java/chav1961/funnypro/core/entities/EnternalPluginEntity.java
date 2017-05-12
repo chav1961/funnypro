@@ -4,6 +4,11 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IResolvable;
 
+/**
+ * <p>This class describes external plugin description entity in the expression tree</p> 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class EnternalPluginEntity implements IFProExternalEntity {
 	private final long			pluginId;
 	private final String		pluginName, pluginProducer;
@@ -11,14 +16,35 @@ public class EnternalPluginEntity implements IFProExternalEntity {
 	private final IResolvable	resolver;
 	private IFProEntity			parent;
 
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param entity plugin descriptor
+	 */
 	public EnternalPluginEntity(final IFProExternalEntity entity){
 		this(entity.getEntityId(),entity.getPluginName(),entity.getPluginProducer(),entity.getPluginVersion(),entity.getResolver());
 	}
 	
-	public EnternalPluginEntity(final long pluginId, final String pluginName, final String pluginProducer, final int[] pliginVersion, final IResolvable resolver){
-		this(null,pluginId,pluginName,pluginProducer,pliginVersion,resolver);
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param pluginId any unique long 
+	 * @param pluginName any plugin name
+	 * @param pluginProducer plugin producer name
+	 * @param pluginVersion any non-empty version number
+	 * @param resolver any implementation of plugin resolver
+	 */
+	public EnternalPluginEntity(final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable resolver){
+		this(null,pluginId,pluginName,pluginProducer,pluginVersion,resolver);
 	}
 	
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param parent parent node of the description 
+	 * @param pluginId any unique long 
+	 * @param pluginName any plugin name
+	 * @param pluginProducer plugin producer name
+	 * @param pluginVersion any non-empty version number
+	 * @param resolver any implementation of plugin resolver
+	 */
 	public EnternalPluginEntity(final IFProEntity parent, final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable resolver){
 		if (pluginName == null || pluginName.isEmpty()) {
 			throw new IllegalArgumentException("Plugin name can't be null or empty");

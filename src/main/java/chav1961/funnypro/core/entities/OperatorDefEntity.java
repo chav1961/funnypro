@@ -3,13 +3,23 @@ package chav1961.funnypro.core.entities;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 
-
+/**
+ * <p>This class describes :- op/3 entity</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class OperatorDefEntity implements IFProOperator {
 	private long			id;
 	private OperatorType	type;
 	private int 			prty;
 	private IFProEntity		parent;
 
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param prty operator priority
+	 * @param type operator type
+	 * @param id operator mnemonics id (need be registered in the term tree)
+	 */
 	public OperatorDefEntity(final int prty, final OperatorType type, final long id) {
 		this.type = type;	this.prty = prty;
 		this.id = id;

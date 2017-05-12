@@ -36,14 +36,14 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  *	final FunnyPrologEngine engine = (FunnyPrologEngine)factory.getEngineByName("FunnyProlog");<br>
  * </code>
  * 
- * <p>This engine implements the {@link Closeable} interface, so can be used in the <b>try-with-resource<b> statements.</p>
+ * <p>This engine implements the {@link Closeable} interface, so can be used in the <b>try-with-resource</b> statements.</p>
  * <p>This engine contains a Funny Prolog virtual machine inside, named <b>FProVM</b>. Life cycle of FProVm is:</p>
  * <code>
- * 1. {@link IFProVM#turnOn(InputStream);} - start VM and deserialize it's persistent database from the input stream<br>
- * 2. Use {@link IFProVM#consult(CharacterSource)}, {@link IFProVM#save(CharacterTarget)}, {@link IFProVM#console(Reader, Writer, Writer),
+ * 1. {@link IFProVM#turnOn(InputStream)} - start VM and deserialize it's persistent database from the input stream<br>
+ * 2. Use {@link IFProVM#consult(CharacterSource)}, {@link IFProVM#save(CharacterTarget)}, {@link IFProVM#console(Reader, Writer, Writer)},
  * {@link IFProVM#goal(String, IFProEntitiesRepo, chav1961.funnypro.core.interfaces.IFProVM.IFProCallback)} etc.<br>    
- * 3. {@link IFProVM#turnOff(OutputStream);} - stop VM and serialize it's persistent database to the output stream<br>
- * <code>
+ * 3. {@link IFProVM#turnOff(OutputStream)} - stop VM and serialize it's persistent database to the output stream<br>
+ * </code>
  * <p>You also can create empty persistent database by calling {@link IFProVM#newFRB(OutputStream)}. After getting this class by 
  * {@link ScriptEngineManager#getEngineByName(String)}, the FProVM is turned on with the empty persistent database. Calling {@link FunnyProEngine#close()}
  * will turns off the FProVM.</p>
@@ -51,12 +51,12 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  * <p>This class is not thread-safe.</p>
  * 
  * @see javax.script
- * @see javax.script.AbstractScriptEngine
+ * @see javax.script.AbstractScriptEngine 
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
  */
 
-class FunnyProEngine extends AbstractScriptEngine implements Closeable, IFProVM {
+public class FunnyProEngine extends AbstractScriptEngine implements Closeable, IFProVM {
 	public static final String			LOGGER = "logger";
 	public static final String			PARAMETERS = "parameters";
 	

@@ -1,11 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>chav1961</groupId>
+  <groupId>com.github.chav1961</groupId>
   <artifactId>funnypro</artifactId>
   <name>Funny Prolog</name>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <description>Funny Prolog interpreter for Java</description>
+  <url>https://github.com/chav1961/funnypro</url>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/chav1961/funnypro/issues</url>
+  </issueManagement>
+  <developers>
+    <developer>
+      <name>Alexander Chernomyrdin aka chav1961</name>
+      <email>chav1961@mail.com</email>
+      <organization>Alexander Chernomyrdin aka chav1961</organization>
+      <organizationUrl>https://github.com/chav1961/</organizationUrl>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://github.com/chav1961/funnypro/blob/master/LICENSE</url>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git@github.com:chav1961/funnypro.git</connection>
+    <developerConnection>scm:git:git@github.com:chav1961/funnypro.git</developerConnection>
+    <url>git@github.com:chav1961/funnypro.git</url>
+  </scm>
   <build>
     <resources>
       <resource>
@@ -18,7 +42,7 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
-    <finalName>funnypro-0.0.1-SNAPSHOT</finalName>
+    <finalName>funnypro-0.0.1</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

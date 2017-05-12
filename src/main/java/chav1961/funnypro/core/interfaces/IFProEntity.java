@@ -11,6 +11,23 @@ public interface IFProEntity {
 	static final int		OPEN_ENTITY_ID = -4; 
 	static final int		PARM_ENTITY_ID = -5; 
 
+	/**
+	 * <p>This enumerations describes FPro entity type:</p>
+	 * <ul>
+	 * <li>string - string term</li>
+	 * <li>integer - integer term</li>
+	 * <li>real - real term</li>
+	 * <li>anonymous - anonymous variable</li>
+	 * <li>variable - variable</li>
+	 * <li>externalplugin - external plugin description</li>
+	 * <li>list - list item</li>
+	 * <li>operatordef - :- op/3</li>
+	 * <li>operator - any operator</li>
+	 * <li>predicate - any predicate</li>
+	 * </ul>
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
+	 */
 	public enum EntityType {
 		string, integer, real, anonymous, variable, externalplugin, 
 		list, operatordef, operator, predicate

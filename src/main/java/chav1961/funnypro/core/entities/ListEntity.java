@@ -3,16 +3,30 @@ package chav1961.funnypro.core.entities;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProList;
 
-
+/**
+ * <p>This class describes list chain entity</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class ListEntity implements IFProList {
 	private IFProEntity		parent;
 	private IFProEntity		child;
 	private IFProEntity		tail;
 
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param parent parent node
+	 */
 	public ListEntity(final IFProEntity parent) {
 		this.parent = parent;
 	}
 	
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param child any child (exactly one of the list element)
+	 * @param tail tail of the list. Can be either null (termination of the list), or another {@link ListEntity} (continuation of the list) or
+	 * {@link VariableEntity}/{@link AnonymousEntity} to mark <i>tail</i> of the list (for example [a,b,c|<b>X</b>). Any other nodes are illegal 
+	 */
 	public ListEntity(final IFProEntity child, final IFProEntity tail) {
 		this.child = child;	this.tail = tail;
 	}

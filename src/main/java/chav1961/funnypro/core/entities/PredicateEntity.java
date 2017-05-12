@@ -5,13 +5,22 @@ import java.util.Arrays;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 
-
+/**
+ * <p>This class describes predicate entity</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class PredicateEntity implements IFProPredicate {
 	private long				id;
 	private IFProEntity[]		parm;
 	private IFProEntity			parent;
 	private IFProEntity			rule;
 
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param id predicate name id (need be registered in the term tree)
+	 * @param parm predicate parameters (up to 64)
+	 */
 	public PredicateEntity(final long id, final IFProEntity... parm) {
 		this.id = id;			this.parm = parm;
 	}

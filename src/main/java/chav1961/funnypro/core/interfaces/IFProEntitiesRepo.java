@@ -13,9 +13,27 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  * @since 0.0.1
  */
 public interface IFProEntitiesRepo extends IFProStreamSerializable, AutoCloseable {
-	public interface SerializableString extends IFProStreamSerializable, IFProStringSerializable {
+	/**
+	 * <p>This interface describes content of the string and term trees in the FProVM database</p>
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
+	 */
+	interface SerializableString extends IFProStreamSerializable, IFProStringSerializable {
 	}
 
+	/**
+	 * <p>This enumeration is used to classify terms detected by the term tree:</p>
+	 * <ul>
+	 * <li>operator - term is operator</li> 
+	 * <li>term - term is ordinal term</li> 
+	 * <li>anonymous - term is anonymous variable</li> 
+	 * <li>variable - term is variable</li> 
+	 * <li>op - term is :- op/3</li> 
+	 * <li>exterm - term is external predicate description</li> 
+	 * </ul> 
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
+	 */
 	public enum Classification {
 		operator, term, anonymous, variable, op, extern
 	}

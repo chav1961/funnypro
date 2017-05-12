@@ -17,8 +17,20 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  * @since 0.0.1
  */
 public interface IFProParserAndPrinter {
-	@FunctionalInterface
+	/**
+	 * <p>This interface describes callback for processing goals and questions</p>  
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
+	 */
 	public interface FProParserCallback {
+		/**
+		 * <p>Process one resolved goal (question)</p>
+		 * @param entity source goal
+		 * @param vars values of the variables binded
+		 * @return true to continue backtracking, false to terminale resolution
+		 * @throws FProException if any problems was detected
+		 * @throws IOException if any I/O errors was detected
+		 */
 		boolean process(IFProEntity entity, List<IFProVariable> vars) throws FProException, IOException;
 	}
 	

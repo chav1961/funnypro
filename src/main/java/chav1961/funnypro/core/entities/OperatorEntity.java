@@ -3,26 +3,52 @@ package chav1961.funnypro.core.entities;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 
-
+/**
+ * <p>This class describes operator entity for existent operator</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class OperatorEntity implements IFProOperator {
 	private long			id;
 	private OperatorType	type;
 	private int 			prty;
 	private IFProEntity		left, right, parent, rule;
 
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param parent parent entity
+	 * @param op operator description
+	 */
 	public OperatorEntity(final IFProEntity parent, final IFProOperator op) {
 		this(parent,op.getPriority(),op.getType(),op.getEntityId());
 	}
 	
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param op operator description
+	 */
 	public OperatorEntity(final IFProOperator op) {
 		this(op.getPriority(),op.getType(),op.getEntityId());
 	}
 
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param parent parent entity
+	 * @param prty operator priority
+	 * @param type operator type
+	 * @param id operator mnemonics id (need be registered in the term tree)
+	 */
 	public OperatorEntity(final IFProEntity parent,final int prty, final OperatorType type, final long id) {
 		this.type = type;	this.prty = prty;
 		this.id = id;		this.parent = parent;
 	}
-	
+
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param prty operator priority
+	 * @param type operator type
+	 * @param id operator mnemonics id (need be registered in the term tree)
+	 */
 	public OperatorEntity(final int prty, final OperatorType type, final long id) {
 		this.type = type;	this.prty = prty;
 		this.id = id;

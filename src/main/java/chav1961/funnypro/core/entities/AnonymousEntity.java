@@ -2,9 +2,18 @@ package chav1961.funnypro.core.entities;
 
 import chav1961.funnypro.core.interfaces.IFProEntity;
 
+/**
+ * <p>This class describes anonymous entity in the expression tree</p> 
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class AnonymousEntity implements IFProEntity {
 	private IFProEntity	parent;
 
+	/**
+	 * <p>Constructor of the object.</p>
+	 * @param parent parent node containing anonymous variable 
+	 */
 	public AnonymousEntity(final IFProEntity parent){
 		this.parent = parent;
 	}

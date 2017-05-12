@@ -2,15 +2,28 @@ package chav1961.funnypro.core.entities;
 
 import chav1961.funnypro.core.interfaces.IFProEntity;
 
-
+/**
+ * <p>This class describes integer entity</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1
+ */
 public class IntegerEntity implements IFProEntity {
 	private long	id;
 	private IFProEntity	parent = null;
 
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param id value of integer (not id!)
+	 * @param parent parent node
+	 */
 	public IntegerEntity(final long id, final IFProEntity parent) {
 		this.id = id;	this.parent = parent;
 	}	
 	
+	/**
+	 * <p>Constructor of the object</p>
+	 * @param id value of integer (not id!)
+	 */
 	public IntegerEntity(final long id) {
 		this.id = id;
 	}
