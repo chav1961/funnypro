@@ -10,17 +10,40 @@ To use Funny Prolog interpreter, you need installed Java 1.8 version 31 and late
 
 ### Installing
 
-Download [executable jar](https://github.com/chav1961/funnypro/blob/master/funnypro-0.0.1-SNAPSHOT.jar) or whole project from [GitHub](https://github.com/chav1961/funnypro) repository and place it to any directory you wish.
+Download [executable jar](https://github.com/chav1961/funnypro/blob/mvn-repo/com/github/chav1961/funnypro/0.0.1/funnypro-0.0.1.jar) or whole project from [GitHub](https://github.com/chav1961/funnypro) repository and place it to any directory you wish. Use [Maven](https://maven.apache.org/) to get access to the project:
+
+```XML
+	<dependency>
+		<groupId>com.github.chav1961</groupId>
+		<artifactId>funnypro</artifactId>
+		<version>0.0.1</version>
+	<dependency>
+```
+
+Also add repository GitHub repository description to your pom file:
+
+```XML
+	<repositories>
+	    <repository>
+	        <id>purelib-mvn-repo</id>
+	        <url>https://raw.github.com/chav1961/funnypro/mvn-repo/</url>
+	        <snapshots>
+	            <enabled>true</enabled>
+	            <updatePolicy>always</updatePolicy>
+	        </snapshots>
+	    </repository>
+	</repositories>
+```
 
 To use this project as a standalone console application (command string mode), type :
 
 ```
-java -jar funnypro-0.0.1-SNAPSHOT.jar
+java -jar funnypro-0.0.1.jar
 ```
 
 After prompt appears, type any Prolog sentences. Type "**quit.**" to exit from the console application.
 
-To use this project inside Java VM, include this archive in your clsspath, or include this project files in your project. To get access to Funny Prolog interpreter from Java VM, use code template:
+To use this project inside Java VM, include this archive in your classpath. To get access to Funny Prolog interpreter from Java VM, use code template:
 
 ```Java
     . . .

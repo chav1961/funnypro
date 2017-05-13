@@ -3,10 +3,10 @@
 	<groupId>com.github.chav1961</groupId>
 	<artifactId>funnypro</artifactId>
 	<version>0.0.1</version>
-	<name>Funny Prolog</name>
 	<description>Funny Prolog interpreter for Java</description>
 	<url>https://github.com/chav1961/funnypro</url>
 	<packaging>jar</packaging>
+	<name>funnypro</name>
 	  
 	<developers>
 		<developer>
@@ -31,6 +31,10 @@
 			<url>https://github.com/chav1961/funnypro/blob/master/LICENSE</url>
 		</license>
 	</licenses>
+
+  	<properties>
+	    <github.global.server>github</github.global.server>
+	</properties>
   
 	<dependencies>
 		<dependency>
@@ -45,6 +49,25 @@
 			<version>0.0.1</version>
 		</dependency>		
 	</dependencies>
+  
+	<repositories>
+	    <repository>
+	        <id>purelib-mvn-repo</id>
+	        <url>https://raw.github.com/chav1961/purelib/mvn-repo/</url>
+	        <snapshots>
+	            <enabled>true</enabled>
+	            <updatePolicy>always</updatePolicy>
+	        </snapshots>
+	    </repository>
+	</repositories>
+
+  	<distributionManagement>
+	    <repository>
+	        <id>internal.repo</id>
+	        <name>Temporary Staging Repository</name>
+	        <url>file://${project.build.directory}/mvn-repo</url>
+	    </repository>
+	</distributionManagement>
   
      <build>
        <finalName>funnypro-0.0.1</finalName>
@@ -102,6 +125,41 @@
                     </execution>
                 </executions>
             </plugin>
+            
+	    <plugin>
+	        <artifactId>maven-deploy-plugin</artifactId>
+	        <version>2.8.1</version>
+	        <configuration>
+	               <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+	        </configuration>
+	    </plugin>
+
+  		<plugin>
+         <groupId>com.github.github</groupId>
+         <artifactId>site-maven-plugin</artifactId>
+         <version>0.11</version>
+         <configuration>
+              <message>Maven artifacts for ${project.version}</message>
+              <noJekyll>true</noJekyll>
+              <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
+              <branch>refs/heads/mvn-repo</branch>
+              <merge>true</merge>
+              <includes>
+                <include>**/*</include>
+                </includes>
+                <repositoryName>funnypro</repositoryName>
+                <repositoryOwner>chav1961</repositoryOwner>
+          </configuration>
+          <executions>
+              <execution>
+                    <goals>
+                         <goal>site</goal>
+                    </goals>
+                    <phase>deploy</phase>
+              </execution>
+          </executions>
+		</plugin>
+            
        </plugins>
    </build>
 </project>
