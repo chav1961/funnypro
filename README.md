@@ -25,7 +25,7 @@ Also add repository GitHub repository description to your pom file:
 ```XML
 	<repositories>
 	    <repository>
-	        <id>purelib-mvn-repo</id>
+	        <id>funnypro-mvn-repo</id>
 	        <url>https://raw.github.com/chav1961/funnypro/mvn-repo/</url>
 	        <snapshots>
 	            <enabled>true</enabled>
