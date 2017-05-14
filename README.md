@@ -41,6 +41,12 @@ To use this project as a standalone console application (command string mode), t
 java -jar funnypro-0.0.1.jar
 ```
 
+To use Russian letters in the Prolog syntax, type: 
+
+```
+java -jar funnypro-0.0.1.jar cp866
+```
+
 After prompt appears, type any Prolog sentences. Type "**quit.**" to exit from the console application.
 
 To use this project inside Java VM, include this archive in your classpath. To get access to Funny Prolog interpreter from Java VM, use code template:
