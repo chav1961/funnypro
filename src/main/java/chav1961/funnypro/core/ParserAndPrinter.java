@@ -34,6 +34,7 @@ import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.CharsUtil;
+import chav1961.purelib.basic.ExtendedBitCharSet;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
@@ -41,6 +42,10 @@ import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
+	private static final ExtendedBitCharSet	VALID_LETTERS = new ExtendedBitCharSet(); 
+	private static final ExtendedBitCharSet	VALID_UPPER_LETTERS = new ExtendedBitCharSet(); 
+	private static final ExtendedBitCharSet	VALID_LOWER_LETTERS = new ExtendedBitCharSet(); 
+	
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
@@ -48,6 +53,24 @@ class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 
 	private enum NameClassification {
 		anonymous, term
+	}
+
+	static {
+		VALID_LETTERS.add('_');
+		VALID_LETTERS.addRange('a','z');
+		VALID_LETTERS.addRange('A','Z');
+		VALID_LETTERS.addRange('\u0410','\u044F');
+		VALID_LETTERS.add('\u0401');
+		VALID_LETTERS.add('\u0451');
+		VALID_LETTERS.addRange('0','9');
+		
+		VALID_UPPER_LETTERS.addRange('A','Z');
+		VALID_UPPER_LETTERS.addRange('\u0410','\u042F');
+		VALID_UPPER_LETTERS.add('\u0401');
+
+		VALID_LOWER_LETTERS.addRange('a','z');
+		VALID_LOWER_LETTERS.addRange('\u0430','\u044F');
+		VALID_LOWER_LETTERS.add('\u0451');
 	}
 	
 	public ParserAndPrinter(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) throws FProParsingException {
@@ -376,176 +399,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 						prefixNow = false;
 					}
 					break;
-				case 'a' : case 'b'	: case 'c' : case 'd' : case 'e' : case 'f' : case 'g' : case 'h'	:	
-				case 'i' : case 'j'	: case 'k' : case 'l' : case 'm' : case 'n' : case 'o' : case 'p'	:	
-				case 'q' : case 'r'	: case 's' : case 't' : case 'u' : case 'v' : case 'w' : case 'x'	:	
-				case 'y' : case 'z'	: case '_' :
-					final int	startName = from, endName = from = skipName(source,from);
-					final long	nameId = getRepo().termRepo().placeName(source,startName,endName,null);
-					
-					switch (classifyName(source,startName,endName)) {
-						case anonymous	:
-							if (!prefixNow) {
-								throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
-							}
-							else {
-								top[0] = new AnonymousEntity();
-								prefixNow = false;
-							}
-							break;
-						case term		:
-							switch (getRepo().classify(nameId)) {
-								case operator 	:
-									found = false;
-									
-									if (prefixNow) {
-										for (IFProOperator item : getRepo().getOperatorDef(nameId // See prefix operators with nearest priorities
-																					,actualMax
-																					,actualMin
-																					,OperatorType.fx,OperatorType.fy)) {
-											final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
-											
-											if (location > 0) {
-												final IFProOperator	op = new OperatorEntity(item);
-												
-												if (top[location] != null) {
-													op.setParent(top[location]);
-													((IFProOperator)top[location]).setRight(op);
-													top[location] = op; 
-												}
-												else {
-													top[location] = op;
-												}
-												actualMax = item.getUnderlyingPriority();
-												found = true;		break;
-											}
-										}
-									}
-									else {
-										for (IFProOperator item : getRepo().getOperatorDef(nameId // See postfix operators with nearest priorities
-																					,actualMin
-																					,actualMax
-																					,OperatorType.xf,OperatorType.yf)) {
-											final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
-											
-											if (location > 0) {
-												final IFProOperator	op = new OperatorEntity(item);
-												
-												top[location] = op.setLeft(collapse(top,location).setParent(op));
-												actualMin = item.getPriority() + (item.getType() == OperatorType.xf ? 1 : 0);
-												found = true;		
-												break;
-											}
-										}
-										if (!found) {
-											for (IFProOperator item : getRepo().getOperatorDef(nameId // See infix operators with nearest priorities
-																						,actualMin
-																						,actualMax
-																						,OperatorType.xfx,OperatorType.yfx,OperatorType.xfy)) {
-												final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
-												
-												if (location > 0) {
-													final IFProOperator	op = new OperatorEntity(item);
-													
-													top[location] = op.setLeft(collapse(top,location).setParent(op));
-													actualMax = item.getUnderlyingPriority(IFProOperator.RIGHT);
-													actualMin = IFProOperator.MIN_PRTY;
-													prefixNow = true;
-													found = true;
-													break;
-												}
-											}
-										}
-									}
-									if (!found) {
-										throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting!"); 
-									}
-									break;
-								case term 		:
-									if (!prefixNow) {
-										throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
-									}
-									else {
-										top[0] = new PredicateEntity(nameId);
-										
-										while (from < maxLen && source[from] <= ' ') {
-											from++;
-										}
-										if (from < maxLen && source[from] == '(') {
-											from++;
-											while (from < maxLen && source[from] <= ' ') {
-												from++;
-											}
-											if (from < maxLen && source[from] == ')') {
-												from++;
-											}
-											else {
-												from = parse(source,from,priorities,1101,vars,result);
-												
-												while (from < maxLen && source[from] <= ' ') {
-													from++;
-												}
-												if (from < maxLen && source[from] == ')') {
-													from++;
-													((IFProPredicate)top[0]).setParameters(andChain2Array(result[0],top[0]));
-												}
-												else {
-													throw new FProParsingException(FProUtil.toRowCol(source,from),"Close bracket ')' missing!"); 
-												}												
-											}
-										}
-										actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
-										prefixNow = false;
-									}
-									break;
-								case extern		:
-									if (!prefixNow) {
-										throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
-									}
-									else {
-										from = parseExtern(source,from,result);
-										top[0] = result[0];
-										actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
-										prefixNow = false;
-									}
-									break;
-								case op		:
-									if (!prefixNow) {
-										throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
-									}
-									else {
-										from = parseOp(source,from,result);
-										top[0] = result[0];
-										actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
-										prefixNow = false;
-									}
-									break;
-								default :
-									throw new FProParsingException(FProUtil.toRowCol(source,from),"Unsupported classification ["+getRepo().classify(nameId)+"] for the term"); 
-							}
-							break;
-						default:
-							throw new FProParsingException(FProUtil.toRowCol(source,from),"Unsupported classification ["+classifyName(source,startName,endName)+"] for the term"); 
-					}
-					break;
-				case 'A' : case 'B'	: case 'C' : case 'D' : case 'E' : case 'F' : case 'G' : case 'H'	:	
-				case 'I' : case 'J'	: case 'K' : case 'L' : case 'M' : case 'N' : case 'O' : case 'P'	:	
-				case 'Q' : case 'R'	: case 'S' : case 'T' : case 'U' : case 'V' : case 'W' : case 'X'	:	
-				case 'Y' : case 'Z'	:
-					final int	startVar = from, endVar = from = skipName(source,from);
-					final long	varId = getRepo().termRepo().placeName(source,startVar,endVar,null);
-					final IFProVariable		var = new VariableEntity(varId); 
-					
-					if (!prefixNow) {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
-					}
-					else {
-						top[0] = var;
-						vars.storeVariable(var);
-						actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
-						prefixNow = false;
-					}
-					break;
 				case '!' :	// 'cut' predicate
 					from++;
 					if (!prefixNow) {
@@ -558,88 +411,254 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}
 					break;
 				default :
-					from = extractEntityId(source,from,entityId);
-					found = false;
-					
-					if (repo.classify(entityId[0]) != Classification.operator) {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Operator awaited!"); 
+					if (VALID_UPPER_LETTERS.contains(source[from])) {
+						final int	startVar = from, endVar = from = skipName(source,from);
+						final long	varId = getRepo().termRepo().placeName(source,startVar,endVar,null);
+						final IFProVariable		var = new VariableEntity(varId); 
+						
+						if (!prefixNow) {
+							throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+						}
+						else {
+							top[0] = var;
+							vars.storeVariable(var);
+							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							prefixNow = false;
+						}
 					}
-					
-					if (prefixNow) {
-						for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See prefix operators with nearest priorities
-																	,actualMax
-																	,actualMin
-																	,OperatorType.fx,OperatorType.fy)) {
-							final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
-							
-							if (location > 0) {
-								final IFProOperator	op = new OperatorEntity(item);
-								
-								if (top[location] != null) {
-									op.setParent(top[location]);
-									((IFProOperator)top[location]).setRight(op);
-									top[location] = op; 
+					else if (VALID_LOWER_LETTERS.contains(source[from]) || source[from] == '_') {
+						final int	startName = from, endName = from = skipName(source,from);
+						final long	nameId = getRepo().termRepo().placeName(source,startName,endName,null);
+						
+						switch (classifyName(source,startName,endName)) {
+							case anonymous	:
+								if (!prefixNow) {
+									throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
 								}
 								else {
-									top[location] = op;
+									top[0] = new AnonymousEntity();
+									prefixNow = false;
 								}
-								actualMax = item.getUnderlyingPriority();
-								found = true;		break;
-							}
+								break;
+							case term		:
+								switch (getRepo().classify(nameId)) {
+									case operator 	:
+										found = false;
+										
+										if (prefixNow) {
+											for (IFProOperator item : getRepo().getOperatorDef(nameId // See prefix operators with nearest priorities
+																						,actualMax
+																						,actualMin
+																						,OperatorType.fx,OperatorType.fy)) {
+												final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
+												
+												if (location > 0) {
+													final IFProOperator	op = new OperatorEntity(item);
+													
+													if (top[location] != null) {
+														op.setParent(top[location]);
+														((IFProOperator)top[location]).setRight(op);
+														top[location] = op; 
+													}
+													else {
+														top[location] = op;
+													}
+													actualMax = item.getUnderlyingPriority();
+													found = true;		break;
+												}
+											}
+										}
+										else {
+											for (IFProOperator item : getRepo().getOperatorDef(nameId // See postfix operators with nearest priorities
+																						,actualMin
+																						,actualMax
+																						,OperatorType.xf,OperatorType.yf)) {
+												final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
+												
+												if (location > 0) {
+													final IFProOperator	op = new OperatorEntity(item);
+													
+													top[location] = op.setLeft(collapse(top,location).setParent(op));
+													actualMin = item.getPriority() + (item.getType() == OperatorType.xf ? 1 : 0);
+													found = true;		
+													break;
+												}
+											}
+											if (!found) {
+												for (IFProOperator item : getRepo().getOperatorDef(nameId // See infix operators with nearest priorities
+																							,actualMin
+																							,actualMax
+																							,OperatorType.xfx,OperatorType.yfx,OperatorType.xfy)) {
+													final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
+													
+													if (location > 0) {
+														final IFProOperator	op = new OperatorEntity(item);
+														
+														top[location] = op.setLeft(collapse(top,location).setParent(op));
+														actualMax = item.getUnderlyingPriority(IFProOperator.RIGHT);
+														actualMin = IFProOperator.MIN_PRTY;
+														prefixNow = true;
+														found = true;
+														break;
+													}
+												}
+											}
+										}
+										if (!found) {
+											throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting!"); 
+										}
+										break;
+									case term 		:
+										if (!prefixNow) {
+											throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+										}
+										else {
+											top[0] = new PredicateEntity(nameId);
+											
+											while (from < maxLen && source[from] <= ' ') {
+												from++;
+											}
+											if (from < maxLen && source[from] == '(') {
+												from++;
+												while (from < maxLen && source[from] <= ' ') {
+													from++;
+												}
+												if (from < maxLen && source[from] == ')') {
+													from++;
+												}
+												else {
+													from = parse(source,from,priorities,1101,vars,result);
+													
+													while (from < maxLen && source[from] <= ' ') {
+														from++;
+													}
+													if (from < maxLen && source[from] == ')') {
+														from++;
+														((IFProPredicate)top[0]).setParameters(andChain2Array(result[0],top[0]));
+													}
+													else {
+														throw new FProParsingException(FProUtil.toRowCol(source,from),"Close bracket ')' missing!"); 
+													}												
+												}
+											}
+											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											prefixNow = false;
+										}
+										break;
+									case extern		:
+										if (!prefixNow) {
+											throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+										}
+										else {
+											from = parseExtern(source,from,result);
+											top[0] = result[0];
+											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											prefixNow = false;
+										}
+										break;
+									case op		:
+										if (!prefixNow) {
+											throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+										}
+										else {
+											from = parseOp(source,from,result);
+											top[0] = result[0];
+											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											prefixNow = false;
+										}
+										break;
+									default :
+										throw new FProParsingException(FProUtil.toRowCol(source,from),"Unsupported classification ["+getRepo().classify(nameId)+"] for the term"); 
+								}
+								break;
+							default:
+								throw new FProParsingException(FProUtil.toRowCol(source,from),"Unsupported classification ["+classifyName(source,startName,endName)+"] for the term"); 
 						}
 					}
 					else {
-						for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See postfix operators with nearest priorities
-																	,actualMin
-																	,actualMax
-																	,OperatorType.xf,OperatorType.yf)) {
-							final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
-							
-							if (location > 0) {
-								final IFProOperator	op = new OperatorEntity(item);
-								
-								top[location] = op.setLeft(collapse(top,location).setParent(op));
-								actualMin = item.getPriority() + (item.getType() == OperatorType.xf ? 1 : 0);
-								found = true;		
-								break;
-							}
+						from = extractEntityId(source,from,entityId);
+						found = false;
+						
+						if (repo.classify(entityId[0]) != Classification.operator) {
+							throw new FProParsingException(FProUtil.toRowCol(source,from),"Operator awaited!"); 
 						}
-						if (!found) {
-							for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See infix operators with nearest priorities
-																		,actualMin
+						
+						if (prefixNow) {
+							for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See prefix operators with nearest priorities
 																		,actualMax
-																		,OperatorType.xfx,OperatorType.yfx,OperatorType.xfy)) {
+																		,actualMin
+																		,OperatorType.fx,OperatorType.fy)) {
 								final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
 								
 								if (location > 0) {
 									final IFProOperator	op = new OperatorEntity(item);
 									
-									if (top[location] == null) {
-										top[location] = op.setLeft(collapse(top,location).setParent(op));
-									}
-									else if (((IFProOperator)top[location]).getType() == OperatorType.fy || ((IFProOperator)top[location]).getType() == OperatorType.yf || ((IFProOperator)top[location]).getType() == OperatorType.xfy) {
-										((IFProOperator)top[location]).setRight(op.setLeft(collapse(top,location-1).setParent(top[location])));
-										top[location] = op.setParent(top[location]);
-									}
-									else if (op.getType() == OperatorType.yfx) {
-										top[location] = op.setLeft(collapse(top,location).setParent(op));
+									if (top[location] != null) {
+										op.setParent(top[location]);
+										((IFProOperator)top[location]).setRight(op);
+										top[location] = op; 
 									}
 									else {
-										throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
+										top[location] = op;
 									}
-									actualMax = item.getUnderlyingPriority(IFProOperator.RIGHT);
-									actualMin = IFProOperator.MIN_PRTY;
-									prefixNow = true;
-									found = true;
-									break;
+									actualMax = item.getUnderlyingPriority();
+									found = true;		break;
 								}
 							}
 						}
+						else {
+							for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See postfix operators with nearest priorities
+																		,actualMin
+																		,actualMax
+																		,OperatorType.xf,OperatorType.yf)) {
+								final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
+								
+								if (location > 0) {
+									final IFProOperator	op = new OperatorEntity(item);
+									
+									top[location] = op.setLeft(collapse(top,location).setParent(op));
+									actualMin = item.getPriority() + (item.getType() == OperatorType.xf ? 1 : 0);
+									found = true;		
+									break;
+								}
+							}
+							if (!found) {
+								for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See infix operators with nearest priorities
+																			,actualMin
+																			,actualMax
+																			,OperatorType.xfx,OperatorType.yfx,OperatorType.xfy)) {
+									final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
+									
+									if (location > 0) {
+										final IFProOperator	op = new OperatorEntity(item);
+										
+										if (top[location] == null) {
+											top[location] = op.setLeft(collapse(top,location).setParent(op));
+										}
+										else if (((IFProOperator)top[location]).getType() == OperatorType.fy || ((IFProOperator)top[location]).getType() == OperatorType.yf || ((IFProOperator)top[location]).getType() == OperatorType.xfy) {
+											((IFProOperator)top[location]).setRight(op.setLeft(collapse(top,location-1).setParent(top[location])));
+											top[location] = op.setParent(top[location]);
+										}
+										else if (op.getType() == OperatorType.yfx) {
+											top[location] = op.setLeft(collapse(top,location).setParent(op));
+										}
+										else {
+											throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
+										}
+										actualMax = item.getUnderlyingPriority(IFProOperator.RIGHT);
+										actualMin = IFProOperator.MIN_PRTY;
+										prefixNow = true;
+										found = true;
+										break;
+									}
+								}
+							}
+						}
+						if (!found) {
+							throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
+						}
+						break;
 					}
-					if (!found) {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
-					}
-					break;
 			}
 			while (from < maxLen && source[from] <= ' ') from++;
 		}
@@ -827,7 +846,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 
 	private int skipName(final char[] source, final int from) {
 		for (int index = from, maxIndex = source.length; index < maxIndex; index++) {
-			if (!(source[index] >= 'a' && source[index] <= 'z' || source[index] >= 'A' && source[index] <= 'Z' || source[index] >= '0' && source[index] <= '9' || source[index] == '_')) {
+			if (!VALID_LETTERS.contains(source[index])) {
 				return index;
 			}
 		}

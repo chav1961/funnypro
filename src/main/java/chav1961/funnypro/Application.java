@@ -16,7 +16,7 @@ import javax.script.ScriptException;
  */
 public class Application {
 	public static void main(String[] args) throws ScriptException {
-		try(final Reader	in = new InputStreamReader(System.in);
+		try(final Reader	in = new InputStreamReader(System.in,args.length == 0 ? "UTF8" : args[0]);
 			final Writer	out = new OutputStreamWriter(System.out); 
 			final Writer	err = new OutputStreamWriter(System.err)) {
 			
