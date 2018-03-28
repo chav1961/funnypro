@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -42,6 +43,7 @@ import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 
@@ -260,9 +262,13 @@ public class StandardResolver implements IResolvable, FProPluginList {
 			}
 			actualLog.rollback();
 		}
-		
-		desc.registered = registered.values().toArray(new QuickIds[ids.size()]);
-		Arrays.sort(desc.registered);
+
+		for (Entry<Long, QuickIds> item : registered.entrySet()) {
+			desc.registered.put(item.getKey(),item.getValue());
+			desc.registeredIds.add(item.getKey());
+		}
+//		desc.registered = registered.values().toArray(new QuickIds[ids.size()]);
+//		Arrays.sort(desc.registered);
 		desc.prepared = true;
 		desc.repo = repo;
 		return desc;
@@ -280,8 +286,16 @@ public class StandardResolver implements IResolvable, FProPluginList {
 				throw new IllegalStateException("Attempt to close non-prepared item! Call prepare(repo) first!");
 			}
 			else {
-				for (int index = 0; index < data.registered.length; index++) {
-					QuickIds	start = data.registered[index].next;
+//				for (int index = 0; index < data.registered.length; index++) {
+//					QuickIds	start = data.registered[index].next;
+//					
+//					while (start != null) {
+//						data.repo.termRepo().removeName(start.id);
+//						start = start.next;
+//					}
+//				}
+				for (long item : data.registeredIds) {
+					QuickIds	start = data.registered.get(item);
 					
 					while (start != null) {
 						data.repo.termRepo().removeName(start.id);
@@ -824,15 +838,17 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		((LocalDescriptor)local).stack = null;		
 	}
 
-	private RegisteredEntities detect(final QuickIds[] repo, final IFProEntity entity) {
+	private RegisteredEntities detect(final LongIdMap<QuickIds> repo, final IFProEntity entity) {
 		if (entity == null) {
 			return RegisteredEntities.Others; 
 		}
 		else {
-			int	found = Arrays.binarySearch(repo,new QuickIds(entity,null));
+			QuickIds	start = repo.get(entity.getEntityId()); 
+//			int	found = Arrays.binarySearch(repo,new QuickIds(entity,null));
 			
-			if (found >= 0) {
-				QuickIds	start = repo[found];
+			if (start != null) {
+//			if (found >= 0) {
+//				QuickIds	start = repo[found];
 				
 				while (start != null) {
 					switch (entity.getEntityType()) {
@@ -865,7 +881,7 @@ public class StandardResolver implements IResolvable, FProPluginList {
 		}
 	}
 
-	private IFProEntity calculate(final GlobalDescriptor global, final QuickIds[] repo, final IFProEntity value) {
+	private IFProEntity calculate(final GlobalDescriptor global, final LongIdMap<QuickIds> repo, final IFProEntity value) {
 		if (value == null) {
 			throw new UnsupportedOperationException();
 		}
@@ -1417,13 +1433,15 @@ public class StandardResolver implements IResolvable, FProPluginList {
 	}
 
 	private static class GlobalDescriptor {
-		public QuickIds[]				registered;
+//		public QuickIds[]				registered;
+		public LongIdMap<QuickIds>		registered = new LongIdMap<>(QuickIds.class);
+		public Set<Long>				registeredIds = new HashSet<>();
 		public IFProEntitiesRepo		repo;
 		public LoggerFacade				log;
 		public Properties				parameters;
 		public boolean					prepared = false;
 		
-		@Override public String toString() {return "GlobalDescriptor [registered=" + Arrays.toString(registered) + ", repo=" + repo + ", parameters=" + parameters + ", prepared=" + prepared + "]";}
+		@Override public String toString() {return "GlobalDescriptor [registered=" + registered + ", repo=" + repo + ", parameters=" + parameters + ", prepared=" + prepared + "]";}
 	}
 
 	private static class LocalDescriptor {

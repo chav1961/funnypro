@@ -33,7 +33,7 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProModule;
-import chav1961.purelib.basic.CharsUtil;
+import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -316,7 +316,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						if (from < maxLen && source[from] == ']') {
 							from++;
 							top[0] = new ListEntity(null,null);
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY+1;
+							actualMax = maxPrty; 
 							prefixNow = false;
 						}
 						else {
@@ -325,7 +326,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 							if (from < maxLen && source[from] == ']') {
 								from++;
 								top[0] = convert2List(source,from,result[0]);
-								actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+								actualMin = IFProOperator.MIN_PRTY+1;
+								actualMax = maxPrty; 
 								prefixNow = false;
 							}
 							else {
@@ -346,7 +348,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						if (from < maxLen && source[from] == ')') {
 							from++;
 							top[0] = result[0];
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY+1;
+							actualMax = maxPrty; 
 							prefixNow = false;
 						}
 						else {
@@ -372,7 +375,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						}
 						else {
 							top[0] = new StringEntity(stringId);
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY+1;
+							actualMax = maxPrty; 
 							prefixNow = false;
 							from++;
 						}
@@ -384,18 +388,19 @@ loop:	while (from < maxLen && source[from] != '.') {
 				case '0' : case '1' : case '2' : case '3' : case '4' : case '5' : case '6' : case '7' : case '8' : case '9' :
 					final long[]	value = new long[2];
 					
-					from = CharsUtil.parseNumber(source,from,value,CharsUtil.PREF_ANY,false);
+					from = CharUtils.parseNumber(source,from,value,CharUtils.PREF_ANY,false);
 					if (!prefixNow) {
 						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
 						switch ((int)value[1]) {
-							case CharsUtil.PREF_INT 	: top[0] = new IntegerEntity(value[0]); break;								
-							case CharsUtil.PREF_LONG 	: top[0] = new IntegerEntity(value[0]); break;
-							case CharsUtil.PREF_FLOAT 	: top[0] = new RealEntity(Float.intBitsToFloat((int)value[0])); break;
-							case CharsUtil.PREF_DOUBLE	: top[0] = new RealEntity(Double.longBitsToDouble(value[0])); break;
+							case CharUtils.PREF_INT 	: top[0] = new IntegerEntity(value[0]); break;								
+							case CharUtils.PREF_LONG 	: top[0] = new IntegerEntity(value[0]); break;
+							case CharUtils.PREF_FLOAT 	: top[0] = new RealEntity(Float.intBitsToFloat((int)value[0])); break;
+							case CharUtils.PREF_DOUBLE	: top[0] = new RealEntity(Double.longBitsToDouble(value[0])); break;
 						}
-						actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+						actualMin = IFProOperator.MIN_PRTY+1;
+						actualMax = maxPrty; 
 						prefixNow = false;
 					}
 					break;
@@ -406,7 +411,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}
 					else {
 						top[0] = new PredicateEntity(repo.termRepo().placeName("!",null));
-						actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+						actualMin = IFProOperator.MIN_PRTY+1;
+						actualMax = maxPrty; 
 						prefixNow = false;
 					}
 					break;
@@ -422,7 +428,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						else {
 							top[0] = var;
 							vars.storeVariable(var);
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY+1;
+							actualMax = maxPrty; 
 							prefixNow = false;
 						}
 					}
@@ -541,7 +548,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 													}												
 												}
 											}
-											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											actualMin = IFProOperator.MIN_PRTY+1;		
+											actualMax = maxPrty; 
 											prefixNow = false;
 										}
 										break;
@@ -552,7 +560,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 										else {
 											from = parseExtern(source,from,result);
 											top[0] = result[0];
-											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											actualMin = IFProOperator.MIN_PRTY+1;		
+											actualMax = maxPrty; 
 											prefixNow = false;
 										}
 										break;
@@ -563,7 +572,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 										else {
 											from = parseOp(source,from,result);
 											top[0] = result[0];
-											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											actualMin = IFProOperator.MIN_PRTY+1;		
+											actualMax = maxPrty; 
 											prefixNow = false;
 										}
 										break;
@@ -832,7 +842,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b%0d%b,%b%1c%b,%b%2c%b)",locations);
 		
 		if (parsed > from) {
-			CharsUtil.parseInt(source,locations[0][0],forPrty,false);
+			CharUtils.parseInt(source,locations[0][0],forPrty,false);
 			final OperatorType	type = getRepo().operatorType(getRepo().termRepo().placeName(source,locations[1][0],locations[1][1],null));
 			final long			operatorId = getRepo().termRepo().placeName(source,locations[2][0],locations[2][1],null);
 			

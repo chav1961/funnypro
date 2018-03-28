@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -23,8 +25,10 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.charsource.ArrayCharSource;
 import chav1961.purelib.streams.charsource.ReaderCharSource;
 import chav1961.purelib.streams.chartarget.WriterCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
@@ -112,13 +116,88 @@ public class StandardResolverTest {
 			sr.onRemove(global);
 		}
 	}
+
+	@Test
+	public void performanceTest() throws Exception {
+		final LoggerFacade				log = new DefaultLoggerFacade();
+		
+		try(final EntitiesRepo			repo = new EntitiesRepo(log,new Properties())){
+			final IFProGlobalStack		stack = new GlobalStack(log,new Properties(),repo);
+			final ParserAndPrinter		pap = new ParserAndPrinter(log,new Properties(),repo);
+			final StandardResolver		sr = new StandardResolver();
+			final Object				global = sr.onLoad(log,new Properties(),repo);
+			
+			try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/environment.fpro");
+				final Reader			rdr = new InputStreamReader(is);) {	// Prepare environment
+				final CharacterSource	cs = new ReaderCharSource(rdr,false);
+				final CharacterTarget	ct = new WriterCharTarget(System.err,false);
+
+				pap.parseEntities(cs,new FProParserCallback(){
+											@Override
+											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+												try{ct.put("Consult");
+													pap.putEntity(entity,ct);
+													ct.put("\n");
+												} catch (PrintingException e) {
+													e.printStackTrace();
+													throw new IOException(e.getMessage());
+												}
+												repo.predicateRepo().assertZ(entity);
+												return true;
+											}
+										}
+				);
+			}
+
+			final char[]	content;
+			
+			try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/trues.fpro");
+				final Reader			rdr = new InputStreamReader(is);
+				final Writer			wr = new StringWriter()) {
+				
+				Utils.copyStream(rdr,wr);
+				content = wr.toString().toCharArray();
+			}
+			
+			final long	start = System.currentTimeMillis();
+			System.err.println("Starting...");
+			
+			for (int index = 0; index < 1000000;  index++) {
+				try{final CharacterSource	cs = new ArrayCharSource(content);
+					final CharacterTarget	ct = new WriterCharTarget(System.err,false);
+	
+					pap.parseEntities(cs,new FProParserCallback(){
+												@Override
+												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+//													try{ct.put("Process true goal: ");
+//														pap.putEntity(entity,ct);
+//														ct.put("\n");
+//													} catch (PrintingException e) {
+//														e.printStackTrace();
+//														throw new IOException(e.getMessage());
+//													}
+													processing(sr,global,stack,entity,vars,true);
+													vars.clear();
+													return true;
+												}
+											}
+					);
+				} finally{
+				}
+			}
+			System.err.println("Duration="+(System.currentTimeMillis()-start));
+			
+			sr.onRemove(global);
+		}
+	}
+	
 	
 	private void processing(final StandardResolver sr, final Object global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult) throws FProException {
 		final IFProCallback	callback = new IFProCallback(){
 								@Override public void beforeFirstCall() {}
 								@Override
 								public boolean onResolution(final Map<String, Object> resolvedVariables) throws FProParsingException, FProPrintingException {
-									System.err.println("Call: "+resolvedVariables);
+//									System.err.println("Call: "+resolvedVariables);
 									return true;
 								}
 								@Override public void afterLastCall() {}
