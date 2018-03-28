@@ -9,7 +9,7 @@ public class QuickListTest {
 
 	@Test
 	public void basicTest() {
-		final IFProQuickList<String>		list = new QuickList<>();
+		final IFProQuickList<String>		list = new QuickList<>(String.class);
 
 		for (int index = 10; index <= 24; index++) {
 			Assert.assertFalse(list.contains(index));

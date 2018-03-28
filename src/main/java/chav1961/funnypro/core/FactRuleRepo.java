@@ -279,7 +279,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		}
 		else {
 			if (predicates[arity] == null) {
-				predicates[arity] = new QuickList<ChainDescriptor>();
+				predicates[arity] = new QuickList<ChainDescriptor>(ChainDescriptor.class);
 			}
 			if (!predicates[arity].contains(value.getEntityId())) {
 				predicates[arity].insert(value.getEntityId(),new ChainDescriptor(value.getEntityId()));

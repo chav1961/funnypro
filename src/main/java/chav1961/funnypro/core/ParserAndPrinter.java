@@ -756,7 +756,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		IFProEntity		actual;
 		
 		actual = root;		count = 0;
-		while (actual != null && actual.getEntityId() == colonId && (actual instanceof IFProOperator)) {
+		while ((actual instanceof IFProOperator) && actual.getEntityId() == colonId) {
 			actual = ((IFProOperator)actual).getRight();
 			count++;
 		}
@@ -766,8 +766,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		actual = root;
 		//count = 0;
 		for (int index = 0; index < count; index++) {
-			data[index] = ((IFProOperator)actual).getLeft();
-			data[index].setParent(parent);
+			(data[index] = ((IFProOperator)actual).getLeft()).setParent(parent);
 			actual = ((IFProOperator)actual).getRight();
 //		while (actual != null && actual.getEntityId() == colonId && (actual instanceof IFProOperator)) {
 //			data[count] = ((IFProOperator)actual).getLeft();

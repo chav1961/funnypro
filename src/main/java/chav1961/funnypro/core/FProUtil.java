@@ -271,7 +271,7 @@ public class FProUtil {
 		}
 		else {final EntityType		leftType = peek.getEntityType(), rightType = entity.getEntityType();
 		
-			 if (peek.getEntityId() == entity.getEntityId() && leftType == rightType) {
+			 if (leftType == rightType && peek.getEntityId() == entity.getEntityId()) {
 				switch (rightType) {
 					case string				:
 					case integer			:

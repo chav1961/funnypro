@@ -164,11 +164,11 @@ public class StandardResolverTest {
 			System.err.println("Starting...");
 			final long	start = System.nanoTime();
 			
-			for (int index = 0; index < 100000; index++) {
-				try{final CharacterSource	cs = new ArrayCharSource(content);
+			for (int index = 0; index < 200000; index++) {
+				try{//final CharacterSource	cs = new ArrayCharSource(content);
 					final CharacterTarget	ct = new WriterCharTarget(System.err,false);
 	
-					pap.parseEntities(cs,new FProParserCallback(){
+					pap.parseEntities(content,0,new FProParserCallback(){
 												@Override
 												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
 	//												try{ct.put("Process true goal: ");
