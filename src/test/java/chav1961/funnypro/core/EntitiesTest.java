@@ -71,7 +71,7 @@ public class EntitiesTest {
 		Assert.assertEquals(op.getEntityId(),12345);
 		Assert.assertEquals(op.getEntityType(),EntityType.operator);
 		Assert.assertEquals(op.getPriority(),100);
-		Assert.assertEquals(op.getType(),OperatorType.xfx);
+		Assert.assertEquals(op.getOperatorType(),OperatorType.xfx);
 		Assert.assertEquals(op.getLeft(),anon);
 		Assert.assertEquals(op.getRight(),string);		
 		Assert.assertEquals(serializeAndDeserialize(op),op);
@@ -83,7 +83,7 @@ public class EntitiesTest {
 		Assert.assertEquals(op.getEntityId(),12345);
 		Assert.assertEquals(op.getEntityType(),EntityType.operator);
 		Assert.assertEquals(op.getPriority(),100);
-		Assert.assertEquals(op.getType(),OperatorType.fx);
+		Assert.assertEquals(op.getOperatorType(),OperatorType.fx);
 		Assert.assertNull(op.getLeft());
 		Assert.assertEquals(op.getRight(),string);
 		Assert.assertEquals(serializeAndDeserialize(op),op);
@@ -95,7 +95,7 @@ public class EntitiesTest {
 		Assert.assertEquals(op.getEntityId(),12345);
 		Assert.assertEquals(op.getEntityType(),EntityType.operator);
 		Assert.assertEquals(op.getPriority(),100);
-		Assert.assertEquals(op.getType(),OperatorType.xf);
+		Assert.assertEquals(op.getOperatorType(),OperatorType.xf);
 		Assert.assertEquals(op.getLeft(),string);
 		Assert.assertNull(op.getRight());
 		Assert.assertEquals(serializeAndDeserialize(op),op);

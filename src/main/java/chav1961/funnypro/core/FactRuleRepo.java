@@ -55,7 +55,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator : 
-					switch (((IFProOperator)value).getType()) {
+					switch (((IFProOperator)value).getOperatorType()) {
 						case fx : case fy : case xf : case yf :
 							assertValue(1,true,value);
 							break;
@@ -80,7 +80,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					switch (((IFProOperator)value).getType()) {
+					switch (((IFProOperator)value).getOperatorType()) {
 						case fx : case fy : case xf : case yf :
 							assertValue(1,false,value);
 							break;
@@ -106,7 +106,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					switch (((IFProOperator)value).getType()) {
+					switch (((IFProOperator)value).getOperatorType()) {
 						case fx : case fy : case xf : case yf :
 							removeChain(1,value.getEntityId());
 							break;
@@ -141,7 +141,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					switch (((IFProOperator)value).getType()) {
+					switch (((IFProOperator)value).getOperatorType()) {
 						case fx : case fy : case xf : case yf :
 							return removeFromChain(1,value.getEntityId(),value);
 						default :
@@ -163,7 +163,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					switch (((IFProOperator)value).getType()) {
+					switch (((IFProOperator)value).getOperatorType()) {
 						case fx : case fy : case xf : case yf :
 							return getChain(1,value.getEntityId());
 						default :

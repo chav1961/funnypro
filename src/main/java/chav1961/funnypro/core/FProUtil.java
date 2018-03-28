@@ -27,7 +27,7 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
  * @author chav1961
  *
  */
-class FProUtil {
+public class FProUtil {
 	private static final int 		EXPONENT_SIZE = 300; 
 	private static final double[]	EXPONENT = new double[2 * EXPONENT_SIZE + 1];
 
@@ -41,13 +41,13 @@ class FProUtil {
 	
 	/**
 	 * <p>Simple parser to extract data from the char string</p>
-	 * <p>All chars in the template expresses self, except special escapes. The set of escapes is:<p>
+	 * <p>All chars in the template expresses self, except special escapes. The set of escapes is:</p>
 	 * <ul>
 	 * <li>'{', '|', '}' - alternatives. Every alternative start need differs each other, except (possibly) the same last alternative (pointed as default)</li>
 	 * <li>'[', ']' - optional. Need to have explicit differentiation from the next data.</li>
-	 * <li>'<', '>seq...' - repeatable clauses. Seq can be any non-escaped char sequence without special chars</li>
+	 * <li>'&lt;', '&gt;seq...' - repeatable clauses. Seq can be any non-escaped char sequence without special chars</li>
 	 * </ul>
-	 * <p>Also a special escapes can be used:<p>
+	 * <p>Also a special escapes can be used:</p>
 	 * <ul>
 	 * <li>'%b' - any blank chars</li>
 	 * <li>'%c' - any non-blank text</li>
@@ -55,7 +55,7 @@ class FProUtil {
 	 * <li>'%d' - any decimal</li>
 	 * <li>'%NNNd' - any decimal. It's start and end position will be stored to to parsing result array</li>
 	 * <li>'%NNN:VVVm' - set location NNN with the value VVV. Not really parses data but can use for marking alternatives</li>
-	 * <li>'%{', '%|', '%}', '%[', '%]', '%<', '%>', '%%' - chars as-is</li>
+	 * <li>'%{', '%|', '%}', '%[', '%]', '%&lt;', '%&gt;', '%%' - chars as-is</li>
 	 * </ul>
 	 * @param source source string to parse
 	 * @param from start position to parse
@@ -74,13 +74,13 @@ class FProUtil {
 
 	/**
 	 * <p>Simple parser to extract data from the char string</p>
-	 * <p>All chars in the template expresses self, except special escapes. The set of escapes is:<p>
+	 * <p>All chars in the template expresses self, except special escapes. The set of escapes is:</p>
 	 * <ul>
 	 * <li>'{', '|', '}' - alternatives. Every alternative start need differs each other, except (possibly) the same last alternative (pointed as default)</li>
 	 * <li>'[', ']' - optional. Need to have explicit differentiation from the next data.</li>
-	 * <li>'<', '>seq...' - repeatable clauses. Seq can be any non-escaped char sequence without special chars</li>
+	 * <li>'&lt;', '&gt;seq...' - repeatable clauses. Seq can be any non-escaped char sequence without special chars</li>
 	 * </ul>
-	 * <p>Also a special escapes can be used:<p>
+	 * <p>Also a special escapes can be used:</p>
 	 * <ul>
 	 * <li>'%b' - any blank chars</li>
 	 * <li>'%c' - any non-blank text</li>
@@ -88,7 +88,7 @@ class FProUtil {
 	 * <li>'%d' - any decimal</li>
 	 * <li>'%NNNd' - any decimal. It's start and end position will be stored to to parsing result array</li>
 	 * <li>'%NNN:VVVm' - set location NNN with the value VVV. Not really parses data but can use for marking alternatives</li>
-	 * <li>'%{', '%|', '%}', '%[', '%]', '%<', '%>', '%%' - chars as-is</li>
+	 * <li>'%{', '%|', '%}', '%[', '%]', '%&lt;', '%&gt;', '%%' - chars as-is</li>
 	 * </ul>
 	 * @param source source string to parse
 	 * @param from start position to parse
@@ -121,7 +121,7 @@ class FProUtil {
 	 * <p>Serialize entities to the output stream</p>
 	 * @param target stream to serialize to
 	 * @param entity entity to serialize
-	 * @throws IOException
+	 * @throws IOException in any I/O errors
 	 */
 	public static void serialize(final OutputStream target, final IFProEntity entity) throws IOException {
 		if (target == null) {
@@ -153,8 +153,8 @@ class FProUtil {
 				case operator		:
 					CommonUtil.writeLong(target,entity.getEntityId());
 					CommonUtil.writeInt(target,((IFProOperator)entity).getPriority());
-					CommonUtil.writeInt(target,((IFProOperator)entity).getType().ordinal());
-					switch (((IFProOperator)entity).getType()) {
+					CommonUtil.writeInt(target,((IFProOperator)entity).getOperatorType().ordinal());
+					switch (((IFProOperator)entity).getOperatorType()) {
 						case xf : case yf :
 							serialize(target,((IFProOperator)entity).getLeft());
 							break;
@@ -186,7 +186,7 @@ class FProUtil {
 	 * <p>Deserialize entities from input stream</p>
 	 * @param source input stream to deserialize from
 	 * @return deserialized entity
-	 * @throws IOException
+	 * @throws IOException on any I/O errors
 	 */
 	public static IFProEntity deserialize(final InputStream source) throws IOException {
 		if (source == null) {
@@ -269,66 +269,71 @@ class FProUtil {
 		else if (peek == null || entity == null) {
 			return false;
 		}
-		else if (peek.getEntityId() == entity.getEntityId() && peek.getEntityType() == entity.getEntityType()) {
-			switch (entity.getEntityType()) {
-				case string				:
-				case integer			:
-				case real				:
-				case anonymous			:
-					return true;
-				case variable			:
-					joinChains(changesList,(IFProVariable)peek,(IFProVariable)entity);
-					return true;
-				case list				:
-					return unify(((IFProList)peek).getChild(),((IFProList)entity).getChild(),changesList) 
-						&& unify(((IFProList)peek).getTail(),((IFProList)entity).getTail(),changesList); 
-				case operator			:
-					if (((IFProOperator)peek).getPriority() == ((IFProOperator)entity).getPriority() && ((IFProOperator)peek).getType() == ((IFProOperator)entity).getType()) {
-						return unify(((IFProOperator)peek).getLeft(),((IFProOperator)entity).getLeft(),changesList)
-						&& unify(((IFProOperator)peek).getRight(),((IFProOperator)entity).getRight(),changesList);
-					}
-					else {
-						return false;
-					}
-				case predicate			:
-					if (((IFProPredicate)peek).getArity() == ((IFProPredicate)entity).getArity()) {
-						for (int index = 0; index < ((IFProPredicate)entity).getArity(); index++) {
-							if (!unify(((IFProPredicate)peek).getParameters()[index],((IFProPredicate)entity).getParameters()[index],changesList)) {
-								return false;
-							}
-						}
+		else {final EntityType		leftType = peek.getEntityType(), rightType = entity.getEntityType();
+		
+			 if (peek.getEntityId() == entity.getEntityId() && leftType == rightType) {
+				switch (rightType) {
+					case string				:
+					case integer			:
+					case real				:
+					case anonymous			:
 						return true;
-					}
-					else {
-						return false;
-					}
-				default :
-					throw new UnsupportedOperationException("Unknown type to scratch: "+entity.getEntityType());
+					case variable			:
+						joinChains(changesList,(IFProVariable)peek,(IFProVariable)entity);
+						return true;
+					case list				:
+						return unify(((IFProList)peek).getChild(),((IFProList)entity).getChild(),changesList) 
+								&& unify(((IFProList)peek).getTail(),((IFProList)entity).getTail(),changesList); 
+					case operator			:
+						if (((IFProOperator)peek).getPriority() == ((IFProOperator)entity).getPriority() && ((IFProOperator)peek).getOperatorType() == ((IFProOperator)entity).getOperatorType()) {
+							return unify(((IFProOperator)peek).getLeft(),((IFProOperator)entity).getLeft(),changesList)
+									&& unify(((IFProOperator)peek).getRight(),((IFProOperator)entity).getRight(),changesList);
+						}
+						else {
+							return false;
+						}
+					case predicate			:
+						if (((IFProPredicate)peek).getArity() == ((IFProPredicate)entity).getArity()) {
+							final IFProEntity[]	left = ((IFProPredicate)peek).getParameters(), right = ((IFProPredicate)entity).getParameters();
+							
+							for (int index = 0, maxIndex = ((IFProPredicate)entity).getArity(); index < maxIndex; index++) {
+								if (!unify(left[index],right[index],changesList)) {
+									return false;
+								}
+							}
+							return true;
+						}
+						else {
+							return false;
+						}
+					default :
+						throw new UnsupportedOperationException("Unknown type to scratch: "+entity.getEntityType());
+				}
 			}
-		}
-		else if (peek.getEntityType() == EntityType.anonymous || entity.getEntityType() == EntityType.anonymous) {
-			return true;
-		}
-		else if (peek.getEntityType() == EntityType.variable && entity.getEntityType() == EntityType.variable) {
-			joinChains(changesList,(IFProVariable)peek,(IFProVariable)entity);
-			return true;
-		}
-		else if (peek.getEntityType() == EntityType.variable) {
-			substitute(changesList,((IFProVariable)peek),entity);
-			return true;
-		}
-		else if (entity.getEntityType() == EntityType.variable) {
-			substitute(changesList,((IFProVariable)entity),peek);
-			return true;
-		}
-		else {
-			return false;
+			else if (leftType == EntityType.anonymous || rightType == EntityType.anonymous) {
+				return true;
+			}
+			else if (leftType == EntityType.variable && rightType == EntityType.variable) {
+				joinChains(changesList,(IFProVariable)peek,(IFProVariable)entity);
+				return true;
+			}
+			else if (leftType == EntityType.variable) {
+				substitute(changesList,((IFProVariable)peek),entity);
+				return true;
+			}
+			else if (rightType == EntityType.variable) {
+				substitute(changesList,((IFProVariable)entity),peek);
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 	}
 
 	/**
 	 * <p>Restore two unified entities to it's original state.</p>
-	 * @param top content of the changesList[0] (see {@link FProUtil.unify})
+	 * @param top content of the changesList[0] (see {@link FProUtil#unify(IFProEntity, IFProEntity, Change[])})
 	 */
 	public static void unbind(final Change top) {
 		Change	actual = top, temp;
@@ -420,7 +425,7 @@ class FProUtil {
 
 	/**
 	 * <p>Remove entity and all it's children</p>
-	 * @param entity
+	 * @param source entity to remove
 	 */
 	public static void removeEntity(final IFProEntity source) {
 		if (source != null) {
@@ -452,7 +457,7 @@ class FProUtil {
 					}
 					break;
 				case predicate		:
-					final IFProEntity[]		parm = new IFProEntity[((IFProPredicate)source).getArity()];
+					final IFProEntity[]		parm = ((IFProPredicate)source).getParameters();
 					
 					for (int index = 0; index < parm.length; index++){
 						removeEntity(parm[index]);
@@ -980,10 +985,12 @@ repeat:					while(start < to) {
 					}
 					break;
 				case predicate			:
-					for (int index = 0; index < ((IFProPredicate)container).getArity(); index++) {
-						if (((IFProPredicate)container).getParameters()[index] == var) {
+					final IFProEntity[]	parm = ((IFProPredicate)container).getParameters(); 
+					
+					for (int index = 0, maxIndex = ((IFProPredicate)container).getArity(); index < maxIndex; index++) {
+						if (parm[index] == var) {
 							placeChanges(changesList,container,var,index);		
-							((IFProPredicate)container).getParameters()[index] = value;
+							parm[index] = value;
 						}
 					}
 					break;

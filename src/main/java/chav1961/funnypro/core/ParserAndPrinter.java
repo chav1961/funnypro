@@ -33,7 +33,7 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProModule;
-import chav1961.purelib.basic.CharsUtil;
+import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -41,7 +41,7 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
-class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
+public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private static final ExtendedBitCharSet	VALID_LETTERS = new ExtendedBitCharSet(); 
 	private static final ExtendedBitCharSet	VALID_UPPER_LETTERS = new ExtendedBitCharSet(); 
 	private static final ExtendedBitCharSet	VALID_LOWER_LETTERS = new ExtendedBitCharSet(); 
@@ -49,7 +49,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
-	private final long				colonId, tailId;
+	private final long				colonId, tailId, tempLong[] = new long[2], entityId[] = new long[1];
 
 	private enum NameClassification {
 		anonymous, term
@@ -200,7 +200,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 					}
 					break;
 				case operator			:
-					switch (((IFProOperator)entity).getType()) {
+					switch (((IFProOperator)entity).getOperatorType()) {
 						case xf : case yf :
 							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getLeft())) {
 								target.put('(');
@@ -265,7 +265,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 					}
 					break;
 				case operatordef		:
-					target.put(String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getType(),repo.termRepo().getName(entity.getEntityId())));
+					target.put(String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getOperatorType(),repo.termRepo().getName(entity.getEntityId())));
 					break;
 				case externalplugin		:
 					target.put(String.format("$external$(\"%1$s\",\"%2$s\",\"%3$s\")",((IFProExternalEntity)entity).getPluginName(),((IFProExternalEntity)entity).getPluginProducer(),((IFProExternalEntity)entity).getPluginVersion()));
@@ -285,7 +285,7 @@ class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		
 	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws FProException, IOException {
 		final IFProEntity[]	top = new IFProEntity[priorities.length+1];
-		final long[]		entityId = new long[1];
+//		final long[]		entityId = new long[1];
 		final int			maxLen = source.length;
 		boolean				prefixNow = true, found;
 		int					actualMin = IFProOperator.MIN_PRTY, actualMax = maxPrty;
@@ -382,18 +382,18 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}					
 					break;
 				case '0' : case '1' : case '2' : case '3' : case '4' : case '5' : case '6' : case '7' : case '8' : case '9' :
-					final long[]	value = new long[2];
+//					final long[]	value = new long[2];
 					
-					from = CharsUtil.parseNumber(source,from,value,CharsUtil.PREF_ANY,false);
+					from = CharUtils.parseNumber(source,from,tempLong,CharUtils.PREF_ANY,false);
 					if (!prefixNow) {
 						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
-						switch ((int)value[1]) {
-							case CharsUtil.PREF_INT 	: top[0] = new IntegerEntity(value[0]); break;								
-							case CharsUtil.PREF_LONG 	: top[0] = new IntegerEntity(value[0]); break;
-							case CharsUtil.PREF_FLOAT 	: top[0] = new RealEntity(Float.intBitsToFloat((int)value[0])); break;
-							case CharsUtil.PREF_DOUBLE	: top[0] = new RealEntity(Double.longBitsToDouble(value[0])); break;
+						switch ((int)tempLong[1]) {
+							case CharUtils.PREF_INT 	: top[0] = new IntegerEntity(tempLong[0]); break;								
+							case CharUtils.PREF_LONG 	: top[0] = new IntegerEntity(tempLong[0]); break;
+							case CharUtils.PREF_FLOAT 	: top[0] = new RealEntity(Float.intBitsToFloat((int)tempLong[0])); break;
+							case CharUtils.PREF_DOUBLE	: top[0] = new RealEntity(Double.longBitsToDouble(tempLong[0])); break;
 						}
 						actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 						prefixNow = false;
@@ -479,7 +479,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 													final IFProOperator	op = new OperatorEntity(item);
 													
 													top[location] = op.setLeft(collapse(top,location).setParent(op));
-													actualMin = item.getPriority() + (item.getType() == OperatorType.xf ? 1 : 0);
+													actualMin = item.getPriority() + (item.getOperatorType() == OperatorType.xf ? 1 : 0);
 													found = true;		
 													break;
 												}
@@ -617,7 +617,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 									final IFProOperator	op = new OperatorEntity(item);
 									
 									top[location] = op.setLeft(collapse(top,location).setParent(op));
-									actualMin = item.getPriority() + (item.getType() == OperatorType.xf ? 1 : 0);
+									actualMin = item.getPriority() + (item.getOperatorType() == OperatorType.xf ? 1 : 0);
 									found = true;		
 									break;
 								}
@@ -635,11 +635,11 @@ loop:	while (from < maxLen && source[from] != '.') {
 										if (top[location] == null) {
 											top[location] = op.setLeft(collapse(top,location).setParent(op));
 										}
-										else if (((IFProOperator)top[location]).getType() == OperatorType.fy || ((IFProOperator)top[location]).getType() == OperatorType.yf || ((IFProOperator)top[location]).getType() == OperatorType.xfy) {
+										else if (((IFProOperator)top[location]).getOperatorType() == OperatorType.fy || ((IFProOperator)top[location]).getOperatorType() == OperatorType.yf || ((IFProOperator)top[location]).getOperatorType() == OperatorType.xfy) {
 											((IFProOperator)top[location]).setRight(op.setLeft(collapse(top,location-1).setParent(top[location])));
 											top[location] = op.setParent(top[location]);
 										}
-										else if (op.getType() == OperatorType.yfx) {
+										else if (op.getOperatorType() == OperatorType.yfx) {
 											top[location] = op.setLeft(collapse(top,location).setParent(op));
 										}
 										else {
@@ -679,7 +679,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				}
 				else {
 					result.setParent(top[index]);
-					switch (((IFProOperator)top[index]).getType()) {
+					switch (((IFProOperator)top[index]).getOperatorType()) {
 						case fx :
 						case fy :
 						case xfx :
@@ -763,12 +763,18 @@ loop:	while (from < maxLen && source[from] != '.') {
 		
 		final IFProEntity[]	data = new IFProEntity[count+1];
 		
-		actual = root;		count = 0;
-		while (actual != null && actual.getEntityId() == colonId && (actual instanceof IFProOperator)) {
-			data[count] = ((IFProOperator)actual).getLeft();
-			data[count].setParent(parent);
+		actual = root;
+		//count = 0;
+		for (int index = 0; index < count; index++) {
+			data[index] = ((IFProOperator)actual).getLeft();
+			data[index].setParent(parent);
 			actual = ((IFProOperator)actual).getRight();
-			count++;
+//		while (actual != null && actual.getEntityId() == colonId && (actual instanceof IFProOperator)) {
+//			data[count] = ((IFProOperator)actual).getLeft();
+//			data[count].setParent(parent);
+//			actual = ((IFProOperator)actual).getRight();
+//			count++;
+//		}
 		}
 		data[count] = actual;
 		data[count].setParent(parent);
@@ -798,7 +804,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			final int	startName = from, endName;
 			final long	maxLex = getRepo().termRepo().seekName(source,startName,source.length);
 						
-			if (maxLex == -1) {
+			if (maxLex == -startName - 1) {
 				throw new FProParsingException(FProUtil.toRowCol(source,from),"Unknown term/operator was detected!"); 
 			}
 			else {
@@ -832,7 +838,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b%0d%b,%b%1c%b,%b%2c%b)",locations);
 		
 		if (parsed > from) {
-			CharsUtil.parseInt(source,locations[0][0],forPrty,false);
+			CharUtils.parseInt(source,locations[0][0],forPrty,false);
 			final OperatorType	type = getRepo().operatorType(getRepo().termRepo().placeName(source,locations[1][0],locations[1][1],null));
 			final long			operatorId = getRepo().termRepo().placeName(source,locations[2][0],locations[2][1],null);
 			
@@ -972,7 +978,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}
 					break;
 				case operator			:
-					switch (((IFProOperator)entity).getType()) {
+					switch (((IFProOperator)entity).getOperatorType()) {
 						case xf : case yf :
 							final String	prefName = blankedName(getRepo().termRepo().getName(entity.getEntityId()));
 							
@@ -1095,7 +1101,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}
 					break;
 				case operatordef		:
-					final String	opDef = String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getType(),repo.termRepo().getName(entity.getEntityId()));
+					final String	opDef = String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getOperatorType(),repo.termRepo().getName(entity.getEntityId()));
 
 					if (from + opDef.length() < targetEnd) {
 						opDef.getChars(0,opDef.length(),target,from);

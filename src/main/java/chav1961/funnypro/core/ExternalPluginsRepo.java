@@ -1,10 +1,12 @@
 package chav1961.funnypro.core;
 
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,8 +16,14 @@ import java.util.ServiceLoader;
 import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
+import chav1961.funnypro.core.interfaces.IFProEntity;
+import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
 import chav1961.funnypro.core.interfaces.IFProModule;
+import chav1961.funnypro.core.interfaces.IFProOperator;
+import chav1961.funnypro.core.interfaces.IFProPredicate;
+import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
@@ -23,7 +31,8 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	
 	private final LoggerFacade						log;
 	private final Properties						props;
-	private final Map<PluginKey,List<PluginItem>>	plugins = new HashMap<PluginKey,List<PluginItem>>();
+	private final Map<PluginKey,List<PluginItem>>	plugins = new HashMap<>();
+	private final List<ExternalEntityDescriptor>	entities = new ArrayList<>();
 
 	public ExternalPluginsRepo(final LoggerFacade log, final Properties prop) throws IOException {
 		if (log == null) {
@@ -54,7 +63,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 
 	@Override public LoggerFacade getDebug() {return log;}
 	@Override public Properties getParameters() {return props;}		
-	
+
 	@Override
 	public void close() throws Exception {
 		for (List<PluginItem> desc : plugins.values()) {
@@ -147,6 +156,67 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		}
 
 	}
+
+	@Override
+	public void registerResolver(final IFProEntity template, final List<IFProVariable> vars, final IResolvable resolver, final Object global) {
+		if (template == null) {
+			throw new IllegalArgumentException("Template can't be null"); 
+		}
+		else if (vars == null) {
+			throw new IllegalArgumentException("Variables list can't be null"); 
+		}
+		else if (resolver == null) {
+			throw new IllegalArgumentException("resolver can't be null"); 
+		}
+		else {
+			entities.add(new ExternalEntityDescriptorImpl(template,vars,resolver,global));
+		}
+	}
+
+	@Override
+	public ExternalEntityDescriptor getResolver(final IFProEntity template) {
+		if (template == null) {
+			throw new IllegalArgumentException("Template can't be null"); 
+		}
+		else {
+			final EntityType	typeAwaited = template.getEntityType();
+			final long			idAwaited = template.getEntityId();
+					
+			for (ExternalEntityDescriptor item : entities) {
+				if (item.getTemplate().getEntityType() == typeAwaited && item.getTemplate().getEntityId() == idAwaited) {
+					switch (typeAwaited) {
+						case operator 	:
+							if (((IFProOperator)template).getOperatorType() == ((IFProOperator)item.getTemplate()).getOperatorType()) {
+								return item;
+							}
+							break;
+						case predicate 	:
+							if (((IFProPredicate)template).getArity() == ((IFProPredicate)item.getTemplate()).getArity()) {
+								return item;
+							}
+							break;
+						default :
+							throw new UnsupportedOperationException(); 
+					}
+				}
+			}
+			return null;
+		}
+	}
+
+	@Override
+	public void purgeResolver(final IResolvable resolver) {
+		if (resolver == null) {
+			throw new IllegalArgumentException("resolver can't be null"); 
+		}
+		else {
+			for (int index = entities.size()-1; index >= 0; index--) {
+				if (entities.get(index).getResolver() == resolver) {
+					entities.remove(index);
+				}
+			}
+		}
+	}
 	
 	private static class PluginItemImpl implements PluginItem {
 		private final PluginDescriptor		desc; 
@@ -163,5 +233,29 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		public void setGlobal(final Object global){this.global = global;}
 
 		@Override public String toString() {return "PluginItem [desc=" + desc + ", global=" + global + "]";}
+	}
+	
+	private static class ExternalEntityDescriptorImpl implements ExternalEntityDescriptor {
+		final IFProEntity 			template;
+		final List<IFProVariable> 	vars;
+		final IResolvable 			resolver;
+		final Object 				global;
+		
+		public ExternalEntityDescriptorImpl(final IFProEntity template, final List<IFProVariable> vars, final IResolvable resolver, final Object global) {
+			this.template = template;
+			this.vars = vars;
+			this.resolver = resolver;
+			this.global = global;
+		}
+
+		@Override public IFProEntity getTemplate() {return template;}
+		@Override public List<IFProVariable> getVars() {return vars;}
+		@Override public IResolvable getResolver() {return resolver;}
+		@Override public Object getGlobal() {return global;}
+
+		@Override
+		public String toString() {
+			return "ExternalEntityDescriptorImpl [template=" + template + ", vars=" + vars + ", resolver=" + resolver + ", global=" + global + "]";
+		}
 	}
 }

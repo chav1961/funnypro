@@ -124,16 +124,16 @@ class PseudoFProVM extends FProVM {
 	@Override
 	protected ResolvableAndGlobal getStandardResolver() {
 		return new ResolvableAndGlobal(
-			new IResolvable() {
-			@Override public ResolveRC nextResolve(Object global, Object local, IFProEntity values) throws FProException {return ResolveRC.False;}
+			new IResolvable<GlobalDescriptor,LocalDescriptor>() {
+			@Override public ResolveRC nextResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws FProException {return ResolveRC.False;}
 			@Override public String getName() {return "test";}
 			@Override public int[] getVersion() {return new int[]{1};}
-			@Override public Object beforeCall(Object global, IFProGlobalStack gs, List<IFProVariable> vars,IFProCallback callback) {return null;}
-			@Override public ResolveRC firstResolve(Object global, Object local, IFProEntity values) throws FProException {return ResolveRC.True;}
-			@Override public void endResolve(Object global, Object local, IFProEntity values) throws FProException {}			
-			@Override public void afterCall(Object global, Object local) {}
-			@Override public void onRemove(Object global) {}
-			@Override public Object onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws FProException {return null;}
+			@Override public LocalDescriptor beforeCall(GlobalDescriptor global, IFProGlobalStack gs, List<IFProVariable> vars,IFProCallback callback) {return null;}
+			@Override public ResolveRC firstResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws FProException {return ResolveRC.True;}
+			@Override public void endResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws FProException {}			
+			@Override public void afterCall(GlobalDescriptor global, LocalDescriptor local) {}
+			@Override public void onRemove(GlobalDescriptor global) {}
+			@Override public GlobalDescriptor onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws FProException {return null;}
 		},
 		null);
 	}

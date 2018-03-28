@@ -61,19 +61,6 @@ public class ParserAndPrinterTest {
 			final IFProEntity		term = buildEntity(pap,"testString.");
 			Assert.assertEquals(term.getEntityType(),EntityType.predicate);
 			Assert.assertEquals(term.getEntityId(),repo.termRepo().seekName("testString"));
-			
-//			final IFProEntity		external = buildEntity(pap,"extern(\""+StandardResolver.PLUGIN_NAME+"\",\""+StandardResolver.PLUGIN_PRODUCER+"\","+Arrays.toString(StandardResolver.PLUGIN_VERSION)+",1).");
-//			Assert.assertEquals(external.getEntityType(),EntityType.externalplugin);
-//			Assert.assertEquals(external.getEntityId(),1);
-//			Assert.assertEquals(((IFProExternalEntity)external).getPluginName(),StandardResolver.PLUGIN_NAME);
-//
-//			final IFProEntity		op = buildEntity(pap,"op(1200,xfx,!@2#$).");
-//			Assert.assertEquals(op.getEntityType(),EntityType.operatordef);
-//			Assert.assertEquals(op.getEntityId(),repo.termRepo().seekName("!@2#$"));
-//
-//			final IFProEntity		op1 = buildEntity(pap,"op(1200,xfx,'!@ 2#$').");
-//			Assert.assertEquals(op1.getEntityType(),EntityType.operatordef);
-//			Assert.assertEquals(op1.getEntityId(),repo.termRepo().seekName("!@ 2#$"));
 		}
 	}
 

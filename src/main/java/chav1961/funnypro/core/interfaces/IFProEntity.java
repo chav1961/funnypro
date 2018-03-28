@@ -24,13 +24,14 @@ public interface IFProEntity {
 	 * <li>operatordef - :- op/3</li>
 	 * <li>operator - any operator</li>
 	 * <li>predicate - any predicate</li>
+	 * <li>any - any type. Used with {@link Predicate} annotation only</li>
 	 * </ul>
 	 * @author Alexander Chernomyrdin aka chav1961
 	 * @since 0.0.1
 	 */
 	public enum EntityType {
 		string, integer, real, anonymous, variable, externalplugin, 
-		list, operatordef, operator, predicate
+		list, operatordef, operator, predicate, any
 	}
 	
 	/**

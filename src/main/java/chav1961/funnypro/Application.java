@@ -1,5 +1,6 @@
 package chav1961.funnypro;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -16,16 +17,38 @@ import javax.script.ScriptException;
  */
 public class Application {
 	public static void main(String[] args) throws ScriptException {
-		try(final Reader	in = new InputStreamReader(System.in,args.length == 0 ? "UTF8" : args[0]);
-			final Writer	out = new OutputStreamWriter(System.out); 
-			final Writer	err = new OutputStreamWriter(System.err)) {
-			
-			final ScriptEngineManager 	factory = new ScriptEngineManager();
-			final ScriptEngine 			engine = factory.getEngineByName("FunnyProlog");
+		String		encoding = "UTF8";
+		boolean		screenMode = false;
+		
+		for (String item : args) {
+			switch (item) {
+				case "-screen"	:
+					screenMode = true;
+					break;
+				default :
+					encoding = item;
+					break;
+			}
+		}
 
-			((FunnyProEngine)engine).console(in,out,err);
-		} catch (Exception exc) {
-			exc.printStackTrace();
+		final ScriptEngineManager 	factory = new ScriptEngineManager();
+		final ScriptEngine 			engine = factory.getEngineByName("FunnyProlog");
+		
+		if (screenMode) {
+			try{final JScreen		screen = new JScreen((FunnyProEngine)engine);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}		
+		}
+		else {
+			try(final Reader	in = new InputStreamReader(System.in,encoding);
+				final Writer	out = new OutputStreamWriter(System.out); 
+				final Writer	err = new OutputStreamWriter(System.err)) {
+				
+				((FunnyProEngine)engine).console(in,out,err);
+			} catch (Exception exc) {
+				exc.printStackTrace();
+			}
 		}
 	}
 }

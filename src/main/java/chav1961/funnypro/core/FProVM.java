@@ -245,14 +245,14 @@ public class FProVM implements IFProVM, IFProModule {
 													continuation[0] = false;
 													return false;
 												}
-												else if (entity.getEntityId() == goal && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getType().equals(OperatorType.fx)) {
+												else if (entity.getEntityId() == goal && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													target.write(String.valueOf(inference(entity,vars,repo,new IFProCallback(){
 														@Override public void beforeFirstCall() {}
 														@Override public boolean onResolution(Map<String, Object> resolvedVariables) {return true;}
 														@Override public void afterLastCall() {}
 													}))+"\n>");
 												}
-												else if (entity.getEntityId() == question && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getType().equals(OperatorType.fx)) {
+												else if (entity.getEntityId() == question && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													target.write("Answer="+String.valueOf(inference(entity,vars,repo,new IFProCallback(){
 														@Override public void beforeFirstCall() {}
 														
@@ -329,7 +329,7 @@ public class FProVM implements IFProVM, IFProModule {
 			pap.parseEntities(source.toCharArray(),0,new FProParserCallback(){
 											@Override
 											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
-												if (entity.getEntityId() == opId && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getType().equals(OperatorType.fx)) {
+												if (entity.getEntityId() == opId && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													try{result[0] = inference(entity,vars,repo,callback);
 													} catch (FProException e) {
 //														e.printStackTrace();
@@ -360,19 +360,22 @@ public class FProVM implements IFProVM, IFProModule {
 	}	
 	
 	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final ResolvableAndGlobal rag, final IFProCallback callback) throws FProException {
-		final GlobalStack	stack = new GlobalStack(getDebug(),getParameters(),repo); 
-		final Object 		data = rag.resolver.beforeCall(rag.global,stack,vars,callback);
-		
-		try{if (rag.resolver.firstResolve(rag.global,data,entity) == ResolveRC.True) {
-				while (rag.resolver.nextResolve(rag.global,data,entity) == ResolveRC.True) {}
-				return true;
+		try(final GlobalStack	stack = new GlobalStack(getDebug(),getParameters(),repo)) {
+			final Object 		data = rag.resolver.beforeCall(rag.global,stack,vars,callback);
+			
+			try{if (rag.resolver.firstResolve(rag.global,data,entity) == ResolveRC.True) {
+					while (rag.resolver.nextResolve(rag.global,data,entity) == ResolveRC.True) {}
+					return true;
+				}
+				else {
+					return false;
+				}
+			} finally {
+				rag.resolver.endResolve(rag.global,data,entity);
+				rag.resolver.afterCall(rag.global,data);
 			}
-			else {
-				return false;
-			}
-		} finally {
-			rag.resolver.endResolve(rag.global,data,entity);
-			rag.resolver.afterCall(rag.global,data);
+		} catch (Exception e) {
+			throw new FProException(e.getMessage(),e);
 		}
 	}
 	

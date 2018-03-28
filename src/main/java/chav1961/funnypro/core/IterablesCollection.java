@@ -65,7 +65,7 @@ class IterablesCollection {
 				public IFProEntity next() {
 					final NameAndArity	naa = iterator.next();
 					
-					return new OperatorEntity(def.getPriority(),def.getType(),def.getEntityId()).setLeft(new PredicateEntity(naa.getId())).setRight(new IntegerEntity(naa.getArity()));
+					return new OperatorEntity(def.getPriority(),def.getOperatorType(),def.getEntityId()).setLeft(new PredicateEntity(naa.getId())).setRight(new IntegerEntity(naa.getArity()));
 				}
 			};
 		}		

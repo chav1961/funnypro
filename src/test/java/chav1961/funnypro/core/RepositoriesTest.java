@@ -214,13 +214,9 @@ public class RepositoriesTest {
 			
 			int	count = 0;			
 			for (PluginItem item : xrepo.allPlugins()) {
-				Assert.assertEquals(item.getDescriptor().getPluginDescription(),StandardResolver.PLUGIN_DESCRIPTION);
-				Assert.assertEquals(item.getDescriptor().getPluginEntity().getPluginName(),StandardResolver.PLUGIN_NAME);
-				Assert.assertEquals(item.getDescriptor().getPluginEntity().getPluginProducer(),StandardResolver.PLUGIN_PRODUCER);
-				Assert.assertArrayEquals(item.getDescriptor().getPluginEntity().getPluginVersion(),StandardResolver.PLUGIN_VERSION);
 				count++;
 			}
-			Assert.assertEquals(count,1);
+			Assert.assertEquals(count,2);
 			
 			count = 0;			
 			for (PluginItem item : xrepo.seek(StandardResolver.PLUGIN_NAME,StandardResolver.PLUGIN_PRODUCER,StandardResolver.PLUGIN_VERSION)) {

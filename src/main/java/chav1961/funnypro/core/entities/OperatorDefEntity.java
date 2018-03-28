@@ -28,7 +28,7 @@ public class OperatorDefEntity implements IFProOperator {
 	@Override public EntityType getEntityType() {return EntityType.operatordef;}
 	@Override public long getEntityId() {return id;}
 	@Override public IFProEntity setEntityId(long entityId) {this.id = entityId; return this;}
-	@Override public OperatorType getType() {return type;}
+	@Override public OperatorType getOperatorType() {return type;}
 	@Override public int getPriority() {return prty;}
 	@Override public IFProEntity getParent() {return parent;}
 	@Override public IFProEntity setParent(final IFProEntity entity) {this.parent = entity; return this;}
@@ -42,7 +42,7 @@ public class OperatorDefEntity implements IFProOperator {
 
 	@Override
 	public int getUnderlyingPriority() {
-		switch (getType()) {
+		switch (getOperatorType()) {
 			case fx 	: return getPriority()-1;
 			case fy 	: return getPriority();
 			case xf 	: return getPriority()-1;
@@ -54,7 +54,7 @@ public class OperatorDefEntity implements IFProOperator {
 	@Override 
 	public int getUnderlyingPriority(final int prioritySide) {
 		if (prioritySide == LEFT) {
-			switch (getType()) {
+			switch (getOperatorType()) {
 				case xfx 	: return getPriority()-1;
 				case xfy 	: return getPriority()-1;
 				case yfx 	: return getPriority();
@@ -62,7 +62,7 @@ public class OperatorDefEntity implements IFProOperator {
 			}
 		}
 		else {
-			switch (getType()) {
+			switch (getOperatorType()) {
 				case xfx 	: return getPriority()-1;
 				case xfy 	: return getPriority();
 				case yfx 	: return getPriority()-1;

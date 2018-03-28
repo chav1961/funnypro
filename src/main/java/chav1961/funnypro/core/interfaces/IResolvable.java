@@ -36,11 +36,13 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
  * <p>Unprepare resolving</p>
  * <p>Calling {@link IResolvable#afterCall(Object, Object)}. Common practice is to free structures returning by {@link IResolvable#beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
  * method</p>     
+ * @param <Global> type of the global object for the plugin
+ * @param <Local> type of the local object for the plugin
  * 
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
  */
-public interface IResolvable {
+public interface IResolvable<Global,Local> {
 	/**
 	 * <p>This enumeration describes return codes from resolving results. They can be:</p>
 	 * <ul>
@@ -77,14 +79,14 @@ public interface IResolvable {
 	 * @return global object to use with longer calls
 	 * @throws FProException any plugin loading problem
 	 */
-	Object onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws FProException;
+	Global onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws FProException;
 	
 	/**
 	 * <p>This method will be called before removing</p>
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
 	 * @throws FProException any plugin removing problem
 	 */
-	void onRemove(Object global) throws FProException;
+	void onRemove(Global global) throws FProException;
 	
 	/**
 	 * <p>This method will be called before first call of the predicate</p>
@@ -95,7 +97,7 @@ public interface IResolvable {
 	 * @return local object to use with longer calls
 	 * @throws FProException if any problems was detected
 	 */
-	Object beforeCall(Object global, IFProGlobalStack gs, List<IFProVariable> vars, IFProCallback callback) throws FProException;
+	Local beforeCall(Global global, IFProGlobalStack gs, List<IFProVariable> vars, IFProCallback callback) throws FProException;
 	
 	/**
 	 * <p>This method will be called on the first resolution</p>
@@ -105,7 +107,7 @@ public interface IResolvable {
 	 * @return resolution result (see {@link ResolveRC})
 	 * @throws FProException if any problems was detected
 	 */
-	ResolveRC firstResolve(Object global, Object local, IFProEntity entity) throws FProException;
+	ResolveRC firstResolve(Global global, Local local, IFProEntity entity) throws FProException;
 	
 	/**
 	 * <p>This method will be called on the sequential next resolution. Optional (if firstResolve was false, will not be called)</p>
@@ -115,7 +117,7 @@ public interface IResolvable {
 	 * @return resolution result (see {@link ResolveRC})
 	 * @throws FProException if any problems was detected
 	 */
-	ResolveRC nextResolve(Object global, Object local, IFProEntity entity) throws FProException;
+	ResolveRC nextResolve(Global global, Local local, IFProEntity entity) throws FProException;
 	
 	/**
 	 * <p>This method ends resolution loop</p> 
@@ -124,7 +126,7 @@ public interface IResolvable {
 	 * @param entity entity to resolve
 	 * @throws FProException if any problems was detected
 	 */
-	void endResolve(Object global, Object local, IFProEntity entity) throws FProException;
+	void endResolve(Global global, Local local, IFProEntity entity) throws FProException;
 	
 	/**
 	 * <p>This method calls after resolution loop</p>  
@@ -132,6 +134,6 @@ public interface IResolvable {
 	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
 	 * @throws FProException if any problems was detected
 	 */
-	void afterCall(Object global, Object local) throws FProException;
+	void afterCall(Global global, Local local) throws FProException;
 }
 

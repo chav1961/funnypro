@@ -1,11 +1,13 @@
 package chav1961.funnypro.core.interfaces;
 
+import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.ExternalEntityDescriptor;
+
 /**
  * <p>This interface describes global stack</p>
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
  */
-public interface IFProGlobalStack extends AutoCloseable{
+public interface IFProGlobalStack extends AutoCloseable {
 	/**
 	 * <p>This enumeration describes content of the global stack top:</p>
 	 * <ul>
@@ -19,7 +21,7 @@ public interface IFProGlobalStack extends AutoCloseable{
 	 * @since 0.0.1
 	 */
 	enum StackTopType {
-		andChain, orChain, iterator, bounds, temporary
+		andChain, orChain, iterator, bounds, temporary, external
 	}
 	
 	/**
@@ -104,6 +106,25 @@ public interface IFProGlobalStack extends AutoCloseable{
 		 * @return entity placed. Can be empty but not null
 		 */
 		IFProEntity getEntity();
+	}
+
+	/**
+	 * <p>This interface describes external predicate placed in the stack</p>
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
+	 */
+	interface ExternalStackTop extends GlobalStackTop {
+		/**
+		 * <p>Get external entity descriptor</p>
+		 * @return entity descriptor
+		 */
+		ExternalEntityDescriptor getDescriptor();
+		
+		/**
+		 * <p>Get local data for entity descriptor</p>
+		 * @return local data
+		 */
+		Object getLocalData();
 	}
 	
 	/**

@@ -22,7 +22,7 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 	 * <p>Get operator type</p>
 	 * @return type of the operator
 	 */
-	OperatorType getType();
+	OperatorType getOperatorType();
 	
 	/**
 	 * <p>Get operator priority</p>

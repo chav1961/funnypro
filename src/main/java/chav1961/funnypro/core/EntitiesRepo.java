@@ -141,7 +141,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 					
 					while (actual != null) {						// Write every definition;
 						CommonUtil.writeInt(target,actual.getPriority());		// Write priority
-						CommonUtil.writeInt(target,actual.getType().ordinal());	// Write operator type
+						CommonUtil.writeInt(target,actual.getOperatorType().ordinal());	// Write operator type
 						CommonUtil.writeLong(target,actual.getEntityId());		// Write operator id
 						
 						actual = (IFProOperator)actual.getParent();
@@ -198,7 +198,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		else if (id == externId) {
 			return Classification.extern;
 		}
-		else if (Arrays.binarySearch(operators, new OperatorDefRepo(id,null)) >= 0) {
+		else if (binarySearch(operators, id) >= 0) {
 			return Classification.operator;
 		}
 		else {
@@ -225,8 +225,8 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			throw new IllegalArgumentException("Max priority ["+maxPrty+"] out of bounds. Need be in "+IFProOperator.MIN_PRTY+".."+IFProOperator.MAX_PRTY);
 		}
 		else {
-			final OperatorDefRepo	odr = new OperatorDefRepo(id,null); 
-			final  int				found = Arrays.binarySearch(operators,odr);
+//			final OperatorDefRepo	odr = new OperatorDefRepo(id,null); 
+			final  int				found = binarySearch(operators,id);
 			final int				min = Math.min(minPrty,maxPrty), max = Math.max(minPrty,maxPrty); 
 			
 			if (found >= 0) {
@@ -234,7 +234,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 				int					count = 0;
 				
 				while (root != null) {
-					if (root.getPriority() >= min && root.getPriority() <= max && (types.length == 0 || inList(root.getType(),types))) {
+					if (root.getPriority() >= min && root.getPriority() <= max && (types.length == 0 || inList(root.getOperatorType(),types))) {
 						count++;
 					}
 					root = (IFProOperator)root.getParent();
@@ -246,7 +246,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 					root = operators[found].data;
 					count = 0;
 					while (root != null) {
-						if (root.getPriority() >= min && root.getPriority() <= max && (types.length == 0 || inList(root.getType(),types))) {
+						if (root.getPriority() >= min && root.getPriority() <= max && (types.length == 0 || inList(root.getOperatorType(),types))) {
 							result[count++] = root;
 						}
 						root = (IFProOperator)root.getParent();
@@ -279,7 +279,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		}
 		else {
 			final OperatorDefRepo	odr = new OperatorDefRepo(op.getEntityId(),op); 
-			int						found = Arrays.binarySearch(operators,odr); 
+			int						found = binarySearch(operators,op.getEntityId()); 
 					
 			if (found < 0) {
 				if (amount >= operators.length) {
@@ -288,7 +288,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 					Arrays.fill(newOperators,fill);
 					System.arraycopy(operators,0,newOperators,operators.length,operators.length);
 					operators = newOperators;
-					found = Arrays.binarySearch(operators,odr); 
+					found = binarySearch(operators,op.getEntityId()); 
 				}
 				if (-found > operators.length) {
 					System.arraycopy(operators,1,operators,0,-2-found);
@@ -307,7 +307,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			else {
 				IFProOperator		root = operators[found].data;
 				while (root != null) {
-					if (root.getPriority() == op.getPriority() && root.getType().equals(op.getType())) {
+					if (root.getPriority() == op.getPriority() && root.getOperatorType().equals(op.getOperatorType())) {
 						throw new IllegalArgumentException("Attempt to put operator def: operator "+op+" already registered in the database!");
 					}
 					else {
@@ -358,7 +358,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			try{pap.parseEntities(source,new FProParserCallback(){
 										@Override
 										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
-											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getType() == OperatorType.fx) {
+											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
 													ops[0]++;
@@ -367,7 +367,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 													getDebug().message(Severity.warning,"Consulted data contains goal. It will be ignored");
 												}
 											}
-											else if (entity.getEntityId() == questionId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getType() == OperatorType.fx) {
+											else if (entity.getEntityId() == questionId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												getDebug().message(Severity.warning,"Consulted data contains question. It will be ignored");
 											}
 											else {
@@ -401,7 +401,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			try{from = pap.parseEntities(source,from,new FProParserCallback(){
 										@Override
 										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
-											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getType() == OperatorType.fx) {
+											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
 													ops[0]++;
@@ -410,7 +410,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 													getDebug().message(Severity.warning,"Consulted data contains goal. It will be ignored");
 												}
 											}
-											else if (entity.getEntityId() == questionId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getType() == OperatorType.fx) {
+											else if (entity.getEntityId() == questionId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												getDebug().message(Severity.warning,"Consulted data contains question. It will be ignored");
 											}
 											else {
@@ -492,7 +492,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		return "EntitiesRepo [anonymousId=" + anonymousId + ", opId=" + opId + ", externId=" + externId + ", operators=" + Arrays.toString(operators) + "]";
 	}
 
-	private boolean inList(OperatorType type, OperatorType[] types) {
+	private static boolean inList(OperatorType type, OperatorType[] types) {
 		for (OperatorType item : types) {
 			if (item.equals(type)) {
 				return true;
@@ -501,6 +501,27 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		return false;
 	}
 
+	private static int binarySearch(final OperatorDefRepo[] content, final long id) {
+		int 	low = 0, high = content.length - 1, mid;
+		long	midVal;
+
+        while (low <= high) {
+            mid = (low + high) >>> 1;
+            midVal = content[mid].id;
+
+            if (midVal < id) {
+                low = mid + 1;
+            }
+            else if (midVal > id) {
+                high = mid - 1;
+            }
+            else {
+                return mid; // key found
+            }
+        }
+        return -(low + 1);  // key not found.
+	}
+	
 	private static class OperatorDefRepo implements Comparable<OperatorDefRepo>{
 		public long id;
 		public IFProOperator data;

@@ -5,11 +5,13 @@ import java.util.Properties;
 import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
+import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.ExternalEntityDescriptor;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProModule;
+import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
-class GlobalStack implements IFProGlobalStack, IFProModule {
+public class GlobalStack implements IFProGlobalStack, IFProModule {
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
@@ -170,6 +172,19 @@ class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.temporary;}
 				@Override public IFProEntity getEntity() {return entity;}
 				@Override public String toString(){return "TemporaryStackTop [entity="+getEntity()+"]";}
+			};
+		}
+	}
+
+	public static ExternalStackTop getExternalStackTop(final ExternalEntityDescriptor desc, final Object localData) {
+		if (desc == null) {
+			throw new IllegalArgumentException("Entity descriptor can't be null");
+		}
+		else {
+			return new ExternalStackTop(){
+				@Override public StackTopType getTopType() {return StackTopType.external;}
+				@Override public ExternalEntityDescriptor getDescriptor() {return desc;}
+				@Override public Object getLocalData() {return localData;}
 			};
 		}
 	}

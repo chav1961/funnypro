@@ -1,5 +1,7 @@
 package chav1961.funnypro.core.interfaces;
 
+import java.util.List;
+
 /**
  * <p>This interface describes all external plugins in the system</p> 
  * @author Alexander Chernomyrdin aka chav1961
@@ -28,6 +30,37 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 		 * @return Plugin description. Can be null
 		 */
 		String getPluginDescription();
+	}
+	
+	/**
+	 * <p>The interface describes resolver for external entities</p>
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
+	 */
+	public interface ExternalEntityDescriptor {
+		/**
+		 * <p>Get entity template</p>
+		 * @return emtoty template
+		 */
+		IFProEntity getTemplate();
+		
+		/**
+		 * <p>Get variables list</p>
+		 * @return variables list. Can be empty but ot null.
+		 */
+		List<IFProVariable> getVars();
+		
+		/**
+		 * <p>Get resolver associated with the predicate</p>
+		 * @return resolver associated
+		 */
+		IResolvable getResolver();
+		
+		/**
+		 * <p>Get logbal object for the given resolver
+		 * @return global object for resolver
+		 */
+		Object getGlobal();
 	}
 	
 	/**
@@ -74,4 +107,26 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * @return list of all plugins in the system. Can be empty but not null 
 	 */
 	Iterable<PluginItem> allPlugins();
+	
+	/**
+	 * <p>GRegister resolver for the given entity</p>
+	 * @param template entity template
+	 * @param vars variables lost for the entity. Can be empty but not null
+	 * @param resolver resolver for the entity
+	 * @param global global object associated with the given resolver
+	 */
+	void registerResolver(IFProEntity template, List<IFProVariable> vars, IResolvable resolver, Object global);
+	
+	/**
+	 * <p>Get resolver for the given template.</p>
+	 * @param template template t get resolver for
+	 * @return resolver associated or null if not exists
+	 */
+	ExternalEntityDescriptor getResolver(IFProEntity template);
+	
+	/**
+	 * <p>Purge all resolver associations</p>
+	 * @param resolver resolver to purge associations for
+	 */
+	void purgeResolver(IResolvable resolver);
 }
