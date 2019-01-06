@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app:root xmlns:app="http://ui.purelib.chav1961/">
+	<app:i18n location="i18n:prop:chav1961/funnypro/i18n/i18n"/>
+	<app:menu id="mainmenu">
+		<app:submenu name="menu.file" caption="menu.file" tooltip="menu.file.tt">
+			<app:item name="menu.file.new" caption="menu.file.new" tooltip="menu.file.new.tt" action="newFile"/>
+			<app:item name="menu.file.open" caption="menu.file.open" tooltip="menu.file.open.tt" action="openFile"/>
+			<app:separator/>
+			<app:item name="menu.file.preparefrb" caption="menu.file.preparefrb" tooltip="menu.file.preparefrb.tt" action="prepareFRB"/>
+			<app:item name="menu.file.consult" caption="menu.file.consult" tooltip="menu.file.consult.tt" action="consultFile"/>
+			<app:separator/>
+			<app:item name="menu.file.exit" caption="menu.file.exit" tooltip="menu.file.exit.tt" action="exit"/>
+		</app:submenu>
+		<app:submenu name="menu.actions" caption="menu.actions" tooltip="menu.actions.tt">
+			<app:item name="menu.actions.startvm" caption="menu.actions.startvm" tooltip="menu.actions.startvm.tt" action="startVM"/>
+			<app:item name="menu.actions.stopvm" caption="menu.actions.stopvm" tooltip="menu.actions.stopvm.tt" action="stopVM"/>
+		</app:submenu>
+		<app:submenu name="menu.tools" caption="menu.tools" tooltip="menu.tools.tt">
+			<app:builtinSubmenu name="builtin.lookandfeel" caption="menu.tools.laf" tooltip="menu.tools.laf.tt"/>
+			<app:builtinSubmenu name="builtin.languages" caption="menu.tools.languages" tooltip="menu.tools.languages.tt"/>
+		</app:submenu>
+		<app:submenu name="menu.help" caption="menu.help" tooltip="menu.help.tt">
+			<app:item name="menu.help.settings" caption="menu.help.settings" tooltip="menu.help.settings.tt" action="settings"/>
+			<app:separator/>
+			<app:item name="menu.help.about" caption="menu.help.about" tooltip="menu.help.about.tt" action="about"/>
+		</app:submenu>
+	</app:menu>
+</app:root>

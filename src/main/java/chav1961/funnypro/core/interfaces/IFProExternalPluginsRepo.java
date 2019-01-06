@@ -54,7 +54,7 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 		 * <p>Get resolver associated with the predicate</p>
 		 * @return resolver associated
 		 */
-		IResolvable getResolver();
+		<Global,Local> IResolvable<Global,Local> getResolver();
 		
 		/**
 		 * <p>Get logbal object for the given resolver
@@ -115,7 +115,7 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * @param resolver resolver for the entity
 	 * @param global global object associated with the given resolver
 	 */
-	void registerResolver(IFProEntity template, List<IFProVariable> vars, IResolvable resolver, Object global);
+	<Global,Local> void registerResolver(IFProEntity template, List<IFProVariable> vars, IResolvable<Global,Local> resolver, Object global);
 	
 	/**
 	 * <p>Get resolver for the given template.</p>
@@ -128,5 +128,5 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * <p>Purge all resolver associations</p>
 	 * @param resolver resolver to purge associations for
 	 */
-	void purgeResolver(IResolvable resolver);
+	<Global,Local> void purgeResolver(IResolvable<Global,Local> resolver);
 }

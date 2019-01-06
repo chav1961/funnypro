@@ -28,5 +28,5 @@ public interface IFProExternalEntity extends IFProEntity {
 	 * <p>Get resolver to process plugin rule.
 	 * @return resolver to process plugin rule. Can't be null
 	 */
-	IResolvable getResolver();
+	<Global,Local> IResolvable<Global,Local> getResolver();
 }

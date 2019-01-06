@@ -14,7 +14,7 @@ public interface IFProPluginManager {
 	 * @param prioprity operator priority
 	 * @param pred java class to implements operator
 	 */
-	void installOperator(String operator, IFProOperator.OperatorType type, int prioprity, IResolvable pred);
+	<Global,Local> void installOperator(String operator, IFProOperator.OperatorType type, int prioprity, IResolvable<Global,Local> pred);
 	
 	/**
 	 * <p>Uninstall external plugin module to process operator</p>
@@ -29,7 +29,7 @@ public interface IFProPluginManager {
 	 * @param predicate predicate header (for example pred(X,Y,_) )
 	 * @param pred java class to implements predicate
 	 */
-	void installPredicate(String predicate, IResolvable pred);
+	<Global,Local> void installPredicate(String predicate, IResolvable<Global,Local> pred);
 	
 	/**
 	 * <p>Uninstall external plugin module to process predicate</p>
@@ -42,5 +42,5 @@ public interface IFProPluginManager {
 	 * <p>Get external plugin module list</p>
 	 * @return module list. Can be empty but not null
 	 */
-	Iterable<IResolvable> list();
+	<Global,Local> Iterable<IResolvable<Global,Local>> list();
 }

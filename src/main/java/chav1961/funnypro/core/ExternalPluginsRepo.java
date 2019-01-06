@@ -158,7 +158,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	}
 
 	@Override
-	public void registerResolver(final IFProEntity template, final List<IFProVariable> vars, final IResolvable resolver, final Object global) {
+	public <Global,Local> void registerResolver(final IFProEntity template, final List<IFProVariable> vars, final IResolvable<Global,Local> resolver, final Object global) {
 		if (template == null) {
 			throw new IllegalArgumentException("Template can't be null"); 
 		}

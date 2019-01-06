@@ -1,130 +1,85 @@
 package chav1961.funnypro;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Locale;
+import java.util.Map;
 
-import javax.imageio.ImageIO;
+import javax.script.ScriptException;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.border.BevelBorder;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
-import chav1961.funnypro.FrameUtils.MenuIcon;
 import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.purelib.basic.Utils;
+import chav1961.funnypro.core.exceptions.FProParsingException;
+import chav1961.funnypro.core.exceptions.FProPrintingException;
+import chav1961.funnypro.core.interfaces.IFProVM;
+import chav1961.purelib.basic.exceptions.EnvironmentException;
+import chav1961.purelib.basic.exceptions.LocalizationException;
+import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
+import chav1961.purelib.i18n.interfaces.Localizer;
+import chav1961.purelib.i18n.interfaces.Localizer.LocaleChangeListener;
+import chav1961.purelib.ui.swing.SwingUtils;
+import chav1961.purelib.ui.swing.XMLDescribedApplication;
+import chav1961.purelib.ui.swing.interfaces.OnAction;
 
-class JScreen extends FrameTemplate {
+/**
+ * <p>This class implements swing-based UI to interact with Funny Prolog.</p>
+ * @author Alexander Chernomyrdin aka chav1961
+ * @since 0.0.1 last update 0.0.2
+ */
+class JScreen extends JFrame implements LocaleChangeListener {
 	private static final long 		serialVersionUID = 3667603693613366899L;
-	
+	private static final int		STATUS_HEIGHT = 24;
+	private static final String		APPLICATION_CAPTION = "JScreen.caption";
+	private static final String		INITIAL_HELP = "JScreen.status.initialHelp";
+
+	private final Localizer			parent, localizer;
 	private final FunnyProEngine	fpe;
-	private final JTextArea			log = new JTextArea();
+	private final LoggerFacade		logger;
+	private final JMenuBar			menu;
+	private final JEditorPane		log = new JEditorPane("text/html","");
 	private final JTextArea			console = new JTextArea();
+	private final StatusString		ss = new StatusString();
 	private File					currentDir = new File("./");
 	
-	JScreen(final FunnyProEngine fpe) throws IOException {
-		super("(c) 2017, Alexander V.Chernomirdin aka chav1961, Funny Prolog V.R=0.0.1",null);
+	JScreen(final Localizer parent, final XMLDescribedApplication xda, final FunnyProEngine fpe, final LoggerFacade logger) throws IOException, EnvironmentException {
+		final Dimension		screen = Toolkit.getDefaultToolkit().getScreenSize();
 		final JSplitPane	split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		final JScrollPane	scroll = new JScrollPane(log);
 		
+		this.parent = parent;
 		this.fpe = fpe;
+		this.logger = logger;
+		this.localizer = xda.getLocalizer();
+		this.parent.push(this.localizer);
+		localizer.addLocaleChangeListener(this);
 		
-		setMenu(FrameUtils.menuBar(
-				FrameUtils.menu("file","File",
-						FrameUtils.menu("file.new","New",0,new FrameUtils.ToolTip("Start Funny Prolog with empty fact/rule base")),
-						FrameUtils.standardMenuItem(FrameUtils.StandardMenu.openFile
-													,new FrameUtils.Caption("Open...")
-													,new FrameUtils.ToolTip("Start Funny Prolog and load presisent database into fact/rule base")
-													,new FrameUtils.FSMTerminal("file.open")
-													,new FrameUtils.Callback(new FrameUtils.OpenFileUICallback() {
-																@Override public FileFilter getFileFilter() {return new FileNameExtensionFilter("Funny prolog database","*.frb");}
-																@Override public File getCurrentDir() {return currentDir;}
-																@Override public boolean allowMultiSelection() {return false;}
-															}
-														)
-													),
-						FrameUtils.standardMenuItem(FrameUtils.StandardMenu.saveFile
-													,new FrameUtils.Caption("Save as...")
-													,new FrameUtils.ToolTip("Save fact/rule base to the persistent database")
-													,new FrameUtils.FSMTerminal("file.save")
-													,new FrameUtils.Callback(new FrameUtils.SaveFileUICallback() {
-																@Override public FileFilter getFileFilter() {return new FileNameExtensionFilter("Funny prolog database","*.frb");}
-																@Override public File getCurrentDir() {return currentDir;}
-																@Override public boolean allowMultiSelection() {return false;}
-															}
-														)
-													),
-						new JSeparator(),
-						FrameUtils.standardMenuItem(FrameUtils.StandardMenu.openFile
-								,new FrameUtils.Caption("Prepare database")
-								,new FrameUtils.ToolTip("Prepare empty Funny Prolog fact/rule base")
-								,new FrameUtils.FSMTerminal("file.prepare")
-								,new FrameUtils.Callback(new FrameUtils.OpenFileUICallback() {
-											@Override public FileFilter getFileFilter() {return new FileNameExtensionFilter("Funny prolog database","*.frb");}
-											@Override public File getCurrentDir() {return currentDir;}
-											@Override public boolean allowMultiSelection() {return false;}
-										}
-									)
-								),
-						FrameUtils.standardMenuItem(FrameUtils.StandardMenu.openFile
-								,new FrameUtils.Caption("Consult file(s)...")
-								,new FrameUtils.ToolTip("Consult selected files into Funny Prolog fact/rule base")
-								,new FrameUtils.FSMTerminal("file.consult")
-								,new FrameUtils.Callback(new FrameUtils.OpenFileUICallback() {
-											@Override public FileFilter getFileFilter() {return new FileNameExtensionFilter("Funny prolog database","*.frb");}
-											@Override public File getCurrentDir() {return currentDir;}
-											@Override public boolean allowMultiSelection() {return true;}
-										}
-									)
-								),
-						new JSeparator(),
-						FrameUtils.standardMenuItem(FrameUtils.StandardMenu.quit,new FrameUtils.ToolTip("Quit Funny Prolog"))
-				),
-				FrameUtils.menu("actions","Actions",
-						FrameUtils.menu("actions.start","Start VM",0,new FrameUtils.ToolTip("Start Funny Prolog VM")),
-						FrameUtils.menu("actions.stop","Stop VM",0,new FrameUtils.ToolTip("Stop Funny Prolog VM"))
-				),
-				FrameUtils.menu("tools","Tools",
-						FrameUtils.standardMenuItem(FrameUtils.StandardMenu.lookandfeel,new FrameUtils.ToolTip("Change look & feel"))
-				),
-				FrameUtils.menu("help","Help",
-						FrameUtils.standardMenuItem(FrameUtils.StandardMenu.about
-								, new FrameUtils.Caption("About Funny Prolog")
-								, new FrameUtils.Content(Utils.fromResource(this.getClass().getResource("./about.html")))
-								, new FrameUtils.MenuIcon(this.getClass().getResource("./icon.png"))
-								, new FrameUtils.ToolTip("About Funny Prolog")
-						)
-				)
-			)
-		);
+		this.menu = xda.getEntity("mainmenu",JMenuBar.class,null);
+		SwingUtils.assignActionListeners(this.menu,this);
 		
 		log.setEditable(false);
 		console.setRows(5);
@@ -132,12 +87,13 @@ class JScreen extends FrameTemplate {
 		split.setRightComponent(console);
 		split.setDividerSize(5);
 		
+		getContentPane().add(menu,BorderLayout.NORTH);
 		getContentPane().add(split,BorderLayout.CENTER);
+		getContentPane().add(ss,BorderLayout.SOUTH);
 				
-		message(Severity.info,"To execute Funny Prolog sentence, type Ctrl-Enter...");
+		message(Severity.info,INITIAL_HELP);
 		pack();
 		
-		split.setDividerLocation(0.8);
 		console.requestFocus();
 		console.addKeyListener(new KeyListener(){
 				@Override public void keyTyped(final KeyEvent e) {}
@@ -146,29 +102,162 @@ class JScreen extends FrameTemplate {
 				@Override 
 				public void keyPressed(final KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER && (e.getModifiers() & InputEvent.CTRL_MASK) != 0) {
-						processSentence();
+						processSentence(console.getSelectedText());
 					}
 				}
 			}
 		);
+		fillLocalizedStrings();
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setMinimumSize(new Dimension(3*screen.width/4,3*screen.height/4));
+		setPreferredSize(new Dimension(3*screen.width/4,3*screen.height/4));
+		setLocationRelativeTo(null);
+		split.setDividerLocation(0.8);
 		setVisible(true);
 	}
 
 	@Override
-	protected void processTerminal(final String terminal, final Object... parameters) {
-		switch (terminal) {
-			case "file.new"		:
-				System.err.println("Terminal1: "+terminal);
-				break;
-			case "file.open"	:
-				System.err.println("Terminal2: "+terminal);
-				break;
-			default :
-				System.err.println("Terminal: "+terminal);
+	public void localeChanged(final Locale oldLocale, final Locale newLocale) throws LocalizationException {
+		fillLocalizedStrings();
+		((LocaleChangeListener)menu).localeChanged(oldLocale, newLocale);
+	}
+
+	@OnAction("exit")
+	private void quit() {
+		this.setVisible(false);
+		this.dispose();
+	}
+	
+
+	protected void processSentence(final String sentence) {
+		final SimpleAttributeSet	as = new SimpleAttributeSet();
+		
+		as.addAttribute(StyleConstants.ColorConstants.Foreground,Color.BLUE);
+		as.addAttribute(StyleConstants.ColorConstants.Bold,true);
+		try{log.getDocument().insertString(log.getDocument().getLength(),sentence+'\n',as);
+		
+			final boolean	result = fpe.goal(sentence,new IFProVM.IFProCallback() {
+								@Override
+								public boolean onResolution(final Map<String, Object> resolvedVariables) throws FProParsingException, FProPrintingException {
+									// TODO Auto-generated method stub
+									if (resolvedVariables.size() > 0) {
+										return true;
+									}
+									else {
+										return true;
+									}
+								}
+								
+								@Override
+								public void beforeFirstCall() {
+									// TODO Auto-generated method stub
+								}
+								
+								@Override
+								public void afterLastCall() {
+									// TODO Auto-generated method stub
+								}
+							});
+			log.getDocument().insertString(log.getDocument().getLength(),result+"\n",as);
+		} catch (BadLocationException | FProException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
-	protected void processSentence() {
+	private void fillLocalizedStrings() throws LocalizationException {
+		// TODO Auto-generated method stub
+		setTitle(localizer.getValue(APPLICATION_CAPTION));
+	}
+
+	private void message(final Severity info, final String format, final Object... parameters) throws IllegalArgumentException, LocalizationException {
+		final String	text = localizer.containsKey(format) ? localizer.getValue(format) : format;
 		
+		if (parameters == null || parameters.length == 0) {
+			ss.message(text);
+		}
+		else {
+			ss.message(String.format(text,parameters));
+		}
+	}
+	
+	private static class StatusString extends JPanel {
+		private static final long 	serialVersionUID = 5395749717067047653L;
+		
+		private final CardLayout	layout;
+		private final JLabel		text = new JLabel(" ");
+		private final JProgressBar	bar = new JProgressBar();
+		private final JLabel		cancel = new JLabel("...");
+		private boolean				cancelPressed = false; 
+		
+		StatusString() {
+			super(new CardLayout());
+			final Dimension 		screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			final JPanel			barPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			
+			this.layout = (CardLayout) getLayout();
+			setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+			
+			text.setPreferredSize(new Dimension(screenSize.width/2,STATUS_HEIGHT));
+			add(text,"card1");
+
+			bar.setPreferredSize(new Dimension(screenSize.width/4,STATUS_HEIGHT));
+			barPanel.add(bar);
+			barPanel.add(cancel);
+			add(barPanel,"card2");
+			
+			layout.show(this,"card1");
+		}
+		
+		void message(final String message) {
+			text.setText(message == null ? " " : message);
+		}
+		
+		ProgressInterface getProgressInterface(final boolean cancellable) {
+			cancelPressed = false;
+			cancel.setVisible(cancellable);
+			layout.show(this,"card2");
+			
+			return new ProgressInterface() {
+				@Override
+				public ProgressInterface setRange(final int from, final int to) {
+					bar.setMaximum((int) from);
+					bar.setMinimum((int) to);
+					return this;
+				}
+
+				@Override
+				public ProgressInterface setPos(final int pos) {
+					bar.setValue((int) pos);
+					return this;
+				}
+
+				@Override
+				public float getPos() {
+					return bar.getValue();
+				}
+
+				@Override
+				public ProgressInterface setText(final String text) {
+					bar.setString(text == null ? "" : text);
+					return this;
+				}
+
+				@Override
+				public String getText() {
+					return bar.getString();
+				}
+
+				@Override
+				public boolean isCancellingRequired() {
+					return cancellable && cancelPressed;
+				}
+
+				@Override
+				public void close() {
+					layout.show(StatusString.this,"card1");
+				}
+			};
+		}
 	}
 }
