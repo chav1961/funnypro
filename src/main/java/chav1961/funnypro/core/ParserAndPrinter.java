@@ -768,12 +768,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 		for (int index = 0; index < count; index++) {
 			(data[index] = ((IFProOperator)actual).getLeft()).setParent(parent);
 			actual = ((IFProOperator)actual).getRight();
-//		while (actual != null && actual.getEntityId() == colonId && (actual instanceof IFProOperator)) {
-//			data[count] = ((IFProOperator)actual).getLeft();
-//			data[count].setParent(parent);
-//			actual = ((IFProOperator)actual).getRight();
-//			count++;
-//		}
 		}
 		data[count] = actual;
 		data[count].setParent(parent);

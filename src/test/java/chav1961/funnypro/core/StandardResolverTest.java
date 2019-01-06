@@ -164,7 +164,7 @@ public class StandardResolverTest {
 			System.err.println("Starting...");
 			final long	start = System.nanoTime();
 			
-			for (int index = 0; index < 200000; index++) {
+			for (int index = 0; index < 1000000; index++) {
 				try{//final CharacterSource	cs = new ArrayCharSource(content);
 					final CharacterTarget	ct = new WriterCharTarget(System.err,false);
 	

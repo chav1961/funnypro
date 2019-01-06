@@ -475,7 +475,7 @@ public class FProUtil {
 	}	
 	
 	/**
-	 * <p>Test entity type in the FPro terminlogy</p> 
+	 * <p>Test entity type in the FPro terminology</p> 
 	 * @param entity entity to test
 	 * @param type check type (according to FRpo tests)
 	 * @return true if entity is a tested type
