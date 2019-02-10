@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Locale;
 import java.util.Map;
 
@@ -40,9 +41,11 @@ import chav1961.purelib.basic.exceptions.EnvironmentException;
 import chav1961.purelib.basic.exceptions.LocalizationException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
+import chav1961.purelib.i18n.LocalizerFactory;
 import chav1961.purelib.i18n.interfaces.Localizer;
 import chav1961.purelib.i18n.interfaces.Localizer.LocaleChangeListener;
-import chav1961.purelib.ui.XMLDescribedApplication;
+import chav1961.purelib.model.interfaces.ContentMetadataInterface;
+import chav1961.purelib.ui.swing.SwingModelUtils;
 import chav1961.purelib.ui.swing.SwingUtils;
 import chav1961.purelib.ui.swing.interfaces.OnAction;
 
@@ -66,7 +69,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 	private final StatusString		ss = new StatusString();
 	private File					currentDir = new File("./");
 	
-	JScreen(final Localizer parent, final XMLDescribedApplication xda, final FunnyProEngine fpe, final LoggerFacade logger) throws IOException, EnvironmentException {
+	JScreen(final Localizer parent, final ContentMetadataInterface xda, final FunnyProEngine fpe, final LoggerFacade logger) throws IOException, EnvironmentException {
 		final Dimension		screen = Toolkit.getDefaultToolkit().getScreenSize();
 		final JSplitPane	split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		final JScrollPane	scroll = new JScrollPane(log);
@@ -74,11 +77,11 @@ class JScreen extends JFrame implements LocaleChangeListener {
 		this.parent = parent;
 		this.fpe = fpe;
 		this.logger = logger;
-		this.localizer = xda.getLocalizer();
+		this.localizer = LocalizerFactory.getLocalizer(xda.getRoot().getLocalizerAssociated());
 		this.parent.push(this.localizer);
 		localizer.addLocaleChangeListener(this);
 		
-		this.menu = xda.getEntity("mainmenu",JMenuBar.class,null);
+		this.menu = SwingModelUtils.toMenuEntity(xda.byUIPath(URI.create("ui:/navigation.top.mainMenu")),JMenuBar.class);
 		SwingUtils.assignActionListeners(this.menu,this);
 		
 		log.setEditable(false);

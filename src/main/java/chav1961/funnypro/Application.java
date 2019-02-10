@@ -18,7 +18,8 @@ import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.i18n.interfaces.Localizer;
-import chav1961.purelib.ui.XMLDescribedApplication;
+import chav1961.purelib.model.ContentModelFactory;
+import chav1961.purelib.model.interfaces.ContentMetadataInterface;
 
 /**
  * <p>This class implements stand-alone console-oriented application for the Funny Prolog interpreter</p>
@@ -51,7 +52,7 @@ public class Application {
 		try(final InputStream				is = Application.class.getResourceAsStream("application.xml");
 			final Localizer					localizer = PureLibSettings.PURELIB_LOCALIZER;
 			final LoggerFacade				logger = new SystemErrLoggerFacade()) {
-			final XMLDescribedApplication	xda = new XMLDescribedApplication(is,logger);
+			final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
 			final ScriptEngineManager 		factory = new ScriptEngineManager();
 			final ScriptEngine 				engine = factory.getEngineByName("FunnyProlog");
 			
