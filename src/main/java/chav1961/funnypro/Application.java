@@ -73,13 +73,9 @@ public class Application {
 			System.err.println("Error starting application: "+e.getLocalizedMessage());
 			System.exit(129);
 		}
-		
-		
-		
-
 	}
 
 	private static void printUsage() {
-		
+		System.err.println("Use: java -jar funnypro.jar [-screen] [<encoding>]");
 	}
 }

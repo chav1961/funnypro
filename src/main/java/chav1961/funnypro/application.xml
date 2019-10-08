@@ -16,7 +16,7 @@
 			<app:item name="menu.actions.stopvm" caption="menu.actions.stopvm" tooltip="menu.actions.stopvm.tt" action="stopVM"/>
 		</app:submenu>
 		<app:submenu name="menu.tools" caption="menu.tools" tooltip="menu.tools.tt">
-			<app:builtinSubmenu name="builtin.lookandfeel" caption="menu.tools.laf" tooltip="menu.tools.laf.tt"/>
+<!-- 			<app:builtinSubmenu name="builtin.lookandfeel" caption="menu.tools.laf" tooltip="menu.tools.laf.tt"/>  -->
 			<app:builtinSubmenu name="builtin.languages" caption="menu.tools.languages" tooltip="menu.tools.languages.tt"/>
 		</app:submenu>
 		<app:submenu name="menu.help" caption="menu.help" tooltip="menu.help.tt">
