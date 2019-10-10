@@ -66,16 +66,16 @@ public class FunnyProEngineFactory implements ScriptEngineFactory {
 
 	@Override
 	public String getMethodCallSyntax(final String obj, final String m, final String... args) {
-		 final StringBuilder	ret = new StringBuilder(obj);
-	      
-		 ret.append("." + m + "(");
-	      for (int i = 0; i < args.length; i++) {
-	          ret.append(args[i]);
-	          if (i < args.length - 1) {
-	              ret.append(",");
-	          }
-	      }
-	      return ret.append(")").toString();
+		final StringBuilder	ret = new StringBuilder(obj);
+		  
+		ret.append("." + m + "(");
+		for (int i = 0; i < args.length; i++) {
+			ret.append(args[i]);
+			if (i < args.length - 1) {
+				ret.append(",");
+			}
+		}
+		return ret.append(")").toString();
 	}
 
 	@Override

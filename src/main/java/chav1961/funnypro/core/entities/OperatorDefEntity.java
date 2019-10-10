@@ -39,36 +39,14 @@ public class OperatorDefEntity implements IFProOperator {
 	@Override public IFProEntity getRule() {return null;}
 	@Override public void setRule(IFProEntity rule) {throw new UnsupportedOperationException("Don't use this method for this class!");}
 
-
 	@Override
 	public int getUnderlyingPriority() {
-		switch (getOperatorType()) {
-			case fx 	: return getPriority()-1;
-			case fy 	: return getPriority();
-			case xf 	: return getPriority()-1;
-			case yf 	: return getPriority();
-			default 	: throw new IllegalArgumentException("Unavailable!");
-		}
+		return IFProOperator.getUnderlyingPriority(this);
 	}
 
 	@Override 
 	public int getUnderlyingPriority(final int prioritySide) {
-		if (prioritySide == LEFT) {
-			switch (getOperatorType()) {
-				case xfx 	: return getPriority()-1;
-				case xfy 	: return getPriority()-1;
-				case yfx 	: return getPriority();
-				default 	: throw new IllegalArgumentException("Unavailable!");
-			}
-		}
-		else {
-			switch (getOperatorType()) {
-				case xfx 	: return getPriority()-1;
-				case xfy 	: return getPriority();
-				case yfx 	: return getPriority()-1;
-				default 	: throw new IllegalArgumentException("Unavailable!");
-			}
-		}
+		return IFProOperator.getUnderlyingPriority(this,prioritySide);
 	}
 	
 	@Override public String toString() {return "OperatorDef [id=" + id + ", type=" + type + ", prty=" + prty + "]";}
@@ -86,7 +64,7 @@ public class OperatorDefEntity implements IFProOperator {
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
-		if (!super.equals(obj)) return false;
+		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		OperatorDefEntity other = (OperatorDefEntity) obj;
 		if (id != other.id) return false;

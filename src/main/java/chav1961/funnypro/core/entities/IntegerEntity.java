@@ -8,7 +8,7 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
  * @since 0.0.1
  */
 public class IntegerEntity implements IFProEntity {
-	private long	id;
+	private long		id;
 	private IFProEntity	parent = null;
 
 	/**

@@ -68,4 +68,45 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 	 * @return self
 	 */
 	IFProOperator setRight(IFProEntity node);
+	
+	
+	static int getUnderlyingPriority(final IFProOperator op) {
+		if (op == null) {
+			throw new NullPointerException("Operator to test can't be null");
+		}
+		else {
+			switch (op.getOperatorType()) {
+				case fx 	: return op.getPriority()-1;
+				case fy 	: return op.getPriority();
+				case xf 	: return op.getPriority()-1;
+				case yf 	: return op.getPriority();
+				default 	: throw new IllegalArgumentException("This call unavailable for infix operator!");
+			}
+		}
+	}
+
+	static int getUnderlyingPriority(final IFProOperator op, final int prioritySide) {
+		if (op == null) {
+			throw new NullPointerException("Operator to test can't be null");
+		}
+		else if (prioritySide == LEFT) {
+			switch (op.getOperatorType()) {
+				case xfx 	: return op.getPriority()-1;
+				case xfy 	: return op.getPriority()-1;
+				case yfx 	: return op.getPriority();
+				default 	: throw new IllegalArgumentException("This call is available for infix operators only!");
+			}
+		}
+		else if (prioritySide == RIGHT) {
+			switch (op.getOperatorType()) {
+				case xfx 	: return op.getPriority()-1;
+				case xfy 	: return op.getPriority();
+				case yfx 	: return op.getPriority()-1;
+				default 	: throw new IllegalArgumentException("This call is available for infix operators only!");
+			}
+		}
+		else {
+			throw new IllegalArgumentException("Priority side can be [IFProOperator.LEFT] and [IFProOperator.RIGHT] only!"); 
+		}
+	}
 }
