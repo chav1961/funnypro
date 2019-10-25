@@ -1,8 +1,8 @@
 package chav1961.funnypro.core.interfaces;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * <p>THis interface describes stream serializable items</p>
@@ -16,12 +16,12 @@ public interface IFProStreamSerializable {
 	 * @param target target to serialize to
 	 * @throws IOException any I/O errors
 	 */
-	void serialize(OutputStream target) throws IOException;
+	void serialize(DataOutputStream target) throws IOException;
 	
 	/**
 	 * <p>Deserialize data from the given source</p>
 	 * @param source source to deserialize from
 	 * @throws IOException any I/O errors
 	 */
-	void deserialize(InputStream source) throws IOException;
+	void deserialize(DataInputStream source) throws IOException;
 }

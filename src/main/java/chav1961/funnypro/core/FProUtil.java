@@ -1,6 +1,8 @@
 package chav1961.funnypro.core;
 
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -123,7 +125,7 @@ public class FProUtil {
 	 * @param entity entity to serialize
 	 * @throws IOException in any I/O errors
 	 */
-	public static void serialize(final OutputStream target, final IFProEntity entity) throws IOException {
+	public static void serialize(final DataOutputStream target, final IFProEntity entity) throws IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target stream can't be null!"); 
 		}
@@ -131,18 +133,18 @@ public class FProUtil {
 			throw new IllegalArgumentException("Entity to serialize can't be null!"); 
 		}
 		else {
-			CommonUtil.writeInt(target,entity.getEntityType().ordinal());		// Write operator type
+			target.writeInt(entity.getEntityType().ordinal());		// Write operator type
 			switch (entity.getEntityType()) {
 				case string			:
 				case integer		:
 				case real			:
 				case variable		:
-					CommonUtil.writeLong(target,entity.getEntityId());
+					target.writeLong(entity.getEntityId());
 					break;
 				case anonymous		:
 					break;
 				case list			:
-					CommonUtil.writeInt(target,(((IFProList)entity).getChild() != null ? 2 : 0) + (((IFProList)entity).getTail() != null ? 1 : 0));
+					target.writeInt((((IFProList)entity).getChild() != null ? 2 : 0) + (((IFProList)entity).getTail() != null ? 1 : 0));
 					if (((IFProList)entity).getChild() != null) {
 						serialize(target,((IFProList)entity).getChild());
 					}
@@ -151,9 +153,9 @@ public class FProUtil {
 					}
 					break;
 				case operator		:
-					CommonUtil.writeLong(target,entity.getEntityId());
-					CommonUtil.writeInt(target,((IFProOperator)entity).getPriority());
-					CommonUtil.writeInt(target,((IFProOperator)entity).getOperatorType().ordinal());
+					target.writeLong(entity.getEntityId());
+					target.writeInt(((IFProOperator)entity).getPriority());
+					target.writeInt(((IFProOperator)entity).getOperatorType().ordinal());
 					switch (((IFProOperator)entity).getOperatorType()) {
 						case xf : case yf :
 							serialize(target,((IFProOperator)entity).getLeft());
@@ -170,8 +172,8 @@ public class FProUtil {
 					}
 					break;
 				case predicate		:
-					CommonUtil.writeLong(target,entity.getEntityId());
-					CommonUtil.writeInt(target,((IFProPredicate)entity).getArity());
+					target.writeLong(entity.getEntityId());
+					target.writeInt(((IFProPredicate)entity).getArity());
 					for (int index = 0; index < ((IFProPredicate)entity).getArity(); index++) {
 						serialize(target,((IFProPredicate)entity).getParameters()[index]);
 					}
@@ -188,31 +190,31 @@ public class FProUtil {
 	 * @return deserialized entity
 	 * @throws IOException on any I/O errors
 	 */
-	public static IFProEntity deserialize(final InputStream source) throws IOException {
+	public static IFProEntity deserialize(final DataInputStream source) throws IOException {
 		if (source == null) {
 			throw new IllegalArgumentException("Target stream can't be null!"); 
 		}
 		else {
-			final EntityType	type = EntityType.values()[CommonUtil.readInt(source)];
+			final EntityType	type = EntityType.values()[source.readInt()];
 
 			switch (type) {
 				case string			:
-					return new StringEntity(CommonUtil.readLong(source));
+					return new StringEntity(source.readLong());
 				case integer		:
-					return new IntegerEntity(CommonUtil.readLong(source));
+					return new IntegerEntity(source.readLong());
 				case real			:
-					return new RealEntity(Double.longBitsToDouble(CommonUtil.readLong(source)));
+					return new RealEntity(Double.longBitsToDouble(source.readLong()));
 				case variable		:
-					return new VariableEntity(CommonUtil.readLong(source));
+					return new VariableEntity(source.readLong());
 				case anonymous		:
 					return new AnonymousEntity();
 				case list			:
-					final int			mask = CommonUtil.readInt(source);
+					final int			mask = source.readInt();
 					return new ListEntity((mask & 0x02) != 0 ? deserialize(source) : null,(mask & 0x01) != 0 ? deserialize(source) : null); 
 				case operator		:
-					final long				operatorId = CommonUtil.readLong(source);
-					final int				priority = CommonUtil.readInt(source);
-					final OperatorType		opType = OperatorType.values()[CommonUtil.readInt(source)];
+					final long				operatorId = source.readLong();
+					final int				priority = source.readInt();
+					final OperatorType		opType = OperatorType.values()[source.readInt()];
 					final OperatorEntity	opEntity = new OperatorEntity(priority,opType,operatorId);
 					
 					switch (opType) {
@@ -235,8 +237,8 @@ public class FProUtil {
 					}
 					return opEntity;
 				case predicate		:
-					final long				predicateId = CommonUtil.readLong(source);
-					final int				arity = CommonUtil.readInt(source);
+					final long				predicateId = source.readLong();
+					final int				arity = source.readInt();
 					final IFProEntity[]		parms = new IFProEntity[arity];
 					final PredicateEntity	predEntity = new PredicateEntity(predicateId,parms); 
 					

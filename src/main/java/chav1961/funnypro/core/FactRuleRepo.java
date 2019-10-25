@@ -1,6 +1,8 @@
 package chav1961.funnypro.core;
 
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -205,17 +207,17 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	}
 	
 	@Override
-	public void serialize(final OutputStream target) throws IOException {
+	public void serialize(final DataOutputStream target) throws IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target stream can't be null!");
 		}
 		else {
-			CommonUtil.writeInt(target,SERIALIZATION_MAGIC);	// Write magic
-			CommonUtil.writeInt(target,predicates.length);		// Write arity size
+			target.writeInt(SERIALIZATION_MAGIC);	// Write magic
+			target.writeInt(predicates.length);		// Write arity size
 			
 			for (int arityIndex = 0; arityIndex < predicates.length; arityIndex++) {	// Write individual chains
 				if (predicates[arityIndex] != null) {
-					CommonUtil.writeInt(target,predicates[arityIndex].size());			// Write amount of the predicates in this chain
+					target.writeInt(predicates[arityIndex].size());			// Write amount of the predicates in this chain
 					
 					for (Long item : predicates[arityIndex].content()) {		// Write chain contents
 						if (predicates[arityIndex].get(item).start != null) {
@@ -223,7 +225,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 							int			count;
 							
 							for (count = 0; actual != null; count++, actual = actual.getParent()) {}
-							CommonUtil.writeInt(target,count);		// Amount of predicates in the chain
+							target.writeInt(count);		// Amount of predicates in the chain
 							
 							if (count > 0) {
 								actual = predicates[arityIndex].get(item).start;
@@ -233,12 +235,12 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 							}
 						}
 						else {
-							CommonUtil.writeInt(target,0);	// No data in this chain
+							target.writeInt(0);	// No data in this chain
 						}
 					}
 				}
 				else {
-					CommonUtil.writeInt(target,0);			// No data with this arity
+					target.writeInt(0);			// No data with this arity
 				}
 			}
 		}
@@ -246,23 +248,23 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deserialize(final InputStream source) throws IOException {
+	public void deserialize(final DataInputStream source) throws IOException {
 		if (source == null) {
 			throw new IllegalArgumentException("Target stream can't be null!");
 		}
-		else if (CommonUtil.readInt(source) != SERIALIZATION_MAGIC) {
+		else if (source.readInt() != SERIALIZATION_MAGIC) {
 			throw new IllegalArgumentException("Illegal content (magic!)");
 		}
 		else {
-			final int		arity = CommonUtil.readInt(source);
+			final int		arity = source.readInt();
 					
 			predicates = new QuickList[arity];
 			for (int arities = 0; arities < arity; arities++) {
-				final int	actualPredAmount = CommonUtil.readInt(source);
+				final int	actualPredAmount = source.readInt();
 				
 				if (actualPredAmount > 0) {
 					for (int predIndex = 0; predIndex < actualPredAmount; predIndex++) {
-						final int	chainLen = CommonUtil.readInt(source);
+						final int	chainLen = source.readInt();
 						
 						for (int count = 0; count < chainLen; count++) {
 							assertZ(FProUtil.deserialize(source));
