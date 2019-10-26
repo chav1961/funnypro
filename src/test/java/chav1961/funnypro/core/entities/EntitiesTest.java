@@ -2,6 +2,8 @@ package chav1961.funnypro.core.entities;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -286,13 +288,16 @@ public class EntitiesTest {
 	}
 
 	private IFProEntity serializeAndDeserialize(final IFProEntity entity) throws IOException {
-		try(final ByteArrayOutputStream		baos = new ByteArrayOutputStream()) {
+		try(final ByteArrayOutputStream		baos = new ByteArrayOutputStream();
+			final DataOutputStream			dos = new DataOutputStream(baos)) {
 			
-			FProUtil.serialize(baos,entity);
-			baos.flush();
+			FProUtil.serialize(dos,entity);
+			dos.flush();
 			
-			try(final InputStream			bais = new ByteArrayInputStream(baos.toByteArray());) {
-				return FProUtil.deserialize(bais);
+			try(final InputStream			bais = new ByteArrayInputStream(baos.toByteArray());
+				final DataInputStream		dis = new DataInputStream(bais)) {
+				
+				return FProUtil.deserialize(dis);
 			}
 		}
 	}
