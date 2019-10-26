@@ -2,6 +2,8 @@ package chav1961.funnypro.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,11 +94,15 @@ public class RepositoriesTest {
 		
 		final FactRuleRepo			newFrr = new FactRuleRepo(log,new Properties());
 		
-		try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream()) {
-			frr.serialize(baos);	baos.flush();
+		try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream();
+			final DataOutputStream		dos = new DataOutputStream(baos)) {
 			
-			try(final InputStream	is = new ByteArrayInputStream(baos.toByteArray())) {
-				newFrr.deserialize(is);
+			frr.serialize(dos);			dos.flush();
+			
+			try(final InputStream		is = new ByteArrayInputStream(baos.toByteArray());
+				final DataInputStream	dis = new DataInputStream(is)) {
+				
+				newFrr.deserialize(dis);
 				
 				count = 0;
 				for (IFProEntity item : newFrr.call(temp)) {
@@ -108,8 +114,10 @@ public class RepositoriesTest {
 			
 			frr.retractAll(temp);
 			
-			try(final InputStream	is = new ByteArrayInputStream(baos.toByteArray())) {
-				frr.deserialize(is);
+			try(final InputStream		is = new ByteArrayInputStream(baos.toByteArray());
+				final DataInputStream	dis = new DataInputStream(is)) {
+				
+				frr.deserialize(dis);
 				
 				count = 0;
 				for (IFProEntity item : frr.call(temp)) {
@@ -161,11 +169,14 @@ public class RepositoriesTest {
 			Assert.assertEquals(count,2);
 			
 			try(final EntitiesRepo		newRepo = new EntitiesRepo(log,new Properties())) {
-				try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream()) {
-					repo.serialize(baos);		baos.flush();
+				try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream();
+					final DataOutputStream		dos = new DataOutputStream(baos)) {
 					
-					try(final InputStream		is = new ByteArrayInputStream(baos.toByteArray())) {
-						newRepo.deserialize(is);
+					repo.serialize(dos);		dos.flush();
+					
+					try(final InputStream		is = new ByteArrayInputStream(baos.toByteArray());
+						final DataInputStream	dis = new DataInputStream(is)) {
+						newRepo.deserialize(dis);
 					}
 				}
 				

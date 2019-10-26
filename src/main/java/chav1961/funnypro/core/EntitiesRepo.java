@@ -1,6 +1,8 @@
 package chav1961.funnypro.core;
 
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -66,7 +68,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	private final Properties					props;
 	private final AndOrTree<SerializableString>	stringRepo; 
 	private final AndOrTree<SerializableString>	termRepo;
-	private final OperatorDefRepo				fill = new OperatorDefRepo(-Integer.MAX_VALUE,new OperatorDefEntity(0,OperatorType.xfx,-Integer.MAX_VALUE)); 
 	
 	private final FactRuleRepo					frRepo;
 	private final ExternalPluginsRepo			epRepo;
@@ -80,7 +81,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	private LongIdMap<OperatorDefRepo>			operators = new LongIdMap<>(OperatorDefRepo.class);
 	private Set<OperatorDefRepo>				operatorsSet = new HashSet<>(); 
 	private int[]								operatorPriorities = new int[0];
-	private int									amount = 0; 
 
 	public EntitiesRepo(final LoggerFacade log, final Properties prop) throws IOException {
 		if (log == null) {
@@ -127,12 +127,12 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	@Override public Properties getParameters() {return props;}		
 	
 	@Override
-	public void serialize(final OutputStream target) throws IOException {
+	public void serialize(final DataOutputStream target) throws IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target stream can't be null");
 		}
 		else {
-			CommonUtil.writeInt(target,SERIALIZATION_MAGIC);	// Write magic
+			target.writeInt(SERIALIZATION_MAGIC);				// Write magic
 			CommonUtil.writeTree(target,stringRepo);			// Write string repo
 			CommonUtil.writeTree(target,termRepo);				// Write term repo
 			frRepo.serialize(target);							// Write fact/rule repo
@@ -148,17 +148,17 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 				}
 			}
 			
-			CommonUtil.writeInt(target,operatorsSet.size());	// Write length of operator array
-			CommonUtil.writeInt(target,unique);					// Write amount of unique ids
-			CommonUtil.writeInt(target,count);					// Write amount of all operators
+			target.writeInt(operatorsSet.size());				// Write length of operator array
+			target.writeInt(unique);							// Write amount of unique ids
+			target.writeInt(count);								// Write amount of all operators
 			
 			for (OperatorDefRepo item : operatorsSet) {
 				IFProOperator	actual = item.data;
 				
 				while (actual != null) {						// Write every definition;
-					CommonUtil.writeInt(target,actual.getPriority());		// Write priority
-					CommonUtil.writeInt(target,actual.getOperatorType().ordinal());	// Write operator type
-					CommonUtil.writeLong(target,actual.getEntityId());		// Write operator id
+					target.writeInt(actual.getPriority());		// Write priority
+					target.writeInt(actual.getOperatorType().ordinal());	// Write operator type
+					target.writeLong(actual.getEntityId());		// Write operator id
 					
 					actual = (IFProOperator)actual.getParent();
 				}
@@ -167,11 +167,11 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public void deserialize(final InputStream source) throws IOException {
+	public void deserialize(final DataInputStream source) throws IOException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source stream can't be null"); 
 		}
-		else if (CommonUtil.readInt(source) != SERIALIZATION_MAGIC) {
+		else if (source.readInt() != SERIALIZATION_MAGIC) {
 			throw new IllegalArgumentException("Illegal content of the source. Magic !"); 
 		}
 		else {
@@ -179,18 +179,17 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			CommonUtil.readTree(source,termRepo,SerializableString.class);
 			frRepo.deserialize(source);
 	
-			final int	length2Read = CommonUtil.readInt(source);
-			CommonUtil.readInt(source);
-			final int	counts2Read = CommonUtil.readInt(source);
+			final int	length2Read = source.readInt();
+			source.readInt();
+			final int	counts2Read = source.readInt();
 			
 			this.operators = new LongIdMap<>(OperatorDefRepo.class);
 			this.operatorsSet.clear();
-			this.amount = 0;
 			
 			for (int index = 0; index < counts2Read; index++) {
-				final int			prty = CommonUtil.readInt(source);
-				final OperatorType	type = OperatorType.values()[CommonUtil.readInt(source)];
-				final long			id = CommonUtil.readLong(source);
+				final int			prty = source.readInt();
+				final OperatorType	type = OperatorType.values()[source.readInt()];
+				final long			id = source.readLong();
 				
 				putOperatorDef(new OperatorDefEntity(prty,type,id));
 			}
@@ -293,7 +292,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			if (found == null) {
 				operators.put(op.getEntityId(),odr);
 				operatorsSet.add(odr);
-				amount++;
 			}
 			else {
 				IFProOperator		root = found.data;

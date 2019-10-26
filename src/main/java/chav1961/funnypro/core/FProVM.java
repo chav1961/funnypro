@@ -1,6 +1,8 @@
 package chav1961.funnypro.core;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -85,17 +87,18 @@ public class FProVM implements IFProVM, IFProModule {
 			repo = new EntitiesRepo(getDebug(),getParameters());
 			
 			if (source != null) {
-				int		magic, version;
+				final DataInputStream	dis = new DataInputStream(source);
+				int						magic, version;
 				
-				if ((magic = CommonUtil.readInt(source)) != SERIALIZATION_MAGIC) {
+				if ((magic = dis.readInt()) != SERIALIZATION_MAGIC) {
 					throw new FProException("Invalid source stream content: magic readed ["+magic+"] is differenf to awaited ["+SERIALIZATION_MAGIC+"]");
 				}
-				else if ((version = CommonUtil.readInt(source)) != SERIALIZATION_VERSION) {
+				else if ((version = dis.readInt()) != SERIALIZATION_VERSION) {
 					throw new FProException("Unsupported source stream content: version readed ["+version+"] is differenf to awaited ["+SERIALIZATION_VERSION+"]");
 				}
 				else {
-					repo.deserialize(source);
-					if ((magic = CommonUtil.readInt(source)) != SERIALIZATION_MAGIC) {
+					repo.deserialize(dis);
+					if ((magic = dis.readInt()) != SERIALIZATION_MAGIC) {
 						throw new FProException("Invalid source stream content: input stream contains something after the data end!");
 					}
 				}
@@ -118,11 +121,13 @@ public class FProVM implements IFProVM, IFProModule {
 			repo.termRepo().removeName(goal);
 			
 			if (target != null) {
-				CommonUtil.writeInt(target, SERIALIZATION_MAGIC);		// Write magic
-				CommonUtil.writeInt(target, SERIALIZATION_VERSION);		// Write magic
-				repo.serialize(target);									// Write content
-				CommonUtil.writeInt(target, SERIALIZATION_MAGIC);		// Write tail
-				target.flush();
+				final DataOutputStream	dos = new DataOutputStream(target); 
+				
+				dos.writeInt(SERIALIZATION_MAGIC);		// Write magic
+				dos.writeInt(SERIALIZATION_VERSION);	// Write magic
+				repo.serialize(dos);					// Write content
+				dos.writeInt(SERIALIZATION_MAGIC);		// Write tail
+				dos.flush();
 			}
 			
 			try{repo.close();
@@ -147,12 +152,13 @@ public class FProVM implements IFProVM, IFProModule {
 		}
 		else {
 			try(final IFProEntitiesRepo	temp = new EntitiesRepo(getDebug(),getParameters())) {
+				final DataOutputStream	dos = new DataOutputStream(target); 
 				
-				CommonUtil.writeInt(target, SERIALIZATION_MAGIC);		// Write magic
-				CommonUtil.writeInt(target, SERIALIZATION_VERSION);		// Write magic
-				temp.serialize(target);									// Write content
-				CommonUtil.writeInt(target, SERIALIZATION_MAGIC);		// Write tail
-				target.flush();
+				dos.writeInt(SERIALIZATION_MAGIC);		// Write magic
+				dos.writeInt(SERIALIZATION_VERSION);	// Write magic
+				temp.serialize(dos);					// Write content
+				dos.writeInt(SERIALIZATION_MAGIC);		// Write tail
+				dos.flush();
 			} catch (Exception e) {
 				throw new FProException(e.getMessage(),e);
 			}
