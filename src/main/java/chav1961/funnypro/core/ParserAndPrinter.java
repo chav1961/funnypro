@@ -27,6 +27,7 @@ import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginItem;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
+import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
@@ -37,6 +38,7 @@ import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.growablearrays.GrowableCharArray;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -107,16 +109,14 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 			throw new IllegalArgumentException("Callback can't be null");
 		}
 		else {
-			final StringBuilder	sb = new StringBuilder();
-			char				symbol;
+			final GrowableCharArray	gca = new GrowableCharArray(false);
+			char					symbol;
 			
 			while ((symbol = source.next()) != CharacterSource.EOF) {
-				sb.append(symbol);
+				gca.append(symbol);
 			}
-			final char[]		result = new char[sb.length()];
-			
-			sb.getChars(0,sb.length(),result,0);
-			parseEntities(result,0,callback);
+			parseEntities(gca.extract(),0,callback);
+			gca.clear();
 		}
 	}
 
@@ -285,7 +285,6 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		
 	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws FProException, IOException {
 		final IFProEntity[]	top = new IFProEntity[priorities.length+1];
-//		final long[]		entityId = new long[1];
 		final int			maxLen = source.length;
 		boolean				prefixNow = true, found;
 		int					actualMin = IFProOperator.MIN_PRTY, actualMax = maxPrty;
@@ -382,7 +381,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}					
 					break;
 				case '0' : case '1' : case '2' : case '3' : case '4' : case '5' : case '6' : case '7' : case '8' : case '9' :
-//					final long[]	value = new long[2];
 					
 					from = CharUtils.parseNumber(source,from,tempLong,CharUtils.PREF_ANY,false);
 					if (!prefixNow) {
@@ -449,7 +447,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 											for (IFProOperator item : getRepo().getOperatorDef(nameId // See prefix operators with nearest priorities
 																						,actualMax
 																						,actualMin
-																						,OperatorType.fx,OperatorType.fy)) {
+																						,OperatorSort.postfix)) {
 												final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
 												
 												if (location > 0) {
@@ -472,7 +470,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 											for (IFProOperator item : getRepo().getOperatorDef(nameId // See postfix operators with nearest priorities
 																						,actualMin
 																						,actualMax
-																						,OperatorType.xf,OperatorType.yf)) {
+																						,OperatorSort.prefix)) {
 												final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
 												
 												if (location > 0) {
@@ -488,7 +486,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 												for (IFProOperator item : getRepo().getOperatorDef(nameId // See infix operators with nearest priorities
 																							,actualMin
 																							,actualMax
-																							,OperatorType.xfx,OperatorType.yfx,OperatorType.xfy)) {
+																							,OperatorSort.infix)) {
 													final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
 													
 													if (location > 0) {
@@ -534,7 +532,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 													}
 													if (from < maxLen && source[from] == ')') {
 														from++;
-														((IFProPredicate)top[0]).setParameters(andChain2Array(result[0],top[0]));
+														((IFProPredicate)top[0]).setParameters(andChain2Array(result[0],top[0],colonId));
 													}
 													else {
 														throw new FProParsingException(FProUtil.toRowCol(source,from),"Close bracket ')' missing!"); 
@@ -587,7 +585,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 							for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See prefix operators with nearest priorities
 																		,actualMax
 																		,actualMin
-																		,OperatorType.fx,OperatorType.fy)) {
+																		,OperatorSort.postfix)) {
 								final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
 								
 								if (location > 0) {
@@ -610,7 +608,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 							for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See postfix operators with nearest priorities
 																		,actualMin
 																		,actualMax
-																		,OperatorType.xf,OperatorType.yf)) {
+																		,OperatorSort.prefix)) {
 								final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
 								
 								if (location > 0) {
@@ -626,7 +624,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 								for (IFProOperator item : getRepo().getOperatorDef(entityId[0] // See infix operators with nearest priorities
 																			,actualMin
 																			,actualMax
-																			,OperatorType.xfx,OperatorType.yfx,OperatorType.xfy)) {
+																			,OperatorSort.infix)) {
 									final int 	location = Arrays.binarySearch(priorities,item.getPriority()) + 1;
 									
 									if (location > 0) {
@@ -712,7 +710,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				actual = new ListEntity(null,((IFProOperator)root).getRight());
 				actual.getTail().setParent(actual);
 				
-				final IFProEntity[]		args = andChain2Array(((IFProOperator)root).getLeft(),actual); 
+				final IFProEntity[]		args = andChain2Array(((IFProOperator)root).getLeft(),actual,colonId); 
 				for (int index = args.length-1; index > 0; index--){
 					actual.setChild(args[index]);
 					args[index].setParent(actual);
@@ -731,7 +729,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		else if (root.getEntityId() == colonId && (root instanceof IFProOperator)) {
 			actual = new ListEntity(null,null);
 			
-			final IFProEntity[]		args = andChain2Array(root,actual); 
+			final IFProEntity[]		args = andChain2Array(root,actual,colonId); 
 			for (int index = args.length-1; index > 0; index--){
 				actual.setChild(args[index]);
 				args[index].setParent(actual);
@@ -751,12 +749,12 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 	}
 
-	private IFProEntity[] andChain2Array(final IFProEntity root, final IFProEntity parent) {
+	private static IFProEntity[] andChain2Array(final IFProEntity root, final IFProEntity parent, final long colonId) {
 		int				count;
 		IFProEntity		actual;
 		
 		actual = root;		count = 0;
-		while ((actual instanceof IFProOperator) && actual.getEntityId() == colonId) {
+		while (actual.getEntityType() == EntityType.operator && actual.getEntityId() == colonId) {
 			actual = ((IFProOperator)actual).getRight();
 			count++;
 		}
@@ -764,7 +762,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 		final IFProEntity[]	data = new IFProEntity[count+1];
 		
 		actual = root;
-		//count = 0;
 		for (int index = 0; index < count; index++) {
 			(data[index] = ((IFProOperator)actual).getLeft()).setParent(parent);
 			actual = ((IFProOperator)actual).getRight();
@@ -843,9 +840,11 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 	}	
 
-	private int skipName(final char[] source, final int from) {
+	private static int skipName(final char[] source, final int from) {
+		final ExtendedBitCharSet	letters = VALID_LETTERS; 
+		
 		for (int index = from, maxIndex = source.length; index < maxIndex; index++) {
-			if (!VALID_LETTERS.contains(source[index])) {
+			if (!letters.contains(source[index])) {
 				return index;
 			}
 		}
@@ -1137,11 +1136,11 @@ class VarRepo implements AutoCloseable {
 	public void close() throws Exception {
 		if (varCount > 0) {			// Link all identical variables to chains
 			if (vars != null) {		// Need fill variables list...
-				for (int index = varRepo.length-varCount; index < varRepo.length; index++) {
+				for (int index = varRepo.length-varCount, maxIndex = varRepo.length; index < maxIndex; index++) {
 					varRepo[index].chain = new VariableEntity(varRepo[index].chain.getEntityId()).setChain(varRepo[index].chain);
 				}
 			}
-			for (int index = varRepo.length-varCount; index < varRepo.length; index++) {	// Make a ring chain for all identical variables in the entity
+			for (int index = varRepo.length-varCount, maxIndex = varRepo.length; index < maxIndex; index++) {	// Make a ring chain for all identical variables in the entity
 				IFProVariable	start = varRepo[index].chain;
 				
 				while (start.getChain() != start) {
@@ -1150,7 +1149,7 @@ class VarRepo implements AutoCloseable {
 				start.setChain(varRepo[index].chain);
 			}
 			if (vars != null) {
-				for (int index = varRepo.length-varCount; index < varRepo.length; index++) {
+				for (int index = varRepo.length-varCount, maxIndex = varRepo.length; index < maxIndex; index++) {
 					vars.add(varRepo[index].chain);
 				}
 			}

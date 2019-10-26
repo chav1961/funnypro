@@ -10,12 +10,29 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 	public static final int		MAX_PRTY = 1200;
 	public static final int		LEFT = 0;
 	public static final int		RIGHT = 1;
+
+	/**
+	 * <p>This enumeration rescribes operator sort</p> 
+	 */
+	public enum OperatorSort {
+		prefix, postfix, infix
+	}
 	
 	/**
 	 * <p>This enumeration describes operator types</p>
 	 */
 	public enum OperatorType {
-		xf, fx, yf, fy, xfy, yfx, xfx
+		xf(OperatorSort.prefix), fx(OperatorSort.postfix), yf(OperatorSort.prefix), fy(OperatorSort.postfix), xfy(OperatorSort.infix), yfx(OperatorSort.infix), xfx(OperatorSort.infix);
+		
+		private final OperatorSort	sort;
+		
+		OperatorType(final OperatorSort sort) {
+			this.sort = sort;
+		}
+		
+		public OperatorSort getSort() {
+			return sort;
+		}
 	}
 	
 	/**
@@ -69,6 +86,13 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 	 */
 	IFProOperator setRight(IFProEntity node);
 	
+	/**
+	 * <p>Is the entity ruled</p>
+	 * @return true if yes
+	 */
+	default boolean isRuled() {
+		return true;
+	}
 	
 	static int getUnderlyingPriority(final IFProOperator op) {
 		if (op == null) {

@@ -6,6 +6,7 @@ import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.ExternalEntityDescriptor;
+import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IResolvable;
@@ -85,7 +86,12 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 			return top.entity;
 		}
 	}
-
+	
+	@Override
+	public StackTopType getTopType() {
+		return top == null ? null : top.entity.getTopType();
+	}	
+	
 	@Override
 	public GlobalStackTop pop() {
 		if (top == null) {

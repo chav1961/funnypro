@@ -65,4 +65,12 @@ public interface IFProEntity {
 	 * @return self
 	 */
 	IFProEntity setParent(IFProEntity entity);
+	
+	/**
+	 * <p>Is the entity ruled</p>
+	 * @return true if yes
+	 */
+	default boolean isRuled() {
+		return false;
+	}
 }
