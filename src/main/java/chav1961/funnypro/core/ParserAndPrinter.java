@@ -37,6 +37,7 @@ import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -283,7 +284,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		return result > target.length ? -result : result;
 	}
 		
-	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws FProException, IOException {
+	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws FProException, IOException, SyntaxException {
 		final IFProEntity[]	top = new IFProEntity[priorities.length+1];
 //		final long[]		entityId = new long[1];
 		final int			maxLen = source.length;
@@ -826,7 +827,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 	}
 
-	private int parseOp(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException {
+	private int parseOp(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException, SyntaxException {
 		final int[]	locations[] = new int[3][2], forPrty = new int[2];
 		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b%0d%b,%b%1c%b,%b%2c%b)",locations);
 		
