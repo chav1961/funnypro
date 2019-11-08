@@ -254,7 +254,7 @@ public class FProVM implements IFProVM, IFProModule {
 												else if (entity.getEntityId() == goal && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													target.write(String.valueOf(inference(entity,vars,repo,new IFProCallback(){
 														@Override public void beforeFirstCall() {}
-														@Override public boolean onResolution(Map<String, Object> resolvedVariables) {return true;}
+														@Override public boolean onResolution(final String[] names, final Object[] resolvedVariables) {return true;}
 														@Override public void afterLastCall() {}
 													}))+"\n>");
 												}
@@ -263,12 +263,12 @@ public class FProVM implements IFProVM, IFProModule {
 														@Override public void beforeFirstCall() {}
 														
 														@Override 
-														public boolean onResolution(final Map<String, Object> resolvedVariables) throws FProPrintingException, FProParsingException {
-															try{for (Entry<String, Object> item : resolvedVariables.entrySet()) {
+														public boolean onResolution(final String[] names, final Object[] resolvedVariables) throws FProPrintingException, FProParsingException {
+															try{for (int index = 0, maxIndex = Math.min(names.length,resolvedVariables.length); index < maxIndex; index++) {
 																	final StringBuilder	sb = new StringBuilder();
 																	
-																	pap.putEntity((IFProEntity)item.getValue(),new StringBuilderCharTarget(sb));
-																	target.write(String.format("%1$s = %2$s\n",item.getKey(),sb));
+																	pap.putEntity((IFProEntity)resolvedVariables[index],new StringBuilderCharTarget(sb));
+																	target.write(String.format("%1$s = %2$s\n",names[index],sb));
 																}
 																target.write("proceed? ");
 																target.flush();

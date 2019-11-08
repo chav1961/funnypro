@@ -30,8 +30,9 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
  *
  */
 public class FProUtil {
-	private static final int 		EXPONENT_SIZE = 300; 
-	private static final double[]	EXPONENT = new double[2 * EXPONENT_SIZE + 1];
+	private static final int 			EXPONENT_SIZE = 300; 
+	private static final double[]		EXPONENT = new double[2 * EXPONENT_SIZE + 1];
+	private static final IFProEntity[]	NULL_ARRAY = new IFProEntity[0]; 
 
 	static {
 		double	start = Double.valueOf("1E-"+EXPONENT_SIZE).doubleValue();
@@ -384,7 +385,7 @@ public class FProUtil {
 				case integer		:
 					return new IntegerEntity(source.getEntityId());
 				case real			:
-					return new RealEntity(Double.longBitsToDouble(source.getEntityId()));
+					return new RealEntity(source.getEntityId());
 				case anonymous		:
 					return new AnonymousEntity(); 
 				case list			:
@@ -409,18 +410,24 @@ public class FProUtil {
 					return op;
 				case predicate		:
 					final IFProPredicate	pred = new PredicateEntity(source.getEntityId());
-					final IFProEntity[]		parm = new IFProEntity[((IFProPredicate)source).getArity()];
+					final int				arity = ((IFProPredicate)source).getArity(); 
 					
-					for (int index = 0; index < parm.length; index++){
-						if ((parm[index] = duplicate(((IFProPredicate)source).getParameters()[index])) != null) {
-							parm[index].setParent(pred);
+					if (arity > 0) {
+						final IFProEntity[]		parm = new IFProEntity[arity];
+						
+						for (int index = 0; index < arity; index++){
+							if ((parm[index] = duplicate(((IFProPredicate)source).getParameters()[index])) != null) {
+								parm[index].setParent(pred);
+							}
 						}
+						pred.setParameters(parm);
 					}
-					pred.setParameters(parm);
+					else {
+						pred.setParameters(NULL_ARRAY);
+					}
 					return pred;
 				default :
-					throw new IllegalArgumentException("Entity type ["+source.getEntityType()+"] can't be duplicated!");
-			
+					throw new UnsupportedOperationException("Entity duplication for ["+source.getEntityType()+"] is not supported yet!");
 			}
 		}
 	}
@@ -467,7 +474,7 @@ public class FProUtil {
 					}
 					break;
 				default :
-					throw new IllegalArgumentException("Entity type ["+source.getEntityType()+"] can't be duplicated!");
+					throw new IllegalArgumentException("Entity type ["+source.getEntityType()+"] can't be removed!");
 			}
 		}
 	}
@@ -912,7 +919,7 @@ repeat:					while(start < to) {
 				IFProVariable	start = var1;
 				
 				while (start != var1) {
-					if (start == var2) {	// Chains are joined!
+					if (start == var2) {	// Chains are already joined!
 						return;
 					}
 					else {

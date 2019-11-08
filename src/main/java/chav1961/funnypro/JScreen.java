@@ -141,9 +141,9 @@ class JScreen extends JFrame implements LocaleChangeListener {
 		
 			final boolean	result = fpe.goal(sentence,new IFProVM.IFProCallback() {
 								@Override
-								public boolean onResolution(final Map<String, Object> resolvedVariables) throws FProParsingException, FProPrintingException {
+								public boolean onResolution(final String[] names, final Object[] resolvedVariables) throws FProParsingException, FProPrintingException {
 									// TODO Auto-generated method stub
-									if (resolvedVariables.size() > 0) {
+									if (resolvedVariables.length > 0) {
 										return true;
 									}
 									else {

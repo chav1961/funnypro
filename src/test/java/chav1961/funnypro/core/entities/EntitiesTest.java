@@ -1,11 +1,20 @@
 package chav1961.funnypro.core.entities;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
+import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProOperator;
+import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 
 public class EntitiesTest {
@@ -205,5 +214,91 @@ public class EntitiesTest {
 		Assert.assertArrayEquals(new IFProEntity[]{ie3,ie4},e1.getParameters());
 		e1.setRule(e2);
 		Assert.assertEquals(e2,e1.getRule());
+	}
+
+	@Test
+	public void serializationTest() throws IOException {
+		final AnonymousEntity	anon = new AnonymousEntity();
+		
+		Assert.assertEquals(anon,serializeAndDeserialize(anon));
+		
+		final IntegerEntity		integer = new IntegerEntity(12345);
+	
+		Assert.assertEquals(integer,serializeAndDeserialize(integer));
+	
+		final RealEntity		real = new RealEntity(12345.6789);
+		
+		Assert.assertEquals(real,serializeAndDeserialize(real));
+	
+		final StringEntity		string = new StringEntity(12345);
+		
+		Assert.assertEquals(string,serializeAndDeserialize(string));
+
+		final VariableEntity	var = new VariableEntity(12345);
+		
+		Assert.assertEquals(var,serializeAndDeserialize(var));
+		
+		ListEntity		list = new ListEntity(integer,real);
+		
+		Assert.assertEquals(list,serializeAndDeserialize(list));
+
+		OperatorEntity	op = new OperatorEntity(100,OperatorType.xfx,12345);
+		
+		op.setLeft(anon).setRight(string);
+		
+		Assert.assertEquals(op.getEntityId(),12345);
+		Assert.assertEquals(op.getEntityType(),EntityType.operator);
+		Assert.assertEquals(op.getPriority(),100);
+		Assert.assertEquals(op.getOperatorType(),OperatorType.xfx);
+		Assert.assertEquals(op.getLeft(),anon);
+		Assert.assertEquals(op.getRight(),string);		
+		Assert.assertEquals(op,serializeAndDeserialize(op));
+
+		op = new OperatorEntity(100,OperatorType.fx,12345);
+		
+		op.setRight(string);
+		
+		Assert.assertEquals(op.getEntityId(),12345);
+		Assert.assertEquals(op.getEntityType(),EntityType.operator);
+		Assert.assertEquals(op.getPriority(),100);
+		Assert.assertEquals(op.getOperatorType(),OperatorType.fx);
+		Assert.assertNull(op.getLeft());
+		Assert.assertEquals(op.getRight(),string);
+		Assert.assertEquals(op,serializeAndDeserialize(op));
+
+		op = new OperatorEntity(100,OperatorType.xf,12345);
+		
+		op.setLeft(string);
+		
+		Assert.assertEquals(op.getEntityId(),12345);
+		Assert.assertEquals(op.getEntityType(),EntityType.operator);
+		Assert.assertEquals(op.getPriority(),100);
+		Assert.assertEquals(op.getOperatorType(),OperatorType.xf);
+		Assert.assertEquals(op.getLeft(),string);
+		Assert.assertNull(op.getRight());
+		Assert.assertEquals(op,serializeAndDeserialize(op));
+		
+		final PredicateEntity	pred = new PredicateEntity(12345,integer,real,string);
+
+		Assert.assertEquals(pred.getEntityId(),12345);
+		Assert.assertEquals(pred.getEntityType(),EntityType.predicate);
+		Assert.assertEquals(pred.getArity(),3);
+		Assert.assertArrayEquals(pred.getParameters(),new IFProEntity[]{integer,real,string});
+		Assert.assertEquals(pred,serializeAndDeserialize(pred));
+	}
+
+	private IFProEntity serializeAndDeserialize(final IFProEntity entity) throws IOException {
+		try(final ByteArrayOutputStream		baos = new ByteArrayOutputStream();
+			final DataOutputStream			dos = new DataOutputStream(baos)) {
+			
+			FProUtil.serialize(dos,entity);
+			dos.flush();
+			
+			try(final InputStream			bais = new ByteArrayInputStream(baos.toByteArray());
+				final DataInputStream		dis = new DataInputStream(bais)) {
+				
+				return FProUtil.deserialize(dis);
+			}
+		}
 	}
 }

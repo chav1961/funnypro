@@ -22,6 +22,7 @@ import chav1961.funnypro.core.interfaces.IFProRepo;
 import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.CommonUtil;
+import chav1961.purelib.basic.ReusableInstances;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
@@ -31,6 +32,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	private final Properties					props;
 	@SuppressWarnings("unchecked")
 	private IFProQuickList<ChainDescriptor>[]	predicates = new QuickList[IFProPredicate.MAX_ARITY];
+	private ReusableInstances<Change[]>			tempChanges = new ReusableInstances<>(()->{return new Change[1];}); 
 
 	public FactRuleRepo(final LoggerFacade log, final Properties prop) {
 		if (log == null) {
@@ -116,6 +118,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 							removeChain(2,value.getEntityId());
 							break;
 					}
+					break;
 				case predicate :
 					removeChain(((IFProPredicate)value).getArity(),value.getEntityId());
 					break;
@@ -141,24 +144,29 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			throw new IllegalArgumentException("Value can't be null!");
 		}
 		else {
-			switch (value.getEntityType()) {
-				case operator :
-					switch (((IFProOperator)value).getOperatorType()) {
-						case fx : case fy : case xf : case yf :
-							return removeFromChain(1,value.getEntityId(),value);
-						default :
-							return removeFromChain(2,value.getEntityId(),value);
-					}
-				case predicate :
-					return removeFromChain(((IFProPredicate)value).getArity(),value.getEntityId(),value);
-				default :
-					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be removed directly from the fact/rule base");
+			final Change[]	temp = tempChanges.allocate();
+
+			try{switch (value.getEntityType()) {
+					case operator :
+						switch (((IFProOperator)value).getOperatorType()) {
+							case fx : case fy : case xf : case yf :
+								return removeFromChain(1,value.getEntityId(),value,temp);
+							default :
+								return removeFromChain(2,value.getEntityId(),value,temp);
+						}
+					case predicate :
+						return removeFromChain(((IFProPredicate)value).getArity(),value.getEntityId(),value,temp);
+					default :
+						throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be removed directly from the fact/rule base");
+				}
+			} finally {
+				tempChanges.free(temp);
 			}
 		}
 	}
 	
 	@Override
-	public Iterable<IFProEntity> call(IFProEntity value) {
+	public Iterable<IFProEntity> call(final IFProEntity value) {
 		if (value == null) {
 			throw new IllegalArgumentException("Value can't be null!");
 		}
@@ -174,7 +182,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 				case predicate :
 					return getChain(((IFProPredicate)value).getArity(),value.getEntityId());
 				default :
-					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directory to the fact/rule base");
+					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be called directly to the fact/rule base");
 			}
 		}
 	}
@@ -323,7 +331,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	}
 
 	
-	private boolean removeFromChain(final int arity, final long entityId, final IFProEntity template) {
+	private boolean removeFromChain(final int arity, final long entityId, final IFProEntity template, final Change[] changes) {
 		if (arity < 0 || arity > IFProPredicate.MAX_ARITY) {
 			throw new IllegalArgumentException("Predicate arity ["+arity+"] outside available. Need be in 0.."+IFProPredicate.MAX_ARITY);
 		}
@@ -331,7 +339,6 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			if (predicates[arity].contains(entityId)) {
 				final ChainDescriptor	key = predicates[arity].get(entityId);
 				IFProEntity				start = key.start, temp;
-				Change[]				changes = new Change[1];
 
 				if (start != null) {
 					if (FProUtil.unify(start,template,changes)) {

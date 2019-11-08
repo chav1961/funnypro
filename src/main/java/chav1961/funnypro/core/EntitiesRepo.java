@@ -27,6 +27,7 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
 import chav1961.funnypro.core.interfaces.IFProOperator;
+import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
@@ -46,7 +47,22 @@ import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
-	private static final int					SERIALIZATION_MAGIC = 0x12123000;
+	private static final int						SERIALIZATION_MAGIC = 0x12123000;
+	private static final IFProOperator[]			EMPTY_OPERATOR_LIST = new IFProOperator[0];
+	private static final Comparator<IFProOperator>	OP_COMPARATOR_MINMAX = new Comparator<IFProOperator>(){
+															@Override
+															public int compare(final IFProOperator o1, final IFProOperator o2) {
+																return o1.getPriority() - o2.getPriority();
+															}
+														};
+    private static final Comparator<IFProOperator>	OP_COMPARATOR_MAXMIN = new Comparator<IFProOperator>(){
+															@Override
+															public int compare(final IFProOperator o1, final IFProOperator o2) {
+																return o2.getPriority() - o1.getPriority();
+															}
+														};
+	
+	
 	
 	private final LoggerFacade					log;
 	private final Properties					props;
@@ -215,7 +231,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 	
 	@Override
-	public IFProOperator[] getOperatorDef(long id, int minPrty, int maxPrty, OperatorType... types) {
+	public IFProOperator[] getOperatorDef(final long id, final int minPrty, final int maxPrty, final OperatorSort sort) {
 		if (minPrty < IFProOperator.MIN_PRTY || minPrty > IFProOperator.MAX_PRTY) {
 			throw new IllegalArgumentException("Min priority ["+minPrty+"] out of bounds. Need be in "+IFProOperator.MIN_PRTY+".."+IFProOperator.MAX_PRTY);
 		}
@@ -224,14 +240,14 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		}
 		else {
 			final OperatorDefRepo	found = operators.get(id);
-			final int				min = Math.min(minPrty,maxPrty), max = Math.max(minPrty,maxPrty); 
 			
 			if (found != null) {
-				IFProOperator		root = found.data;
-				int					count = 0;
+				final int			min = Math.min(minPrty,maxPrty), max = Math.max(minPrty,maxPrty); 
+				IFProOperator		root = found.data, temp;
+				int					count = 0, prty;
 				
 				while (root != null) {
-					if (root.getPriority() >= min && root.getPriority() <= max && (types.length == 0 || inList(root.getOperatorType(),types))) {
+					if ((prty = root.getPriority()) >= min && prty <= max && root.getOperatorType().getSort() == sort) {
 						count++;
 					}
 					root = (IFProOperator)root.getParent();
@@ -243,28 +259,23 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 					root = found.data;
 					count = 0;
 					while (root != null) {
-						if (root.getPriority() >= min && root.getPriority() <= max && (types.length == 0 || inList(root.getOperatorType(),types))) {
+						if ((prty = root.getPriority()) >= min && prty <= max && root.getOperatorType().getSort() == sort) {
 							result[count++] = root;
 						}
 						root = (IFProOperator)root.getParent();
 					}
 					if (count > 1) {
-						Arrays.sort(result,new Comparator<IFProOperator>(){
-							@Override
-							public int compare(final IFProOperator o1, final IFProOperator o2) {
-								return minPrty < maxPrty ? o1.getPriority() - o2.getPriority() : o2.getPriority() - o1.getPriority();
-							}
-						});
+						Arrays.sort(result, minPrty < maxPrty ? OP_COMPARATOR_MINMAX : OP_COMPARATOR_MAXMIN);
 					}
 					
 					return result;
 				}
 				else {
-					return new IFProOperator[0];
+					return EMPTY_OPERATOR_LIST;
 				}
 			}
 			else {
-				return new IFProOperator[0];
+				return EMPTY_OPERATOR_LIST;
 			}
 		}
 	}
@@ -285,7 +296,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			else {
 				IFProOperator		root = found.data;
 				while (root != null) {
-					if (root.getPriority() == op.getPriority() && root.getOperatorType().equals(op.getOperatorType())) {
+					if (root.getPriority() == op.getPriority() && root.getOperatorType() == op.getOperatorType()) {
 						throw new IllegalArgumentException("Attempt to put operator def: operator "+op+" already registered in the database!");
 					}
 					else {
@@ -466,15 +477,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	@Override
 	public String toString() {
 		return "EntitiesRepo [anonymousId=" + anonymousId + ", opId=" + opId + ", externId=" + externId + ", operators=" + operatorsSet + "]";
-	}
-
-	private static boolean inList(OperatorType type, OperatorType[] types) {
-		for (OperatorType item : types) {
-			if (item.equals(type)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private static class OperatorDefRepo implements Comparable<OperatorDefRepo>{

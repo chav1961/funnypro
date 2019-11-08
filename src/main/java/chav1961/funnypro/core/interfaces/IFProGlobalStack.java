@@ -157,4 +157,10 @@ public interface IFProGlobalStack extends AutoCloseable {
 	 * @return stack top will be removed
 	 */
 	GlobalStackTop pop();
+	
+	/**
+	 * <p>Get stack top type</p>
+	 * @return stack top type
+	 */
+	StackTopType getTopType();
 }

@@ -26,4 +26,12 @@ public interface IFProPredicate extends IFProEntity, IFProRuledEntity {
 	 * @param entity predicate parametetrs
 	 */
 	void setParameters(final IFProEntity... entity);
+
+	/**
+	 * <p>Is the entity ruled</p>
+	 * @return true if yes
+	 */
+	default boolean isRuled() {
+		return true;
+	}
 }

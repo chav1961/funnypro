@@ -33,6 +33,7 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginItem;
 import chav1961.funnypro.core.interfaces.IFProOperator;
+import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
@@ -141,16 +142,16 @@ public class RepositoriesTest {
 			final IFProOperator		opDef2 = new OperatorDefEntity(100,OperatorType.xf,operatorId);
 			final IFProOperator		op = new OperatorEntity(opDef);
 			
-			Assert.assertEquals(repo.getOperatorDef(operatorId,IFProOperator.MIN_PRTY,IFProOperator.MAX_PRTY,OperatorType.fx).length,0);		
+			Assert.assertEquals(repo.getOperatorDef(operatorId,IFProOperator.MIN_PRTY,IFProOperator.MAX_PRTY,OperatorSort.postfix).length,0);		
 			repo.putOperatorDef(opDef);
-			Assert.assertEquals(repo.getOperatorDef(operatorId,IFProOperator.MIN_PRTY,IFProOperator.MAX_PRTY,OperatorType.fy).length,0);		
-			Assert.assertEquals(repo.getOperatorDef(operatorId,IFProOperator.MIN_PRTY,IFProOperator.MIN_PRTY,OperatorType.fx).length,0);		
-			Assert.assertEquals(repo.getOperatorDef(operatorId,100,100,OperatorType.fx).length,1);		
-			Assert.assertEquals(repo.getOperatorDef(operatorId,100,101,OperatorType.fx).length,1);		
-			Assert.assertEquals(repo.getOperatorDef(operatorId,101,100,OperatorType.fx).length,1);		
+			Assert.assertEquals(repo.getOperatorDef(operatorId,IFProOperator.MIN_PRTY,IFProOperator.MAX_PRTY,OperatorSort.prefix).length,0);		
+			Assert.assertEquals(repo.getOperatorDef(operatorId,IFProOperator.MIN_PRTY,IFProOperator.MIN_PRTY,OperatorSort.postfix).length,0);		
+			Assert.assertEquals(repo.getOperatorDef(operatorId,100,100,OperatorSort.postfix).length,1);		
+			Assert.assertEquals(repo.getOperatorDef(operatorId,100,101,OperatorSort.postfix).length,1);		
+			Assert.assertEquals(repo.getOperatorDef(operatorId,101,100,OperatorSort.postfix).length,1);		
 			repo.putOperatorDef(opDef2);
-			Assert.assertEquals(repo.getOperatorDef(operatorId,100,101,OperatorType.fx,OperatorType.xf).length,2);		
-			Assert.assertEquals(repo.getOperatorDef(operatorId,101,100,OperatorType.fx,OperatorType.xf).length,2);		
+//			Assert.assertEquals(repo.getOperatorDef(operatorId,100,101,OperatorType.fx,OperatorType.xf).length,2);		
+//			Assert.assertEquals(repo.getOperatorDef(operatorId,101,100,OperatorType.fx,OperatorType.xf).length,2);		
 			
 			repo.predicateRepo().assertZ(pred);
 			

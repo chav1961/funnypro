@@ -32,7 +32,8 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	private final LoggerFacade						log;
 	private final Properties						props;
 	private final Map<PluginKey,List<PluginItem>>	plugins = new HashMap<>();
-	private final List<ExternalEntityDescriptor>	entities = new ArrayList<>();
+	private final List<ExternalEntityDescriptor>	operators = new ArrayList<>();
+	private final List<ExternalEntityDescriptor>	predicates = new ArrayList<>();
 
 	public ExternalPluginsRepo(final LoggerFacade log, final Properties prop) throws IOException {
 		if (log == null) {
@@ -169,7 +170,16 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new IllegalArgumentException("resolver can't be null"); 
 		}
 		else {
-			entities.add(new ExternalEntityDescriptorImpl(template,vars,resolver,global));
+			switch (template.getEntityType()) {
+				case operator	:
+					operators.add(new ExternalEntityDescriptorImpl(template,vars,resolver,global));
+					break;
+				case predicate	:
+					predicates.add(new ExternalEntityDescriptorImpl(template,vars,resolver,global));
+					break;
+				default:
+					throw new UnsupportedOperationException("Only operators and predicates are supported for external plugins"); 
+			}
 		}
 	}
 
@@ -179,26 +189,27 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new IllegalArgumentException("Template can't be null"); 
 		}
 		else {
-			final EntityType	typeAwaited = template.getEntityType();
 			final long			idAwaited = template.getEntityId();
-					
-			for (ExternalEntityDescriptor item : entities) {
-				if (item.getTemplate().getEntityType() == typeAwaited && item.getTemplate().getEntityId() == idAwaited) {
-					switch (typeAwaited) {
-						case operator 	:
+			
+			switch (template.getEntityType()) {
+				case operator 	:
+					for (ExternalEntityDescriptor item : operators) {
+						if (item.getTemplate().getEntityId() == idAwaited) {
 							if (((IFProOperator)template).getOperatorType() == ((IFProOperator)item.getTemplate()).getOperatorType()) {
 								return item;
 							}
-							break;
-						case predicate 	:
-							if (((IFProPredicate)template).getArity() == ((IFProPredicate)item.getTemplate()).getArity()) {
-								return item;
-							}
-							break;
-						default :
-							throw new UnsupportedOperationException(); 
+						}
 					}
-				}
+					break;
+				case predicate 	:
+					for (ExternalEntityDescriptor item : predicates) {
+						if (item.getTemplate().getEntityId() == idAwaited && ((IFProPredicate)template).getArity() == ((IFProPredicate)item.getTemplate()).getArity()) {
+							return item;
+						}
+					}
+					break;
+				default:
+					throw new UnsupportedOperationException("Only operators and predicates are supported for external plugins"); 
 			}
 			return null;
 		}
@@ -210,9 +221,14 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new IllegalArgumentException("resolver can't be null"); 
 		}
 		else {
-			for (int index = entities.size()-1; index >= 0; index--) {
-				if (entities.get(index).getResolver() == resolver) {
-					entities.remove(index);
+			for (int index = operators.size()-1; index >= 0; index--) {
+				if (operators.get(index).getResolver() == resolver) {
+					operators.remove(index);
+				}
+			}
+			for (int index = predicates.size()-1; index >= 0; index--) {
+				if (predicates.get(index).getResolver() == resolver) {
+					predicates.remove(index);
 				}
 			}
 		}

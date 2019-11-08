@@ -2,6 +2,7 @@ package chav1961.funnypro.core.interfaces;
 
 import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.exceptions.FProPrintingException;
+import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.purelib.streams.interfaces.CharacterSource;
@@ -86,9 +87,9 @@ public interface IFProEntitiesRepo extends IFProStreamSerializable, AutoCloseabl
 	 * @param minPrty min available operator priority. See remarks above 
 	 * @param maxPrty max available operator priority. See remarks above
 	 * @param types operator types to select.
-	 * @return operator declarations t\for the given condition
+	 * @return operator declarations for the given condition
 	 */
-	IFProOperator[] getOperatorDef(long id, int minPrty, int maxPrty, OperatorType... types);
+	IFProOperator[] getOperatorDef(long id, int minPrty, int maxPrty, OperatorSort sort);
 	
 	/**
 	 * <p>Place operator definition in the repo</p>
