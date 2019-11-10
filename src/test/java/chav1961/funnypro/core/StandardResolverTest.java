@@ -19,6 +19,7 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.URIUtils;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.charsource.ArrayCharSource;
@@ -37,7 +38,7 @@ public class StandardResolverTest {
 			final GlobalDescriptor		global = sr.onLoad(log,new Properties(),repo);
 			CharacterSource				cs;
 			
-			cs = new ArrayCharSource(Utils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
+			cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
 
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
@@ -48,7 +49,7 @@ public class StandardResolverTest {
 									}
 			);
 			
-			cs = new ArrayCharSource(Utils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/trues.fpro").toURI()));
+			cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/trues.fpro").toURI()));
 
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
@@ -60,7 +61,7 @@ public class StandardResolverTest {
 									}
 			);
 			
-			cs = new ArrayCharSource(Utils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/falses.fpro").toURI()));
+			cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/falses.fpro").toURI()));
 
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
@@ -84,7 +85,7 @@ public class StandardResolverTest {
 			final ParserAndPrinter		pap = new ParserAndPrinter(log,new Properties(),repo);
 			final StandardResolver		sr = new StandardResolver();
 			final GlobalDescriptor		global = sr.onLoad(log,new Properties(),repo);
-			final CharacterSource		cs = new ArrayCharSource(Utils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
+			final CharacterSource		cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
 
 			pap.parseEntities(cs,new FProParserCallback(){	// Prepare environment
 										@Override
@@ -95,7 +96,7 @@ public class StandardResolverTest {
 									}
 			);
 
-			final char[]	content = Utils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/trues.fpro").toURI());
+			final char[]	content = URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/trues.fpro").toURI());
 			
 			System.err.println("Starting...");
 			final long	start = System.nanoTime();
