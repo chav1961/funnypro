@@ -1119,7 +1119,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 
 
 class VarRepo implements AutoCloseable {
-	private static final int			INITIAL_ARRAYS_SIZE = 16;
+	private static final int			INITIAL_ARRAYS_SIZE = 64;
 	
 	private final List<IFProVariable>	vars;
 	private VariableChain[]				varRepo = null;

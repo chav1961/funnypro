@@ -94,7 +94,7 @@ public class RepositoriesTest {
 		
 		final FactRuleRepo			newFrr = new FactRuleRepo(log,new Properties());
 		
-		try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream();
+/*		try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 			final DataOutputStream		dos = new DataOutputStream(baos)) {
 			
 			frr.serialize(dos);			dos.flush();
@@ -127,6 +127,7 @@ public class RepositoriesTest {
 				Assert.assertEquals(count,3);
 			}
 		}
+		*/
 	}
 	
 	@Test

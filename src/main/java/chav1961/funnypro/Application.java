@@ -14,7 +14,6 @@ import javax.script.ScriptException;
 
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.SystemErrLoggerFacade;
-import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.i18n.interfaces.Localizer;
@@ -38,13 +37,13 @@ public class Application {
 					screenMode = true;
 					break;
 				default :
-					try{"test".getBytes(item);
-						encoding = item;
-					} catch (UnsupportedEncodingException e) {
-						System.err.println("Unsupported encoding ["+item+"] was typed.");
-						printUsage();
-						System.exit(128);
-					}
+//					try{"test".getBytes(item);
+//						encoding = item;
+//					} catch (UnsupportedEncodingException e) {
+//						System.err.println("Unsupported encoding ["+item+"] was typed.");
+//						printUsage();
+//						System.exit(128);
+//					}
 					break;
 			}
 		}

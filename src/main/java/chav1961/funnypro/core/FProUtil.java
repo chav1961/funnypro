@@ -4,8 +4,6 @@ package chav1961.funnypro.core;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 import chav1961.funnypro.core.entities.AnonymousEntity;
@@ -342,27 +340,29 @@ public class FProUtil {
 		Change	actual = top, temp;
 		
 		while (actual != null) {
+			final IFProEntity	oldVal = actual.oldValue;
+			
 			switch (actual.location) {
 				case Change.IN_PARENT	:
-					actual.container.setParent(actual.oldValue);
+					actual.container.setParent(oldVal);
 					break;
 				case Change.IN_CHILD	:
-					((IFProList)actual.container).setChild(actual.oldValue);
+					((IFProList)actual.container).setChild(oldVal);
 					break;
 				case Change.IN_TAIL		:
-					((IFProList)actual.container).setTail(actual.oldValue);
+					((IFProList)actual.container).setTail(oldVal);
 					break;
 				case Change.IN_CHAIN	:
-					((IFProVariable)actual.container).setChain((IFProVariable) actual.oldValue);
+					((IFProVariable)actual.container).setChain((IFProVariable)oldVal);
 					break;
 				case Change.IN_LEFT		:
-					((IFProOperator)actual.container).setLeft(actual.oldValue);
+					((IFProOperator)actual.container).setLeft(oldVal);
 					break;
 				case Change.IN_RIGHT	:
-					((IFProOperator)actual.container).setRight(actual.oldValue);
+					((IFProOperator)actual.container).setRight(oldVal);
 					break;
 				default :
-					((IFProPredicate)actual.container).getParameters()[actual.location] = actual.oldValue;
+					((IFProPredicate)actual.container).getParameters()[actual.location] = oldVal;
 					break;
 			}
 			temp = actual.next;		actual.next = null;		actual = temp;			

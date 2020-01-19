@@ -94,8 +94,8 @@ class IterablesCollection {
 			}
 			template = call.getParameters()[0];	// Important order - don't change this string with the next one 
 			callIterator = new Iterator<IFProEntity>(){
-				Change[]	temp = new Change[1];
-				IFProEntity	item;
+				final Change[]	temp = new Change[1];
+				IFProEntity		item;
 			
 				@Override 
 				public boolean hasNext() {
@@ -147,8 +147,8 @@ class IterablesCollection {
 			template = call.getParameters()[1];
 			image = call.getParameters()[0];		// Important order - don't change this string with the next one
 			bagofIterator = new Iterator<IFProEntity>(){
-								Change[]	temp = new Change[1];
-								IFProEntity	item;
+								final Change[]	temp = new Change[1];
+								IFProEntity		item;
 							
 								@Override 
 								public boolean hasNext() {
@@ -187,13 +187,13 @@ class IterablesCollection {
 			this.list = (IFProList) call.getParameters()[0];
 			this.template = call.getParameters()[1];
 			this.iterator = new Iterator<IFProEntity>(){
-				Change[]	temp = new Change[1];
-				IFProEntity	item;
-				IFProList	start = list;
+				final Change[]	temp = new Change[1];
+				IFProEntity		item;
+				IFProList		start = list;
 			
 				@Override 
 				public boolean hasNext() {
-					if (start != null && start instanceof IFProList) {
+					if (start != null && start.getEntityType() == EntityType.list) {
 						do{if (FProUtil.unify(template,start.getChild(),temp)) {
 								FProUtil.unbind(temp[0]);
 								item = start.getChild();
@@ -203,7 +203,7 @@ class IterablesCollection {
 							else {
 								FProUtil.unbind(temp[0]);
 							}
-						} while ((start = (IFProList) start.getTail()) != null && start instanceof IFProList);
+						} while ((start = (IFProList) start.getTail()) != null && start.getEntityType() == EntityType.list);
 						return false;
 					}
 					else {
