@@ -254,7 +254,7 @@ public class FProVM implements IFProVM, IFProModule {
 												else if (entity.getEntityId() == goal && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													target.write(String.valueOf(inference(entity,vars,repo,new IFProCallback(){
 														@Override public void beforeFirstCall() {}
-														@Override public boolean onResolution(final String[] names, final Object[] resolvedVariables) {return true;}
+														@Override public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) {return true;}
 														@Override public void afterLastCall() {}
 													}))+"\n>");
 												}
@@ -263,7 +263,7 @@ public class FProVM implements IFProVM, IFProModule {
 														@Override public void beforeFirstCall() {}
 														
 														@Override 
-														public boolean onResolution(final String[] names, final Object[] resolvedVariables) throws FProPrintingException, FProParsingException {
+														public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws FProPrintingException, FProParsingException {
 															try{for (int index = 0, maxIndex = Math.min(names.length,resolvedVariables.length); index < maxIndex; index++) {
 																	final StringBuilder	sb = new StringBuilder();
 																	
@@ -300,8 +300,8 @@ public class FProVM implements IFProVM, IFProModule {
 										}
 							);
 					} catch (FProParsingException e) {
-						e.printStackTrace();
 						errors.write(e.getMessage());
+						throw new FProException(e.getMessage()); 
 					} finally {
 						target.flush();
 						errors.flush();

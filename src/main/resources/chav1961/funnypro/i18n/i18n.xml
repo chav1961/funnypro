@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localization xmlns="http://www.i18n.purelib.chav1961.ru/">
+	<lang name="en">
+<!-- Application window localization -->
+		<key name="JScreen.caption">(c) 2017..2018, Alexander V.Chernomyrdin aka chav1961, Funny Prolog V.R=0.0.2</key>
+		<key name="JScreen.status.initialHelp">To execute Funny Prolog sentence, type Ctrl-Enter...</key>
+		<key name="JScreen.about.title">About...</key>
+		<key name="JScreen.about.content">uri(aboutApplication.cre)</key>
+ 
+<!-- Application menu localization -->
+		<key name="menu.file">File</key>
+		<key name="menu.file.tt">Manage files and exit from application</key>
+		<key name="menu.file.new">New</key>
+		<key name="menu.file.new.tt">Create new *.frp file</key>
+		<key name="menu.file.open">Open</key>
+		<key name="menu.file.open.tt">Open existent *.frp file</key>
+		<key name="menu.file.preparefrb">Prepare FRB</key>
+		<key name="menu.file.preparefrb.tt">Prepare new Funny Prolog fact/rule base. To use it, Funny Prolog VM must be stopped firstly</key>
+		<key name="menu.file.consult">Consult...</key>
+		<key name="menu.file.consult.tt">Consult a set of files into Funny Prolog fact/rule base</key>
+		<key name="menu.file.exit">Exit</key>
+		<key name="menu.file.exit.tt">Exit Funny Prolog</key>
+		<key name="menu.actions">Actions</key>
+		<key name="menu.actions.tt">Manage Funny Prolog virtual machine</key>
+		<key name="menu.actions.startvm">Start VM</key>
+		<key name="menu.actions.startvm.tt">Start Funny Prolog virtual machine</key>
+		<key name="menu.actions.stopvm">Stop VM</key>
+		<key name="menu.actions.stopvm.tt">Stop Funny Prolog virtual machine</key>
+		<key name="menu.actions.parameters">VM parameters</key>
+		<key name="menu.actions.parameters.tt">Funny Prolog virtual machine parameters</key>
+		<key name="menu.tools">Tools</key>
+		<key name="menu.tools.tt">Usual tools</key>
+		<key name="menu.tools.laf">Change Look &amp; Feel</key>
+		<key name="menu.tools.laf.tt">Change Current Look &amp; Feel</key>
+		<key name="menu.tools.languages">Language</key>
+		<key name="menu.tools.languages.tt">Change current language</key>
+		<key name="menu.help">Help &amp; Settings</key>
+		<key name="menu.help.tt">Set of helps and settings</key>
+		<key name="menu.help.settings">Settings</key>
+		<key name="menu.help.settings.tt">Application settings</key>
+		<key name="menu.help.about">About...</key>
+		<key name="menu.help.about.tt">About Funny Prolog</key>
+	</lang>
+	<lang name="ru">
+<!-- Локализация окна приложения -->
+		<key name="JScreen.caption">(c) 2017..2018, А. Черномырдин aka chav1961, Funny Prolog V.R=0.0.2</key>
+		<key name="JScreen.status.initialHelp">Для выполнения предложения Funny Prolog нажмите Ctrl-Enter... </key>
+		<key name="JScreen.about.title">О программе</key>
+		<key name="JScreen.about.content">uri(aboutApplication.cre)</key>
+ 
+<!-- Локализация меню приложения -->
+		<key name="menu.file">Файл</key>
+		<key name="menu.file.tt">Манипуляции файлами и завершение работы программы</key>
+		<key name="menu.file.new">Создать</key>
+		<key name="menu.file.new.tt">Создать новый файл *.frp</key>
+		<key name="menu.file.open">Открыть</key>
+		<key name="menu.file.open.tt">Открыть существующий файл *.frp</key>
+		<key name="menu.file.preparefrb">Подготовить FRB</key>
+		<key name="menu.file.preparefrb.tt">Подготовить новую базу фактов/правил Funny Prolog. Для его работы нужно вначале остановить виртуальную машину Funny Prolog</key>
+		<key name="menu.file.consult">Подгрузить...</key>
+		<key name="menu.file.consult.tt">Подгрузить файлы в базу фактов/правил Funny Prolog</key>
+		<key name="menu.file.exit">Выход</key>
+		<key name="menu.file.exit.tt">Завершение работы Finny Prolog</key>
+		<key name="menu.actions">Действия</key>
+		<key name="menu.actions.tt">Управление виртуальной машиной Funny Prolog</key>
+		<key name="menu.actions.startvm">Запуск VM</key>
+		<key name="menu.actions.startvm.tt">Запустить виртуальную машину Funny Prolog</key>
+		<key name="menu.actions.stopvm">Остановка VM</key>
+		<key name="menu.actions.stopvm.tt">Остановить виртуальную машину Funny Prolog</key>
+		<key name="menu.actions.parameters">Параметры VM</key>
+		<key name="menu.actions.parameters.tt">Параметры виртуальной машины Funny Prolog</key>
+		<key name="menu.tools">Инструменты</key>
+		<key name="menu.tools.tt">Различные инструменты</key>
+		<key name="menu.tools.laf">Изменить внешний вид (Look &amp; Feel)</key>
+		<key name="menu.tools.laf.tt">Настройка внешнего виде приложения</key>
+		<key name="menu.tools.languages">Язык</key>
+		<key name="menu.tools.languages.tt">Изменить язык приложения</key>
+		<key name="menu.help">Помощь и настройки</key>
+		<key name="menu.help.tt">Различные настройки и помощь</key>
+		<key name="menu.help.settings">Настройки</key>
+		<key name="menu.help.settings.tt">Настройки приложения</key>
+		<key name="menu.help.about">О программе...</key>
+		<key name="menu.help.about.tt">Информация о Funny Prolog</key>
+	</lang>
+</localization>

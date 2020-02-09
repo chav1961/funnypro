@@ -29,7 +29,7 @@ import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 public class VMTest {
 	private static final IFProCallback	EMPTY = new IFProCallback() {
 													@Override public void beforeFirstCall() {}
-													@Override public boolean onResolution(final String[] names, final Object[] resolvedVariables) throws FProParsingException, FProPrintingException {return false;}
+													@Override public boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws FProParsingException, FProPrintingException {return false;}
 													@Override public void afterLastCall() {}
 												};
 	

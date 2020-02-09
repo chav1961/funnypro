@@ -166,4 +166,6 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	public void console(final Reader source, final Writer target, final Writer errors) throws FProException {
 		vm.console(source, target, errors);
 	}
+	
+	
 }

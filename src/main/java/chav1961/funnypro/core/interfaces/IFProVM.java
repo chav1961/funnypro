@@ -36,12 +36,13 @@ public interface IFProVM extends AutoCloseable {
 		/**
 		 * <p>Call on every successful resolution</p>
 		 * @param names variable names
-		 * @param resolvedValues variables bound to variables
+		 * @param resolvedValues values bound to variables
+		 * @param printedValues string representation of values bound to variables
 		 * @return true if need continue resolutions, false otherwise
 		 * @throws FProParsingException any problem on parsing data
 		 * @throws FProPrintingException any problem on printing data
 		 */
-		boolean onResolution(String[] names, Object[] resolvedValues) throws FProParsingException, FProPrintingException;
+		boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws FProParsingException, FProPrintingException;
 		
 		/**
 		 * <p>Called before end resolution, undependently of 'onResolution' call.</p>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <app:root xmlns:app="http://ui.purelib.chav1961/">
-	<app:i18n location="i18n:prop:chav1961/funnypro/i18n/i18n"/>
+	<app:i18n location="i18n:xml:root://chav1961.funnypro.Application/chav1961/funnypro/i18n/i18n.xml"/>
 	<app:menu id="mainmenu">
 		<app:submenu name="menu.file" caption="menu.file" tooltip="menu.file.tt">
 			<app:item name="menu.file.new" caption="menu.file.new" tooltip="menu.file.new.tt" action="newFile"/>
@@ -12,8 +12,10 @@
 			<app:item name="menu.file.exit" caption="menu.file.exit" tooltip="menu.file.exit.tt" action="exit"/>
 		</app:submenu>
 		<app:submenu name="menu.actions" caption="menu.actions" tooltip="menu.actions.tt">
-			<app:item name="menu.actions.startvm" caption="menu.actions.startvm" tooltip="menu.actions.startvm.tt" action="startVM"/>
-			<app:item name="menu.actions.stopvm" caption="menu.actions.stopvm" tooltip="menu.actions.stopvm.tt" action="stopVM"/>
+			<app:item name="menu.actions.startvm" caption="menu.actions.startvm" tooltip="menu.actions.startvm.tt" action="startVM#VMGroup"/>
+			<app:item name="menu.actions.stopvm" caption="menu.actions.stopvm" tooltip="menu.actions.stopvm.tt" action="stopVM#VMGroup"/>
+			<app:separator/>
+			<app:item name="menu.actions.parameters" caption="menu.actions.parameters" tooltip="menu.actions.parameters.tt" action="VMParameters"/>
 		</app:submenu>
 		<app:submenu name="menu.tools" caption="menu.tools" tooltip="menu.tools.tt">
 <!-- 			<app:builtinSubmenu name="builtin.lookandfeel" caption="menu.tools.laf" tooltip="menu.tools.laf.tt"/>  -->

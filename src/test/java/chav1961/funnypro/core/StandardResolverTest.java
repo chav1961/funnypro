@@ -76,7 +76,7 @@ public class StandardResolverTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void performanceTest() throws Exception {
 		final LoggerFacade				log = new DefaultLoggerFacade();
 		
@@ -121,12 +121,11 @@ public class StandardResolverTest {
 	private void processing(final StandardResolver sr, final GlobalDescriptor global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult) throws FProException {
 		final IFProCallback	callback = new IFProCallback(){
 								@Override public void beforeFirstCall() {}
-								@Override
-								public boolean onResolution(final String[] names, final Object[] resolvedVariables) throws FProParsingException, FProPrintingException {
-//									System.err.println("Call: "+resolvedVariables);
-									return true;
-								}
 								@Override public void afterLastCall() {}
+								@Override
+								public boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws FProParsingException, FProPrintingException {
+									return false;
+								}
 							}; 
 		Assert.assertTrue(stack.isEmpty());
 

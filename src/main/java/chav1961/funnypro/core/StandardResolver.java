@@ -47,8 +47,11 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.LongIdMap;
+import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
+import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 
 /**
@@ -354,7 +357,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 								local.varNames[index++] = global.repo.termRepo().getName(var.getEntityId()); 
 							}
 						}
-						return executeCallback(local.callback,local.vars,local.varNames,global.repo) ? ResolveRC.True : ResolveRC.UltimateFalse;
+						return executeCallback(local.callback,local.vars,local.varNames,global.repo,local.pap) ? ResolveRC.True : ResolveRC.UltimateFalse;
 					}
 					else {
 						return ResolveRC.True;
@@ -606,7 +609,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				rc = (nextResolveInternal(global,local,((IFProOperator)entity).getRight()));
 				if (rc == ResolveRC.True) {
 					if (local.callback != null) {
-						if (!executeCallback(local.callback,local.vars,local.varNames,global.repo)) {
+						if (!executeCallback(local.callback,local.vars,local.varNames,global.repo,local.pap)) {
 							return ResolveRC.UltimateFalse;
 						}
 						else {
@@ -1443,14 +1446,23 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}	
 
-	private static boolean executeCallback(IFProCallback callback, List<IFProVariable> vars, final String[] names, final IFProEntitiesRepo repo) throws FProParsingException, FProPrintingException {
-		final Object[]	resolved = new Object[names.length];
-		int				index = 0;
+	private static boolean executeCallback(IFProCallback callback, List<IFProVariable> vars, final String[] names, final IFProEntitiesRepo repo, final IFProParserAndPrinter pap) throws FProParsingException, FProPrintingException {
+		final IFProEntity[]		resolved = new IFProEntity[names.length];
+		final String[]			printedValues = new String[names.length];
+		final StringBuilder		sb = new StringBuilder();
+		final CharacterTarget	ct = new StringBuilderCharTarget(sb);
+		int						index = 0;
 		
 		for (IFProVariable var : vars) {
-			resolved[index++] = var.getParent() == null ? var : var.getParent();
+			resolved[index] = var.getParent() == null ? var : var.getParent();
+			try{pap.putEntity(resolved[index],ct);
+				printedValues[index++] = sb.toString();
+			} catch (PrintingException | FProPrintingException | IOException e) {
+				printedValues[index++] = e.getLocalizedMessage();
+			}
+			sb.setLength(0);			
 		}
-		return callback.onResolution(names,resolved);
+		return callback.onResolution(names,resolved,printedValues);
 	}
 	
 	static class StandardOperators {
