@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <app:root xmlns:app="http://ui.purelib.chav1961/">
 	<app:i18n location="i18n:xml:root://chav1961.funnypro.Application/chav1961/funnypro/i18n/i18n.xml"/>
-	<app:menu id="mainmenu">
+	<app:menu id="mainmenu" keyset="mainMenuKeyset">
 		<app:submenu name="menu.file" caption="menu.file" tooltip="menu.file.tt">
 			<app:item name="menu.file.new" caption="menu.file.new" tooltip="menu.file.new.tt" action="newFile"/>
 			<app:item name="menu.file.open" caption="menu.file.open" tooltip="menu.file.open.tt" action="openFile"/>
@@ -18,7 +18,7 @@
 			<app:item name="menu.actions.parameters" caption="menu.actions.parameters" tooltip="menu.actions.parameters.tt" action="VMParameters"/>
 		</app:submenu>
 		<app:submenu name="menu.tools" caption="menu.tools" tooltip="menu.tools.tt">
-<!-- 			<app:builtinSubmenu name="builtin.lookandfeel" caption="menu.tools.laf" tooltip="menu.tools.laf.tt"/>  -->
+ 			<app:builtinSubmenu name="builtin.lookAndFeel" caption="menu.tools.laf" tooltip="menu.tools.laf.tt"/>
 			<app:builtinSubmenu name="builtin.languages" caption="menu.tools.languages" tooltip="menu.tools.languages.tt"/>
 		</app:submenu>
 		<app:submenu name="menu.help" caption="menu.help" tooltip="menu.help.tt">
@@ -27,4 +27,10 @@
 			<app:item name="menu.help.about" caption="menu.help.about" tooltip="menu.help.about.tt" action="about"/>
 		</app:submenu>
 	</app:menu>
+	<app:keyset id="mainMenuKeyset">
+		<app:key code="N" ctrl="true" action="newFile"/>
+		<app:key code="O" ctrl="true" action="openFile"/>
+		<app:key code="C" ctrl="true" shift="true" action="consultFile"/>
+		<app:key code="Q" ctrl="true" action="exit"/>
+	</app:keyset>
 </app:root>

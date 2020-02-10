@@ -17,6 +17,7 @@ import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.script.ScriptException;
 import javax.swing.Icon;
@@ -29,6 +30,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -48,7 +52,9 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 import chav1961.purelib.fsys.FileSystemFactory;
 import chav1961.purelib.fsys.interfaces.FileSystemInterface;
+import chav1961.purelib.i18n.AbstractLocalizer;
 import chav1961.purelib.i18n.LocalizerFactory;
+import chav1961.purelib.i18n.AbstractLocalizer.SupportedLanguages;
 import chav1961.purelib.i18n.interfaces.Localizer;
 import chav1961.purelib.i18n.interfaces.Localizer.LocaleChangeListener;
 import chav1961.purelib.model.interfaces.ContentMetadataInterface;
@@ -112,6 +118,8 @@ class JScreen extends JFrame implements LocaleChangeListener {
 		this.logger = logger;
 		this.localizer = LocalizerFactory.getLocalizer(xda.getRoot().getLocalizerAssociated());
 		this.parent.push(this.localizer);
+		this.localizer.addLocaleChangeListener(this);
+		
 		this.ss = new JStateString(this.localizer);
 		localizer.addLocaleChangeListener(this);
 		
@@ -152,6 +160,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 				}
 			}
 		);
+		
 		fillLocalizedStrings();
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setMinimumSize(new Dimension(3*screen.width/4,3*screen.height/4));
@@ -165,6 +174,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 	public void localeChanged(final Locale oldLocale, final Locale newLocale) throws LocalizationException {
 		fillLocalizedStrings();
 		((LocaleChangeListener)menu).localeChanged(oldLocale, newLocale);
+		ss.localeChanged(oldLocale, newLocale);
 	}
 
 	@OnAction("action:/exit")
@@ -243,6 +253,21 @@ class JScreen extends JFrame implements LocaleChangeListener {
 
 	@OnAction("action:/VMParameters")
 	private void setupVM() throws LocalizationException {
+	}
+
+	@OnAction("action:/builtin.languages")
+	private void changeLang(final Map<String,String[]> query) throws LocalizationException {
+		localizer.setCurrentLocale(Locale.forLanguageTag(query.get("lang")[0]));
+	}
+	
+	
+	@OnAction("action:/builtin.lookAndFeel")
+	private void changeLaf(final Map<String,String[]> query) throws LocalizationException {
+		try{UIManager.setLookAndFeel(query.get("laf")[0]);
+	        SwingUtilities.updateComponentTreeUI(this);
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+			message(Severity.error,e.getLocalizedMessage());
+		}
 	}
 	
 	@OnAction("action:/about")

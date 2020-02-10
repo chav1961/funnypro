@@ -62,7 +62,8 @@ public class Application {
 
 	static class ApplicationArgParser extends ArgParser {
 		public ApplicationArgParser() {
-			super(new BooleanArg("screen",false,false,"Start application with GUI"),new StringArg("encoding",false,false,"Source file encoding"));
+			super(new BooleanArg("screen",false,false,"Start application with GUI")
+				 ,new StringArg("encoding",false,"Source file encoding","UTF-8"));
 		}
 	}
 }
