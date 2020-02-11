@@ -12,8 +12,6 @@ import chav1961.funnypro.core.entities.EnternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.StringEntity;
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -34,6 +32,7 @@ import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.pluginexample.TutorialPlugin;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 
@@ -70,7 +69,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	}
 	
 	@Override
-	public StringProcessorGlobal onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws FProException {
+	public StringProcessorGlobal onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws SyntaxException {
 		try(final LoggerFacade 				actualLog = debug.transaction("TutorialPlugin:onLoad")) {
 			final StringProcessorGlobal		global = new StringProcessorGlobal(); 
 			final IFProParserAndPrinter 	pap = new ParserAndPrinter(debug,parameters,repo);
@@ -79,7 +78,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 			try{
 				pap.parseEntities(PREDICATE_SPLIT,0,new FProParserCallback(){
 						@Override
-						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 							splitId = entity.getEntityId();
 							repo.pluginsRepo().registerResolver(entity,vars,StringProcessorPlugin.this,global);
 							return true;
@@ -90,7 +89,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 				
 				pap.parseEntities(PREDICATE_LIST,0,new FProParserCallback(){
 						@Override
-						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 							listId = entity.getEntityId();
 							repo.pluginsRepo().registerResolver(entity,vars,StringProcessorPlugin.this,global);
 							return true;
@@ -101,7 +100,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 				
 				pap.parseEntities(OPERATOR_CHARARRAY,0,new FProParserCallback(){
 						@Override
-						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 							listId = entity.getEntityId();
 							repo.pluginsRepo().registerResolver(entity,vars,StringProcessorPlugin.this,global);
 							repo.putOperatorDef((IFProOperator)entity);
@@ -110,7 +109,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 					}
 				);
 				actualLog.message(Severity.info,"Operator "+new String(OPERATOR_CHARARRAY)+" was registeded successfully");
-			} catch (FProParsingException | IOException exc) {
+			} catch (SyntaxException | IOException exc) {
 				actualLog.message(Severity.info,"Predicate registration failed for scanlist(List,Item).: %1$s", exc.getMessage());
 				throw new IllegalArgumentException("Attempt to register predicate scanlist(List,Item) failed: "+exc.getMessage(),exc); 
 			}
@@ -120,12 +119,12 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	}
 	
 	@Override
-	public void onRemove(final StringProcessorGlobal global) throws FProException {
+	public void onRemove(final StringProcessorGlobal global) throws SyntaxException {
 		global.repo.pluginsRepo().purgeResolver(this);
 	}
 	
 	@Override
-	public StringProcessorLocal beforeCall(final StringProcessorGlobal global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws FProException {
+	public StringProcessorLocal beforeCall(final StringProcessorGlobal global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException {
 		if (global.collection.size() == 0) {		// Cache to reduce memory requirements
 			global.collection.add(new StringProcessorLocal());
 		}
@@ -138,7 +137,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	}
 	
 	@Override
-	public ResolveRC firstResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws FProException {
+	public ResolveRC firstResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws SyntaxException {
 		if (entity.getEntityType() == EntityType.predicate) {
 			if (entity.getEntityId() == splitId && ((IFProPredicate)entity).getArity() == 3) {
 				
@@ -234,7 +233,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	}
 	
 	@Override
-	public ResolveRC nextResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws FProException {
+	public ResolveRC nextResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws SyntaxException {
 		if (entity.getEntityType() == EntityType.predicate) {
 			if (entity.getEntityId() == splitId && ((IFProPredicate)entity).getArity() == 3) {
 				
@@ -258,14 +257,14 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	}
 	
 	@Override
-	public void endResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws FProException {
+	public void endResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws SyntaxException {
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
 			FProUtil.unbind(((BoundStackTop<FProUtil.Change>)local.stack.pop()).getChangeChain());
 		}
 	}
 	
 	@Override
-	public void afterCall(final StringProcessorGlobal global, final StringProcessorLocal local) throws FProException {
+	public void afterCall(final StringProcessorGlobal global, final StringProcessorLocal local) throws SyntaxException {
 		global.collection.add(local);
 	} 
 }

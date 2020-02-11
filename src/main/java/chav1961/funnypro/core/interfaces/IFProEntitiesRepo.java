@@ -1,9 +1,10 @@
 package chav1961.funnypro.core.interfaces;
 
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
+
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
+import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -112,32 +113,32 @@ public interface IFProEntitiesRepo extends IFProStreamSerializable, AutoCloseabl
 	/**
 	 * <p>Consult data to the repo</p>
 	 * @param source source to consult data from
-	 * @throws FProParsingException if any parsing data problems were detected
+	 * @throws SyntaxException if any parsing data problems were detected
 	 */
-	void consult(CharacterSource source) throws FProParsingException;
+	void consult(CharacterSource source) throws SyntaxException;
 	
 	/**
 	 * <p>Consult data to the repo</p>
 	 * @param source source to consult data from
 	 * @param from start position to consult data
 	 * @return end position after consulting data
-	 * @throws FProParsingException if any parsing data problems were detected
+	 * @throws SyntaxException if any parsing data problems were detected
 	 */
-	int consult(char[] source, int from) throws FProParsingException;
+	int consult(char[] source, int from) throws SyntaxException;
 	
 	/**
 	 * <p>Save repo to the given target</p> 
 	 * @param target target to save repo to
-	 * @throws FProPrintingException if any data printing problems were detected
+	 * @throws PrintingException if any data printing problems were detected
 	 */
-	void save(CharacterTarget target) throws FProPrintingException;
+	void save(CharacterTarget target) throws PrintingException;
 
 	/**
 	 * <p>Save repo to the given target</p> 
 	 * @param target target to save repo to
 	 * @param from start position to save repo
 	 * @return end position after repo saving
-	 * @throws FProPrintingException if any data printing problems were detected
+	 * @throws PrintingException if any data printing problems were detected
 	 */
-	int save(char[] target, int from) throws FProPrintingException;
+	int save(char[] target, int from) throws PrintingException;
 }

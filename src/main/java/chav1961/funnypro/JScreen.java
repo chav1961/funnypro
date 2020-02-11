@@ -40,14 +40,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.purelib.basic.MimeType;
+import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
 import chav1961.purelib.basic.exceptions.LocalizationException;
+import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 import chav1961.purelib.fsys.FileSystemFactory;
@@ -195,7 +195,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 						os.flush();
 					}
 					message(Severity.info,"New fact/rule base %1$s was prepared",relativeURI);
-				} catch (FProException | IOException e) {
+				} catch (ContentException | IOException e) {
 					message(Severity.error,e.getLocalizedMessage());
 				}
 			}
@@ -215,7 +215,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 						fpe.consult(new ReaderCharSource(rdr,false));
 					}
 					count++;
-				} catch (FProException | IOException e) {
+				} catch (SyntaxException | IOException e) {
 					message(Severity.error,e.getLocalizedMessage());
 				}
 			}
@@ -232,7 +232,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 				((JMenuItem)SwingUtils.findComponentByName(this.menu,"menu.actions.parameters")).setEnabled(false);
 				((JMenuItem)SwingUtils.findComponentByName(this.menu,"menu.file.preparefrb")).setEnabled(false);
 				message(Severity.info,"start");
-			} catch (FProException | IOException e) {
+			} catch (ContentException | IOException e) {
 				message(Severity.error,e.getLocalizedMessage());
 			}
 		}
@@ -245,7 +245,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 				((JMenuItem)SwingUtils.findComponentByName(this.menu,"menu.actions.parameters")).setEnabled(true);
 				((JMenuItem)SwingUtils.findComponentByName(this.menu,"menu.file.preparefrb")).setEnabled(true);
 				message(Severity.info,"stop");
-			} catch (FProException | IOException e) {
+			} catch (ContentException | IOException e) {
 				message(Severity.error,e.getLocalizedMessage());
 			}
 		}
@@ -308,7 +308,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 				result = fpe.goal(sentence,new IFProVM.IFProCallback() {
 					int	count = 0;
 					@Override
-					public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws FProParsingException, FProPrintingException {
+					public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws SyntaxException, PrintingException {
 						if (resolvedVariables.length > 0) {
 							final StringBuilder 	sb = new StringBuilder("\n__________");
 							
@@ -332,7 +332,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 				result = fpe.question(sentence,new IFProVM.IFProCallback() {
 					int	count = 0;
 					@Override
-					public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws FProParsingException, FProPrintingException {
+					public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws SyntaxException, PrintingException {
 						if (resolvedVariables.length > 0) {
 							final StringBuilder 	sb = new StringBuilder("\n__________");
 							final CharacterTarget	target = new StringBuilderCharTarget(sb);
@@ -360,7 +360,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 			}
 		
 			append2Log(MessageType.TOTAL_RESULT,result);
-		} catch (FProException | ScriptException | IOException e) {
+		} catch (ContentException | ScriptException | IOException e) {
 			append2Log(MessageType.PROCESSING_ERROR,e.getMessage());
 			ss.message(Severity.error,e.getLocalizedMessage());
 		}

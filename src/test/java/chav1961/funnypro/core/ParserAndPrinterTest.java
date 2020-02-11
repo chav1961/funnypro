@@ -18,8 +18,6 @@ import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProList;
@@ -29,6 +27,8 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -110,11 +110,11 @@ public class ParserAndPrinterTest {
 			
 			try{buildEntity(pap,"[123,456,789|0] .");
 				Assert.fail("Mandatory exception was not detected (tail of the list can be variable only)");
-			} catch (FProParsingException exc) {				
+			} catch (SyntaxException exc) {				
 			}
 			try{buildEntity(pap,"[123,456,789|0 .");
 				Assert.fail("Mandatory exception was not detected (unclosed bracket)");
-			} catch (FProParsingException exc) {				
+			} catch (SyntaxException exc) {				
 			}
 		}
 	}
@@ -153,7 +153,7 @@ public class ParserAndPrinterTest {
 
 			try{buildEntity(pap,"(123 .");
 				Assert.fail("Mandatory exception was not detected (unclosed bracket)");
-			} catch (FProParsingException exc) {				
+			} catch (SyntaxException exc) {				
 			}
 		}
 	}
@@ -242,12 +242,12 @@ public class ParserAndPrinterTest {
 			
 			try{buildEntity(pap,"::150 ::200 123.");
 				Assert.fail("Mandatory exception was not detected (illegal priority nesting)");
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 			}
 
 			try{buildEntity(pap," :200 :200 123.");
 				Assert.fail("Mandatory exception was not detected (illegal priority nesting because fx)");
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 			}
 			
 			final IFProEntity		yyRight = buildEntity(pap,"123 ::150 ::200 .");
@@ -266,12 +266,12 @@ public class ParserAndPrinterTest {
 			
 			try{buildEntity(pap,"123 ::200 ::150 .");
 				Assert.fail("Mandatory exception was not detected (illegal priority nesting)");
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 			}			
 
 			try{buildEntity(pap,"123 :200 :200 .");
 				Assert.fail("Mandatory exception was not detected (illegal priority nesting because xf)");
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 			}			
 
 			final IFProEntity		yyBoth = buildEntity(pap,"::200 ::150 123 ::150 ::200.");
@@ -345,7 +345,7 @@ public class ParserAndPrinterTest {
 			
 			try{buildEntity(pap,"123 ::xfx:: 456 ::xfx:: 789 .");
 				Assert.fail("Mandatory exception was not detected (illegal priority nesting because xfx)");
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 			}
 
 			final IFProEntity		fx1xfy = buildEntity(pap,"::fx1:: 123 ::xfy:: 456 .");
@@ -495,12 +495,12 @@ public class ParserAndPrinterTest {
 	}
 
 
-	private IFProEntity buildEntity(final ParserAndPrinter pap, final String source) throws FProException, IOException {
+	private IFProEntity buildEntity(final ParserAndPrinter pap, final String source) throws ContentException, IOException {
 		final IFProEntity[]	result = new IFProEntity[1];
 		
 		pap.parseEntities(source.toCharArray(),0,new FProParserCallback(){
 								@Override
-								public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+								public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 									result[0] = entity;
 									return true;
 								}
@@ -509,12 +509,12 @@ public class ParserAndPrinterTest {
 		return result[0];
 	}
 
-	private IFProEntity buildEntity(final ParserAndPrinter pap, final String source, final List<IFProVariable> varList) throws FProException, IOException {
+	private IFProEntity buildEntity(final ParserAndPrinter pap, final String source, final List<IFProVariable> varList) throws ContentException, IOException {
 		final IFProEntity[]	result = new IFProEntity[1];
 		
 		pap.parseEntities(source.toCharArray(),0,new FProParserCallback(){
 								@Override
-								public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+								public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 									result[0] = entity;
 									varList.addAll(vars);
 									return true;

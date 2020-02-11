@@ -9,8 +9,6 @@ import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.GlobalStack;
 import chav1961.funnypro.core.ParserAndPrinter;
 import chav1961.funnypro.core.entities.EnternalPluginEntity;
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -27,6 +25,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 
@@ -72,7 +71,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	}
 
 	@Override
-	public MyOwnMemory onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws FProException {
+	public MyOwnMemory onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws SyntaxException {
 		try(final LoggerFacade 				actualLog = debug.transaction("TutorialPlugin:onLoad")) {
 			final MyOwnMemory				global = new MyOwnMemory(); 
 			final IFProParserAndPrinter 	pap = new ParserAndPrinter(debug,parameters,repo);
@@ -80,7 +79,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 			global.repo = repo;
 			try{pap.parseEntities(PREDICATE,0,new FProParserCallback(){
 						@Override
-						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 							scanlistId = entity.getEntityId();	// Can be useful when you process more than one predicate/operaotr.
 							repo.pluginsRepo().registerResolver(entity,vars,TutorialPlugin.this,global);	// Register resolver for this external predicate
 							return true;
@@ -90,7 +89,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 				actualLog.message(Severity.info,"Predicate scanlist(List,Item) was registeded successfully");
 				actualLog.rollback();	// See Pure library about transactional logging
 				return global;
-			} catch (FProParsingException | IOException exc) {
+			} catch (SyntaxException | IOException exc) {
 				actualLog.message(Severity.info,"Predicate registration failed for scanlist(List,Item).: %1$s", exc.getMessage());
 				throw new IllegalArgumentException("Attempt to register predicate scanlist(List,Item) failed: "+exc.getMessage(),exc); 
 			}
@@ -98,13 +97,13 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	}
 
 	@Override
-	public void onRemove(final MyOwnMemory global) throws FProException {
+	public void onRemove(final MyOwnMemory global) throws SyntaxException {
 		global.collection.clear();
 		global.repo.pluginsRepo().purgeResolver(this);
 	}
 
 	@Override
-	public ListEntityIndex beforeCall(final MyOwnMemory global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws FProException {
+	public ListEntityIndex beforeCall(final MyOwnMemory global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException {
 		if (global.collection.size() == 0) {		// Cache to reduce memory requirements
 			global.collection.add(new ListEntityIndex());
 		}
@@ -117,7 +116,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	}
 
 	@Override
-	public ResolveRC firstResolve(final MyOwnMemory global, final ListEntityIndex local, final IFProEntity entity) throws FProException {
+	public ResolveRC firstResolve(final MyOwnMemory global, final ListEntityIndex local, final IFProEntity entity) throws SyntaxException {
 		if (entity.getEntityType() == EntityType.predicate	// Guard check - entity is predicate 
 			&& entity.getEntityId() == scanlistId 			// Entity is 'scanlist' predicate (see onLoad(...) where we got this Id)
 			&& ((IFProPredicate)entity).getArity() == 2) {	// Entity has exactly 2 parameters
@@ -150,7 +149,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	}
 
 	@Override
-	public ResolveRC nextResolve(final MyOwnMemory global, final ListEntityIndex local, final IFProEntity entity) throws FProException {
+	public ResolveRC nextResolve(final MyOwnMemory global, final ListEntityIndex local, final IFProEntity entity) throws SyntaxException {
 		if (entity.getEntityType() == EntityType.predicate	// Guard check - entity is predicate 
 				&& entity.getEntityId() == scanlistId 			// Entity is 'scanlist' predicate (see onLoad(...) where we got this Id)
 				&& ((IFProPredicate)entity).getArity() == 2) {	// Entity has exactly 2 parameters
@@ -188,7 +187,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	}
 
 	@Override
-	public void endResolve(final MyOwnMemory global, final ListEntityIndex local, final IFProEntity entity) throws FProException {
+	public void endResolve(final MyOwnMemory global, final ListEntityIndex local, final IFProEntity entity) throws SyntaxException {
 		// Free binded variables, if was.
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
 			FProUtil.unbind(((BoundStackTop<FProUtil.Change>)local.stack.pop()).getChangeChain());
@@ -196,7 +195,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	}
 
 	@Override
-	public void afterCall(final MyOwnMemory global, final ListEntityIndex local) throws FProException {
+	public void afterCall(final MyOwnMemory global, final ListEntityIndex local) throws SyntaxException {
 		global.collection.add(local);	// Return unused instance to cache
 	}
 

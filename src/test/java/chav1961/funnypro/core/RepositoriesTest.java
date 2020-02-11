@@ -27,7 +27,6 @@ import chav1961.funnypro.core.entities.OperatorEntity;
 import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
-import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
@@ -41,6 +40,7 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.charsource.ReaderCharSource;
 import chav1961.purelib.streams.chartarget.WriterCharTarget;
@@ -251,7 +251,7 @@ public class RepositoriesTest {
 	
 	
 	@Test
-	public void parsersTest() throws IOException, FProException, ContentException, PrintingException {
+	public void parsersTest() throws IOException, ContentException, PrintingException {
 		final LoggerFacade			log = new DefaultLoggerFacade();
 		final EntitiesRepo			repo = new EntitiesRepo(log,new Properties());
 		final ParserAndPrinter		pap = new ParserAndPrinter(log,new Properties(),repo);
@@ -265,7 +265,7 @@ public class RepositoriesTest {
 			
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 											try{pap.putEntity(entity,ct);
 											} catch (PrintingException e) {
 												e.printStackTrace();

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Properties;
 
 import chav1961.funnypro.core.entities.EnternalPluginEntity;
-import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -18,6 +17,7 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Local extends LocalDescriptor, ProcessingType extends Enum<?>> implements IResolvable<Global,Local>, FProPluginList {
@@ -67,43 +67,43 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 	@Override public int[] getVersion() {return pluginVersion;}
 
 	@Override
-	public Global onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws FProException {
+	public Global onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws SyntaxException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void onRemove(final Global global) throws FProException {
+	public void onRemove(final Global global) throws SyntaxException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public Local beforeCall(final Global global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws FProException {
+	public Local beforeCall(final Global global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ResolveRC firstResolve(final Global global, final Local local, final IFProEntity entity) throws FProException {
+	public ResolveRC firstResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ResolveRC nextResolve(final Global global, final Local local, final IFProEntity entity) throws FProException {
+	public ResolveRC nextResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void endResolve(final Global global, final Local local, final IFProEntity entity) throws FProException {
+	public void endResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void afterCall(final Global global, final Local local) throws FProException {
+	public void afterCall(final Global global, final Local local) throws SyntaxException {
 		// TODO Auto-generated method stub
 	}
 

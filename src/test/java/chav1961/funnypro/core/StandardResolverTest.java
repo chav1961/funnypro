@@ -9,9 +9,6 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
@@ -21,6 +18,9 @@ import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.DefaultLoggerFacade;
 import chav1961.purelib.basic.URIUtils;
 import chav1961.purelib.basic.Utils;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.charsource.ArrayCharSource;
 import chav1961.purelib.streams.interfaces.CharacterSource;
@@ -42,7 +42,7 @@ public class StandardResolverTest {
 
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 											repo.predicateRepo().assertZ(entity);
 											return true;
 										}
@@ -53,7 +53,7 @@ public class StandardResolverTest {
 
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 											processing(sr,global,stack,entity,vars,true);
 											vars.clear();
 											return true;
@@ -65,7 +65,7 @@ public class StandardResolverTest {
 
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 											processing(sr,global,stack,entity,vars,false);
 											vars.clear();
 											return true;
@@ -89,7 +89,7 @@ public class StandardResolverTest {
 
 			pap.parseEntities(cs,new FProParserCallback(){	// Prepare environment
 										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 											repo.predicateRepo().assertZ(entity);
 											return true;
 										}
@@ -104,7 +104,7 @@ public class StandardResolverTest {
 			for (int index = 0; index < 1000000; index++) {
 				pap.parseEntities(content,0,new FProParserCallback(){
 												@Override
-												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProException, IOException {
+												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 													processing(sr,global,stack,entity,vars,true);
 													vars.clear();
 													return true;
@@ -118,12 +118,12 @@ public class StandardResolverTest {
 		}
 	}
 	
-	private void processing(final StandardResolver sr, final GlobalDescriptor global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult) throws FProException {
+	private void processing(final StandardResolver sr, final GlobalDescriptor global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult) throws SyntaxException {
 		final IFProCallback	callback = new IFProCallback(){
 								@Override public void beforeFirstCall() {}
 								@Override public void afterLastCall() {}
 								@Override
-								public boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws FProParsingException, FProPrintingException {
+								public boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws SyntaxException {
 									return false;
 								}
 							}; 

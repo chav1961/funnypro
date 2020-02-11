@@ -11,9 +11,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.entities.EnternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
@@ -48,6 +45,7 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
@@ -218,7 +216,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	@Override public int[] getVersion() {return null;}
 
 	@Override
-	public GlobalDescriptor onLoad(final LoggerFacade log, final Properties parameters, final IFProEntitiesRepo repo) throws FProException {
+	public GlobalDescriptor onLoad(final LoggerFacade log, final Properties parameters, final IFProEntitiesRepo repo) throws SyntaxException  {
 		final GlobalDescriptor					desc = new GlobalDescriptor();
 		final Set<Long>							ids = new HashSet<>();
 		final Map<Long,QuickIds>				registered = new HashMap<>();
@@ -253,21 +251,21 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					actualLog.message(Severity.info,"Register predicate %1$s...", item.text);
 					try{pap.parseEntities(item.text.toCharArray(),0,new FProParserCallback(){
 													@Override
-													public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+													public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 														ids.add(entity.getEntityId());
 														fillQuickIds(registered,new QuickIds(entity,item.action));
 														return true;
 													}
 												}
 						);
-					} catch (FProParsingException | IOException exc) {
+					} catch (SyntaxException | IOException exc) {
 //						exc.printStackTrace();
 						actualLog.message(Severity.info,"Predicate registration failed for %1$s: %2$s", item.text, exc.getMessage());
 						throw new IllegalArgumentException("Attempt to register predicate ["+item+"] failed: "+exc.getMessage(),exc); 
 					}
 					actualLog.message(Severity.info,"Predicate %1$s was registeded successfully", item.text);
 				}
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 				actualLog.message(Severity.info,"Problem creating predicate parser: %1$s", exc.getMessage());
 				throw new IllegalArgumentException("Attempt to register predicates failed: "+exc.getMessage(),exc); 
 			}
@@ -283,7 +281,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	@Override
-	public void onRemove(final GlobalDescriptor global) throws FProException {
+	public void onRemove(final GlobalDescriptor global) throws SyntaxException {
 		if (global == null) {
 			throw new IllegalArgumentException("Global object can't be null!");
 		}
@@ -307,7 +305,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	@Override
-	public LocalDescriptor beforeCall(final GlobalDescriptor global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws FProException {
+	public LocalDescriptor beforeCall(final GlobalDescriptor global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException {
 		if (global == null) {
 			throw new IllegalArgumentException("Global object can't be null!");
 		}
@@ -326,7 +324,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	@Override
-	public ResolveRC firstResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws FProException {
+	public ResolveRC firstResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException {
 		if (global == null) {
 			throw new IllegalArgumentException("Global object can't be null!");
 		} 
@@ -338,7 +336,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}
 
-	private ResolveRC firstResolveInternal(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws FProException {
+	private ResolveRC firstResolveInternal(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException {
 		switch (detect(global.registered,entity)) {
 			case Op1200xfxGoal		:
 				return (firstResolveInternal(global,local,((IFProOperator)entity).getRight()));
@@ -586,7 +584,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public ResolveRC nextResolve(final GlobalDescriptor global, final LocalDescriptor local, IFProEntity entity) throws FProException {
+	public ResolveRC nextResolve(final GlobalDescriptor global, final LocalDescriptor local, IFProEntity entity) throws SyntaxException {
 		if (global == null) {
 			throw new IllegalArgumentException("Global object can't be null!");
 		} 
@@ -594,11 +592,14 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			throw new IllegalArgumentException("Local object can't be null!");
 		}
 		else {
-			return nextResolveInternal(global, local, entity); 
+			try{return nextResolveInternal(global, local, entity);
+			} catch (PrintingException e) {
+				throw new SyntaxException(0, 0,e.getLocalizedMessage(),e);
+			} 
 		}
 	}
 
-	private ResolveRC nextResolveInternal(final GlobalDescriptor global, final LocalDescriptor local, IFProEntity entity) throws FProException {
+	private ResolveRC nextResolveInternal(final GlobalDescriptor global, final LocalDescriptor local, IFProEntity entity) throws SyntaxException, PrintingException {
 		switch (detect(global.registered,entity)) {
 			case Op1200xfxGoal		:
 				ResolveRC	rc = nextResolveInternal(global,local,((IFProOperator)entity).getRight());
@@ -759,7 +760,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void endResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws FProException {
+	public void endResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException {
 		if (global == null) {
 			throw new IllegalArgumentException("Global object can't be null!");
 		} 
@@ -771,7 +772,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}
 
-	private void endResolveInternal(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws FProException {
+	private void endResolveInternal(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException {
 		switch (detect(global.registered,entity)) {
 			case Op1200xfxGoal		:
 				break;
@@ -885,7 +886,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}	
 	
 	@Override
-	public void afterCall(final GlobalDescriptor global, final LocalDescriptor local) throws FProException {
+	public void afterCall(final GlobalDescriptor global, final LocalDescriptor local) throws SyntaxException {
 		local.vars = null;		
 		local.pap = null;
 		local.callback = null;
@@ -1122,7 +1123,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}
 
-	private static int lexicalCompare(final IFProEntitiesRepo repo, final IFProEntity left, final IFProEntity right) throws FProPrintingException {
+	private static int lexicalCompare(final IFProEntitiesRepo repo, final IFProEntity left, final IFProEntity right) throws SyntaxException {
 		int compare;
 		
 		if (left == right) {
@@ -1273,7 +1274,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private ResolveRC iterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity, final Iterable<IFProEntity> iterable) throws FProException {
+	private ResolveRC iterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity, final Iterable<IFProEntity> iterable) throws SyntaxException {
 		local.stack.push(GlobalStack.getIteratorStackTop(iterable,IFProEntity.class));
 		
 		while ((((Iterable)((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator()).iterator().hasNext())) {
@@ -1304,7 +1305,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private ResolveRC continueIterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity) throws FProException {
+	private ResolveRC continueIterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity) throws SyntaxException, PrintingException {
 		if (local.stack.getTopType() == StackTopType.temporary) {
 			IFProEntity		rule = ((TemporaryStackTop)local.stack.pop()).getEntity();
 			
@@ -1389,7 +1390,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		return start;
 	}
 
-	private static IFProEntity orderSetofList(final IFProEntitiesRepo repo, final IFProList setofList) throws FProPrintingException {
+	private static IFProEntity orderSetofList(final IFProEntitiesRepo repo, final IFProList setofList) throws SyntaxException {
 		if (setofList.getChild() == null || setofList.getTail() == null || ((IFProList)setofList.getTail()).getChild() == null) {
 			return setofList;
 		}
@@ -1446,7 +1447,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}	
 
-	private static boolean executeCallback(IFProCallback callback, List<IFProVariable> vars, final String[] names, final IFProEntitiesRepo repo, final IFProParserAndPrinter pap) throws FProParsingException, FProPrintingException {
+	private static boolean executeCallback(IFProCallback callback, List<IFProVariable> vars, final String[] names, final IFProEntitiesRepo repo, final IFProParserAndPrinter pap) throws SyntaxException {
 		final IFProEntity[]		resolved = new IFProEntity[names.length];
 		final String[]			printedValues = new String[names.length];
 		final StringBuilder		sb = new StringBuilder();
@@ -1457,12 +1458,15 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			resolved[index] = var.getParent() == null ? var : var.getParent();
 			try{pap.putEntity(resolved[index],ct);
 				printedValues[index++] = sb.toString();
-			} catch (PrintingException | FProPrintingException | IOException e) {
+			} catch (PrintingException | IOException e) {
 				printedValues[index++] = e.getLocalizedMessage();
 			}
 			sb.setLength(0);			
 		}
-		return callback.onResolution(names,resolved,printedValues);
+		try{return callback.onResolution(names,resolved,printedValues);
+		} catch (PrintingException e) {
+			throw new SyntaxException(0,0,e.getLocalizedMessage(),e);
+		}
 	}
 	
 	static class StandardOperators {

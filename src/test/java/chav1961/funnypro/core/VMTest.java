@@ -10,9 +10,6 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
@@ -21,6 +18,9 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.charsource.StringCharSource;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
@@ -29,7 +29,7 @@ import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 public class VMTest {
 	private static final IFProCallback	EMPTY = new IFProCallback() {
 													@Override public void beforeFirstCall() {}
-													@Override public boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws FProParsingException, FProPrintingException {return false;}
+													@Override public boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws SyntaxException, PrintingException {return false;}
 													@Override public void afterLastCall() {}
 												};
 	
@@ -94,7 +94,7 @@ public class VMTest {
 			}
 			try{vm.question(":-predicate(X)",EMPTY);
 				Assert.fail("Mandatory exception was not detected (string is not a question)");
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 			}
 
 			Assert.assertTrue(vm.goal(":-predicate(X)",EMPTY));
@@ -108,7 +108,7 @@ public class VMTest {
 			}
 			try{vm.goal("?-predicate(X)",EMPTY);
 				Assert.fail("Mandatory exception was not detected (string is not a goal)");
-			} catch (FProParsingException exc) {
+			} catch (SyntaxException exc) {
 			}
 		}
 	}
@@ -125,15 +125,15 @@ class PseudoFProVM extends FProVM {
 	protected ResolvableAndGlobal getStandardResolver() {
 		return new ResolvableAndGlobal(
 			new IResolvable<GlobalDescriptor,LocalDescriptor>() {
-			@Override public ResolveRC nextResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws FProException {return ResolveRC.False;}
+			@Override public ResolveRC nextResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.False;}
 			@Override public String getName() {return "test";}
 			@Override public int[] getVersion() {return new int[]{1};}
 			@Override public LocalDescriptor beforeCall(GlobalDescriptor global, IFProGlobalStack gs, List<IFProVariable> vars,IFProCallback callback) {return null;}
-			@Override public ResolveRC firstResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws FProException {return ResolveRC.True;}
-			@Override public void endResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws FProException {}			
+			@Override public ResolveRC firstResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.True;}
+			@Override public void endResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {}			
 			@Override public void afterCall(GlobalDescriptor global, LocalDescriptor local) {}
 			@Override public void onRemove(GlobalDescriptor global) {}
-			@Override public GlobalDescriptor onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws FProException {return null;}
+			@Override public GlobalDescriptor onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws SyntaxException {return null;}
 		},
 		null);
 	}

@@ -18,12 +18,12 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import chav1961.funnypro.core.FProVM;
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.purelib.basic.SystemErrLoggerFacade;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -65,7 +65,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	private final FProVM				vm;
 	private final LoggerFacade			logger = new SystemErrLoggerFacade();
 	
-	FunnyProEngine(final ScriptEngineFactory factory) throws FProException, IOException {
+	FunnyProEngine(final ScriptEngineFactory factory) throws ContentException, IOException {
 		this.factory = factory;
 		this.vm = new FProVM(logger,new Properties());
 		this.vm.turnOn(null);
@@ -74,7 +74,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	@Override
 	public void close() throws IOException {
 		try{vm.turnOff(new OutputStream(){public void write(int data) throws IOException {}});
-		} catch (FProException e) {
+		} catch (ContentException e) {
 		}
 		vm.close();
 	}
@@ -91,7 +91,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	@Override
 	public Object eval(Reader reader, ScriptContext context) throws ScriptException {
 		try{console(reader,context.getWriter(),context.getErrorWriter());
-		} catch (FProException e) {
+		} catch (ContentException e) {
 			throw new ScriptException(e);
 		}
 		return null;
@@ -108,17 +108,17 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	}
 
 	@Override
-	public void turnOn(final InputStream source) throws FProException, IOException {
+	public void turnOn(final InputStream source) throws ContentException, IOException {
 		vm.turnOn(source);
 	}
 
 	@Override
-	public void turnOff(final OutputStream target) throws FProException, IOException {
+	public void turnOff(final OutputStream target) throws ContentException, IOException {
 		vm.turnOff(target);
 	}
 
 	@Override
-	public void newFRB(final OutputStream target) throws FProException, IOException {
+	public void newFRB(final OutputStream target) throws ContentException, IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target stream can't be null"); 
 		}
@@ -133,37 +133,37 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	}
 
 	@Override
-	public boolean question(final String question, final IFProCallback callback) throws FProException, IOException {
+	public boolean question(final String question, final IFProCallback callback) throws ContentException, SyntaxException, IOException {
 		return vm.question(question, callback);
 	}
 
 	@Override
-	public boolean question(final String question, final IFProEntitiesRepo repo, final IFProCallback callback) throws FProException, IOException {
+	public boolean question(final String question, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException, SyntaxException, IOException {
 		return vm.question(question, repo, callback);
 	}
 
 	@Override
-	public boolean goal(final String goal, final IFProCallback callback) throws FProException, IOException {
+	public boolean goal(final String goal, final IFProCallback callback) throws ContentException, SyntaxException, IOException {
 		return vm.goal(goal, callback);
 	}
 
 	@Override
-	public boolean goal(final String goal, final IFProEntitiesRepo repo, final IFProCallback callback) throws FProException, IOException {
+	public boolean goal(final String goal, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException, SyntaxException, IOException {
 		return vm.goal(goal,repo,callback);
 	}
 
 	@Override
-	public void consult(final CharacterSource source) throws FProParsingException, IOException {
+	public void consult(final CharacterSource source) throws SyntaxException, IOException {
 		vm.consult(source);
 	}
 
 	@Override
-	public void save(final CharacterTarget target) throws FProPrintingException, IOException {
+	public void save(final CharacterTarget target) throws PrintingException, IOException {
 		vm.save(target);
 	}
 
 	@Override
-	public void console(final Reader source, final Writer target, final Writer errors) throws FProException {
+	public void console(final Reader source, final Writer target, final Writer errors) throws ContentException {
 		vm.console(source, target, errors);
 	}
 	

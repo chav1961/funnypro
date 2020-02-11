@@ -19,9 +19,6 @@ import java.util.Set;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
 import chav1961.funnypro.core.entities.PredicateEntity;
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
@@ -39,6 +36,7 @@ import chav1961.purelib.basic.AndOrTree;
 import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
@@ -334,7 +332,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 	
 	@Override
-	public void consult(final CharacterSource source) throws FProParsingException {
+	public void consult(final CharacterSource source) throws SyntaxException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source can't be null");
 		}
@@ -344,7 +342,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			
 			try{pap.parseEntities(source,new FProParserCallback(){
 										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
@@ -365,16 +363,15 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 										}
 									}
 				);
-			} catch (FProException | IOException | ContentException e) {
-//				e.printStackTrace();
-				throw new FProParsingException(0,0,e.getMessage()); 
+			} catch (IOException | ContentException e) {
+				throw new SyntaxException(0,0,e.getMessage()); 
 			} 
 			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted",count[0],ops[0]);
 		}
 	}
 
 	@Override
-	public int consult(final char[] source, int from) throws FProParsingException {
+	public int consult(final char[] source, int from) throws SyntaxException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source can't be null");
 		}
@@ -387,7 +384,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			
 			try{from = pap.parseEntities(source,from,new FProParserCallback(){
 										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
@@ -408,9 +405,9 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 										}
 									}
 				);
-			} catch (FProException | IOException e) {
+			} catch (SyntaxException | IOException e) {
 //				e.printStackTrace();
-				throw new FProParsingException(0,0,e.getMessage()); 
+				throw new SyntaxException(0,0,e.getMessage()); 
 			} 
 			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted",count[0],ops[0]);
 			return from;
@@ -418,7 +415,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public void save(final CharacterTarget target) throws FProPrintingException {
+	public void save(final CharacterTarget target) throws PrintingException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target can't be null");
 		}
@@ -438,14 +435,14 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 					}
 				}
 				getDebug().message(Severity.info,"%1$d entities was saved",count);
-			} catch (FProException | IOException | PrintingException e) {
-				throw new FProPrintingException(e.getMessage());
+			} catch (SyntaxException | IOException | PrintingException e) {
+				throw new PrintingException(e.getMessage());
 			}
 		}
 	}
 
 	@Override
-	public int save(final char[] target, final int from) throws FProPrintingException {
+	public int save(final char[] target, final int from) throws PrintingException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target can't be null");
 		}
@@ -461,7 +458,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 				result = wr.toString();			
 			} catch (IOException e) {
 //				e.printStackTrace();
-				throw new FProPrintingException(e.getMessage());
+				throw new PrintingException(e.getMessage());
 			}
 			
 			if (result.length() < target.length - from) {

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Properties;
 
 import chav1961.funnypro.core.StandardResolver;
-import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 /**
@@ -77,16 +77,16 @@ public interface IResolvable<Global,Local> {
 	 * @param parameters to use
 	 * @param repo entities repo to use with. Can be stored in the plugin for longer using
 	 * @return global object to use with longer calls
-	 * @throws FProException any plugin loading problem
+	 * @throws SyntaxException any plugin loading problem
 	 */
-	Global onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws FProException;
+	Global onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws SyntaxException;
 	
 	/**
 	 * <p>This method will be called before removing</p>
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
-	 * @throws FProException any plugin removing problem
+	 * @throws SyntaxException any plugin removing problem
 	 */
-	void onRemove(Global global) throws FProException;
+	void onRemove(Global global) throws SyntaxException;
 	
 	/**
 	 * <p>This method will be called before first call of the predicate</p>
@@ -95,9 +95,9 @@ public interface IResolvable<Global,Local> {
 	 * @param vars variables from the predicate to use. Can be null
 	 * @param callback to use for the inference
 	 * @return local object to use with longer calls
-	 * @throws FProException if any problems was detected
+	 * @throws SyntaxException if any problems was detected
 	 */
-	Local beforeCall(Global global, IFProGlobalStack gs, List<IFProVariable> vars, IFProCallback callback) throws FProException;
+	Local beforeCall(Global global, IFProGlobalStack gs, List<IFProVariable> vars, IFProCallback callback) throws SyntaxException;
 	
 	/**
 	 * <p>This method will be called on the first resolution</p>
@@ -105,9 +105,9 @@ public interface IResolvable<Global,Local> {
 	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)})
 	 * @param entity entity to resolve
 	 * @return resolution result (see {@link ResolveRC})
-	 * @throws FProException if any problems was detected
+	 * @throws SyntaxException if any problems was detected
 	 */
-	ResolveRC firstResolve(Global global, Local local, IFProEntity entity) throws FProException;
+	ResolveRC firstResolve(Global global, Local local, IFProEntity entity) throws SyntaxException;
 	
 	/**
 	 * <p>This method will be called on the sequential next resolution. Optional (if firstResolve was false, will not be called)</p>
@@ -115,25 +115,25 @@ public interface IResolvable<Global,Local> {
 	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
 	 * @param entity entity to resolve
 	 * @return resolution result (see {@link ResolveRC})
-	 * @throws FProException if any problems was detected
+	 * @throws SyntaxException if any problems was detected
 	 */
-	ResolveRC nextResolve(Global global, Local local, IFProEntity entity) throws FProException;
+	ResolveRC nextResolve(Global global, Local local, IFProEntity entity) throws SyntaxException;
 	
 	/**
 	 * <p>This method ends resolution loop</p> 
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
 	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
 	 * @param entity entity to resolve
-	 * @throws FProException if any problems was detected
+	 * @throws SyntaxException if any problems was detected
 	 */
-	void endResolve(Global global, Local local, IFProEntity entity) throws FProException;
+	void endResolve(Global global, Local local, IFProEntity entity) throws SyntaxException;
 	
 	/**
 	 * <p>This method calls after resolution loop</p>  
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
 	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
-	 * @throws FProException if any problems was detected
+	 * @throws SyntaxException if any problems was detected
 	 */
-	void afterCall(Global global, Local local) throws FProException;
+	void afterCall(Global global, Local local) throws SyntaxException;
 }
 

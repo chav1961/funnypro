@@ -13,9 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
@@ -30,7 +27,9 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
+import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
@@ -72,14 +71,14 @@ public class FProVM implements IFProVM, IFProModule {
 	public void close() throws IOException {
 		if (isTurnedOn()) {
 			try{turnOff(null);
-			} catch (FProException e) {
+			} catch (ContentException e) {
 				throw new IOException(e.getMessage(),e);
 			}
 		}
 	}
 	
 	@Override
-	public void turnOn(final InputStream source) throws FProException, IOException {
+	public void turnOn(final InputStream source) throws ContentException, IOException {
 		if (isTurnedOn()) {
 			throw new IllegalStateException("VM already is turned on");
 		}
@@ -91,15 +90,15 @@ public class FProVM implements IFProVM, IFProModule {
 				int						magic, version;
 				
 				if ((magic = dis.readInt()) != SERIALIZATION_MAGIC) {
-					throw new FProException("Invalid source stream content: magic readed ["+magic+"] is differenf to awaited ["+SERIALIZATION_MAGIC+"]");
+					throw new ContentException("Invalid source stream content: magic readed ["+magic+"] is differenf to awaited ["+SERIALIZATION_MAGIC+"]");
 				}
 				else if ((version = dis.readInt()) != SERIALIZATION_VERSION) {
-					throw new FProException("Unsupported source stream content: version readed ["+version+"] is differenf to awaited ["+SERIALIZATION_VERSION+"]");
+					throw new ContentException("Unsupported source stream content: version readed ["+version+"] is differenf to awaited ["+SERIALIZATION_VERSION+"]");
 				}
 				else {
 					repo.deserialize(dis);
 					if ((magic = dis.readInt()) != SERIALIZATION_MAGIC) {
-						throw new FProException("Invalid source stream content: input stream contains something after the data end!");
+						throw new ContentException("Invalid source stream content: input stream contains something after the data end!");
 					}
 				}
 			}
@@ -111,7 +110,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	@Override
-	public void turnOff(OutputStream target) throws FProException, IOException {
+	public void turnOff(OutputStream target) throws ContentException, IOException {
 		if (!isTurnedOn()) {
 			throw new IllegalStateException("VM already is turned off");
 		}
@@ -132,7 +131,7 @@ public class FProVM implements IFProVM, IFProModule {
 			
 			try{repo.close();
 			} catch (Exception e) {
-				throw new FProException(e.getMessage(),e);
+				throw new ContentException(e.getMessage(),e);
 			}
 		}
 	}
@@ -143,7 +142,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	@Override
-	public void newFRB(final OutputStream target) throws FProException, IOException {
+	public void newFRB(final OutputStream target) throws ContentException, IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target can't be null");
 		}
@@ -160,13 +159,13 @@ public class FProVM implements IFProVM, IFProModule {
 				dos.writeInt(SERIALIZATION_MAGIC);		// Write tail
 				dos.flush();
 			} catch (Exception e) {
-				throw new FProException(e.getMessage(),e);
+				throw new ContentException(e.getMessage(),e);
 			}
 		}
 	}
 	
 	@Override
-	public boolean question(final String question, final IFProCallback callback) throws FProException, IOException {
+	public boolean question(final String question, final IFProCallback callback) throws ContentException, IOException, SyntaxException {
 		if (!isTurnedOn()) {
 			throw new IllegalStateException("You can't make this operatio when VM is turned on. Turn off VM firstly!");
 		}
@@ -176,7 +175,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}	
 	
 	@Override
-	public boolean question(final String question, final IFProEntitiesRepo repo, final IFProCallback callback) throws FProException, IOException {
+	public boolean question(final String question, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException, IOException, SyntaxException {
 		if (!isTurnedOn()) {
 			throw new IllegalStateException("You can't make this operatio when VM is turned on. Turn off VM firstly!");
 		}
@@ -186,7 +185,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	@Override
-	public boolean goal(final String goal, final IFProCallback callback) throws FProException, IOException {
+	public boolean goal(final String goal, final IFProCallback callback) throws ContentException, IOException, SyntaxException {
 		if (!isTurnedOn()) {
 			throw new IllegalStateException("You can't make this operatio when VM is turned on. Turn off VM firstly!");
 		}
@@ -196,12 +195,12 @@ public class FProVM implements IFProVM, IFProModule {
 	}	
 	
 	@Override
-	public boolean goal(final String goal, final IFProEntitiesRepo repo, final IFProCallback callback) throws FProException, IOException {
+	public boolean goal(final String goal, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException, SyntaxException, IOException {
 		return internalGoal(goal,repo,callback,this.goal,"goal");
 	}
 
 	@Override
-	public void consult(final CharacterSource source) throws FProParsingException, IOException {
+	public void consult(final CharacterSource source) throws SyntaxException, IOException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source can't be null");
 		}
@@ -214,7 +213,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	@Override
-	public void save(final CharacterTarget target) throws FProPrintingException, IOException {
+	public void save(final CharacterTarget target) throws PrintingException, IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target can't be null");
 		}
@@ -227,7 +226,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	@Override
-	public void console(final Reader source, final Writer target, final Writer errors) throws FProException {
+	public void console(final Reader source, final Writer target, final Writer errors) throws ContentException {
 		if (!isTurnedOn()) {
 			throw new IllegalStateException("VM is not turned on. Turn on it firstly!");
 		}
@@ -244,7 +243,7 @@ public class FProVM implements IFProVM, IFProModule {
 				while (continuation[0] && (command = brdr.readLine()) != null) {
 					try{pap.parseEntities(command.toCharArray(),0,new FProParserCallback() {
 											@Override
-											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 												try{
 												if (entity.getEntityId() == quit && entity.getEntityType().equals(EntityType.predicate) && ((IFProPredicate)entity).getArity() == 0) {
 													target.write("quit successful!\n");
@@ -263,7 +262,7 @@ public class FProVM implements IFProVM, IFProModule {
 														@Override public void beforeFirstCall() {}
 														
 														@Override 
-														public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws FProPrintingException, FProParsingException {
+														public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws PrintingException, SyntaxException {
 															try{for (int index = 0, maxIndex = Math.min(names.length,resolvedVariables.length); index < maxIndex; index++) {
 																	final StringBuilder	sb = new StringBuilder();
 																	
@@ -272,8 +271,8 @@ public class FProVM implements IFProVM, IFProModule {
 																}
 																target.write("proceed? ");
 																target.flush();
-															} catch (IOException | PrintingException | FProException e) {
-																throw new FProPrintingException(e);
+															} catch (IOException | ContentException e) {
+																throw new PrintingException(e);
 															}
 
 															try{final String	buffer = brdr.readLine();
@@ -290,7 +289,7 @@ public class FProVM implements IFProVM, IFProModule {
 													repo.predicateRepo().assertZ(entity);
 													target.write("Predicate was asserted\n>");
 												}
-												} catch (FProException exc) {
+												} catch (ContentException exc) {
 //													exc.printStackTrace();
 													errors.write(String.format("Error executing input: "+exc.getMessage()));
 													return false;
@@ -299,16 +298,16 @@ public class FProVM implements IFProVM, IFProModule {
 											}
 										}
 							);
-					} catch (FProParsingException e) {
+					} catch (SyntaxException e) {
 						errors.write(e.getMessage());
-						throw new FProException(e.getMessage()); 
+						throw new ContentException(e.getMessage()); 
 					} finally {
 						target.flush();
 						errors.flush();
 					}
 				}				
 			} catch (Exception e) {
-				throw new FProException(e.getMessage()); 
+				throw new ContentException(e.getMessage()); 
 			} finally {
 				final long	quitName = repo.termRepo().seekName("quit"); 
 				if (quitName >= 0) {
@@ -318,7 +317,7 @@ public class FProVM implements IFProVM, IFProModule {
 		}
 	}
 
-	private boolean internalGoal(final String source, final IFProEntitiesRepo repo, final IFProCallback callback, final long opId, final String awaited) throws FProException, IOException {
+	private boolean internalGoal(final String source, final IFProEntitiesRepo repo, final IFProCallback callback, final long opId, final String awaited) throws ContentException, SyntaxException, IOException {
 		if (source == null || source.isEmpty()) {
 			throw new IllegalArgumentException("Question string can't be null");
 		}
@@ -334,16 +333,16 @@ public class FProVM implements IFProVM, IFProModule {
 			
 			pap.parseEntities(source.toCharArray(),0,new FProParserCallback(){
 											@Override
-											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws FProParsingException, IOException {
+											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 												if (entity.getEntityId() == opId && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													try{result[0] = inference(entity,vars,repo,callback);
-													} catch (FProException e) {
+													} catch (ContentException e) {
 //														e.printStackTrace();
-														throw new FProParsingException(0,0,e.getMessage());
+														throw new SyntaxException(0,0,e.getMessage());
 													}
 												}
 												else {
-													throw new FProParsingException(0,0,"Illegal source content ("+awaited+" awaited)"); 
+													throw new SyntaxException(0,0,"Illegal source content ("+awaited+" awaited)"); 
 												}
 												return false;
 											}
@@ -361,11 +360,11 @@ public class FProVM implements IFProVM, IFProModule {
 		throw new IllegalStateException("No standard resolver was registered in the system. Use inference with explicit call");
 	}
 
-	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final IFProCallback callback) throws FProException {
+	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException {
 		return inference(entity,vars,repo,getStandardResolver(),callback);
 	}	
 	
-	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final ResolvableAndGlobal rag, final IFProCallback callback) throws FProException {
+	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final ResolvableAndGlobal rag, final IFProCallback callback) throws ContentException {
 		try(final GlobalStack	stack = new GlobalStack(getDebug(),getParameters(),repo)) {
 			final Object 		data = rag.resolver.beforeCall(rag.global,stack,vars,callback);
 			
@@ -381,7 +380,7 @@ public class FProVM implements IFProVM, IFProModule {
 				rag.resolver.afterCall(rag.global,data);
 			}
 		} catch (Exception e) {
-			throw new FProException(e.getMessage(),e);
+			throw new ContentException(e.getMessage(),e);
 		}
 	}
 	

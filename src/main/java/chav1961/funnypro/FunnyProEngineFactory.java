@@ -7,7 +7,7 @@ import java.util.List;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
-import chav1961.funnypro.core.exceptions.FProException;
+import chav1961.purelib.basic.exceptions.ContentException;
 
 /**
  * <p>This class implements engine factory for the Funny Prolog interpreter. All requirements about it can be read in the {@link ScriptEngineFactory}
@@ -96,7 +96,7 @@ public class FunnyProEngineFactory implements ScriptEngineFactory {
 	@Override
 	public ScriptEngine getScriptEngine() {
 		try{return new FunnyProEngine(this);
-		} catch (FProException | IOException e) {
+		} catch (ContentException | IOException e) {
 			e.printStackTrace();
 			return null;
 		}

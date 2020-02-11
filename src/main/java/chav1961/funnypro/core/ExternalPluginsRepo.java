@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
-import chav1961.funnypro.core.exceptions.FProException;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -24,6 +23,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
@@ -83,7 +83,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			for (List<PluginItem> desc : plugins.values()) {
 				for (PluginItem item : desc) {
 					try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
-					} catch (FProException e) {
+					} catch (SyntaxException  e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}

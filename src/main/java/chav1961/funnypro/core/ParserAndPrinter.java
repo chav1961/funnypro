@@ -16,9 +16,6 @@ import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
-import chav1961.funnypro.core.exceptions.FProException;
-import chav1961.funnypro.core.exceptions.FProParsingException;
-import chav1961.funnypro.core.exceptions.FProPrintingException;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -48,11 +45,12 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private static final ExtendedBitCharSet	VALID_LETTERS = new ExtendedBitCharSet(); 
 	private static final ExtendedBitCharSet	VALID_UPPER_LETTERS = new ExtendedBitCharSet(); 
 	private static final ExtendedBitCharSet	VALID_LOWER_LETTERS = new ExtendedBitCharSet(); 
-	
+
+	private final long				colonId, tailId, goalId;
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
-	private final long				colonId, tailId, tempLong[] = new long[2], entityId[] = new long[1];
+	private final long				tempLong[] = new long[2], entityId[] = new long[1];
 
 	private enum NameClassification {
 		anonymous, term
@@ -76,7 +74,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		VALID_LOWER_LETTERS.add('\u0451');
 	}
 	
-	public ParserAndPrinter(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) throws FProParsingException {
+	public ParserAndPrinter(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) throws SyntaxException {
 		if (log == null) {
 			throw new IllegalArgumentException("Log can't be null"); 
 		}
@@ -91,6 +89,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 			this.repo = repo;		
 			this.colonId = repo.termRepo().seekName(",");
 			this.tailId = repo.termRepo().seekName("|");
+			this.goalId = repo.termRepo().seekName(":-");
 		}
 	}
 	
@@ -102,7 +101,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	}
 
 	@Override
-	public void parseEntities(final CharacterSource source, final FProParserCallback callback) throws FProParsingException, IOException, ContentException {
+	public void parseEntities(final CharacterSource source, final FProParserCallback callback) throws SyntaxException, IOException, ContentException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source reader can't be null");
 		}
@@ -122,7 +121,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	}
 
 	@Override
-	public int parseEntities(final char[] source, int from, final FProParserCallback callback)  throws FProParsingException, IOException {
+	public int parseEntities(final char[] source, int from, final FProParserCallback callback)  throws SyntaxException, IOException {
 		final List<IFProVariable>	vars = new ArrayList<>();
 		
 		try{final IFProEntity[]		result = new IFProEntity[1];
@@ -145,12 +144,12 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 			}
 			return from;
 		} catch (Exception e) {
-			if (e instanceof FProParsingException) {
-				throw (FProParsingException)e;
+			if (e instanceof SyntaxException) {
+				throw (SyntaxException)e;
 			}
 			else {
 				e.printStackTrace();
-				throw new FProParsingException(0,0,e.getMessage(),e);
+				throw new SyntaxException(0,0,e.getMessage(),e);
 			}
 		}
 	}
@@ -278,13 +277,13 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	}
 	
 	@Override
-	public int putEntity(final IFProEntity entity, final char[] target, int from) throws IOException, FProPrintingException {
+	public int putEntity(final IFProEntity entity, final char[] target, int from) throws IOException, PrintingException {
 		final int	result = internalPutEntity(entity,target,from);
 		
 		return result > target.length ? -result : result;
 	}
 		
-	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws FProException, IOException, SyntaxException {
+	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws ContentException, IOException, SyntaxException {
 		final IFProEntity[]	top = new IFProEntity[priorities.length+1];
 		final int			maxLen = source.length;
 		boolean				prefixNow = true, found;
@@ -308,7 +307,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				case '['	:
 					from++;
 					if (!prefixNow) {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
 						while (from < maxLen && source[from] <= ' ') from++;
@@ -329,7 +328,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 								prefixNow = false;
 							}
 							else {
-								throw new FProParsingException(FProUtil.toRowCol(source,from),"Close bracket ']' missing!"); 
+								throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Close bracket ']' missing!"); 
 							}
 						}
 					}
@@ -337,7 +336,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				case '('	:
 					from++;
 					if (!prefixNow) {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
 						from = parse(source,from,priorities,1101,vars,result);
@@ -350,7 +349,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 							prefixNow = false;
 						}
 						else {
-							throw new FProParsingException(FProUtil.toRowCol(source,from),"Close bracket ')' missing!"); 
+							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Close bracket ')' missing!"); 
 						}
 					}
 					break;
@@ -368,7 +367,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 						final long	stringId = getRepo().stringRepo().placeName(source,startConst+1,from,null);
 						
 						if (!prefixNow) {
-							throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 						}
 						else {
 							top[0] = new StringEntity(stringId);
@@ -378,14 +377,14 @@ loop:	while (from < maxLen && source[from] != '.') {
 						}
 					}
 					else {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Unclosed quoted string detected");
+						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Unclosed quoted string detected");
 					}					
 					break;
 				case '0' : case '1' : case '2' : case '3' : case '4' : case '5' : case '6' : case '7' : case '8' : case '9' :
 					
 					from = CharUtils.parseNumber(source,from,tempLong,CharUtils.PREF_ANY,false);
 					if (!prefixNow) {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
 						switch ((int)tempLong[1]) {
@@ -401,7 +400,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				case '!' :	// 'cut' predicate
 					from++;
 					if (!prefixNow) {
-						throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
 						top[0] = new PredicateEntity(repo.termRepo().placeName("!",null));
@@ -416,7 +415,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 						final IFProVariable		var = new VariableEntity(varId); 
 						
 						if (!prefixNow) {
-							throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 						}
 						else {
 							top[0] = var;
@@ -432,7 +431,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 						switch (classifyName(source,startName,endName)) {
 							case anonymous	:
 								if (!prefixNow) {
-									throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+									throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 								}
 								else {
 									top[0] = new AnonymousEntity();
@@ -504,12 +503,12 @@ loop:	while (from < maxLen && source[from] != '.') {
 											}
 										}
 										if (!found) {
-											throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting!"); 
+											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Illegal nesting!"); 
 										}
 										break;
 									case term 		:
 										if (!prefixNow) {
-											throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 										}
 										else {
 											top[0] = new PredicateEntity(nameId);
@@ -536,7 +535,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 														((IFProPredicate)top[0]).setParameters(andChain2Array(result[0],top[0],colonId));
 													}
 													else {
-														throw new FProParsingException(FProUtil.toRowCol(source,from),"Close bracket ')' missing!"); 
+														throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Close bracket ')' missing!"); 
 													}												
 												}
 											}
@@ -546,7 +545,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 										break;
 									case extern		:
 										if (!prefixNow) {
-											throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 										}
 										else {
 											from = parseExtern(source,from,result);
@@ -557,7 +556,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 										break;
 									case op		:
 										if (!prefixNow) {
-											throw new FProParsingException(FProUtil.toRowCol(source,from),"Two operands witout infix operators detected"); 
+											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 										}
 										else {
 											from = parseOp(source,from,result);
@@ -567,11 +566,11 @@ loop:	while (from < maxLen && source[from] != '.') {
 										}
 										break;
 									default :
-										throw new FProParsingException(FProUtil.toRowCol(source,from),"Unsupported classification ["+getRepo().classify(nameId)+"] for the term"); 
+										throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Unsupported classification ["+getRepo().classify(nameId)+"] for the term"); 
 								}
 								break;
 							default:
-								throw new FProParsingException(FProUtil.toRowCol(source,from),"Unsupported classification ["+classifyName(source,startName,endName)+"] for the term"); 
+								throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Unsupported classification ["+classifyName(source,startName,endName)+"] for the term"); 
 						}
 					}
 					else {
@@ -579,7 +578,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 						found = false;
 						
 						if (repo.classify(entityId[0]) != Classification.operator) {
-							throw new FProParsingException(FProUtil.toRowCol(source,from),"Operator awaited!"); 
+							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Operator awaited!"); 
 						}
 						
 						if (prefixNow) {
@@ -642,7 +641,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 											top[location] = op.setLeft(collapse(top,location).setParent(op));
 										}
 										else {
-											throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
+											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
 										}
 										actualMax = item.getUnderlyingPriority(IFProOperator.RIGHT);
 										actualMin = IFProOperator.MIN_PRTY;
@@ -654,7 +653,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 							}
 						}
 						if (!found) {
-							throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
+							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Illegal nesting for operator ["+repo.termRepo().getName(entityId[0])+"]!"); 
 						}
 						break;
 					}
@@ -665,6 +664,12 @@ loop:	while (from < maxLen && source[from] != '.') {
 			from++;
 		}
 		result[0] = collapse(top,top.length-1);
+		if (result[0].getEntityType() == EntityType.operator
+			&& ((IFProOperator)result[0]).getOperatorType() == OperatorType.xfx
+			&& ((IFProOperator)result[0]).getEntityId() == goalId 
+			&& ((IFProOperator)result[0]).getLeft().getEntityType() == EntityType.predicate) {
+			result[0] = convert2Ruled(result[0]);
+		}
 		return from;
 	}
 
@@ -703,7 +708,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		return result;
 	}
 
-	private IFProEntity convert2List(final char[] source, final int from, final IFProEntity root) throws FProParsingException {
+	private IFProEntity convert2List(final char[] source, final int from, final IFProEntity root) throws SyntaxException {
 		IFProList		actual;
 		
 		if (root.getEntityId() == tailId && (root instanceof IFProOperator)) {
@@ -724,7 +729,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				return actual;
 			}
 			else {
-				throw new FProParsingException(FProUtil.toRowCol(source,from),"Tail of the list can be variable or anonymous only!"); 
+				throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Tail of the list can be variable or anonymous only!"); 
 			}
 		}
 		else if (root.getEntityId() == colonId && (root instanceof IFProOperator)) {
@@ -773,7 +778,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		return data;
 	}
 
-	private int extractEntityId(final char[] source, int from, final long[] result) throws FProParsingException {
+	private int extractEntityId(final char[] source, int from, final long[] result) throws SyntaxException {
 		final int	maxLength = source.length; 
 		
 		if (from < maxLength && source[from] == '\'') {
@@ -788,7 +793,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 				return from;
 			}
 			else {
-				throw new FProParsingException(FProUtil.toRowCol(source,from),"Missing quote (\')!"); 
+				throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing quote (\')!"); 
 			}
 		}
 		else {
@@ -796,7 +801,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			final long	maxLex = getRepo().termRepo().seekName(source,startName,source.length);
 						
 			if (maxLex == -startName - 1) {
-				throw new FProParsingException(FProUtil.toRowCol(source,from),"Unknown term/operator was detected!"); 
+				throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Unknown term/operator was detected!"); 
 			}
 			else {
 				endName = (int) - maxLex - 1;
@@ -806,7 +811,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 	}
 	
-	private int parseExtern(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException {
+	private int parseExtern(final char[] source, final int from, final IFProEntity[] result) throws SyntaxException {
 		final int[]	locations[] = new int[3][2];
 		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b\"%0c\"%b,%b\"%1c\"%b,%b\"%2d\"%b)",locations);
 		
@@ -817,14 +822,14 @@ loop:	while (from < maxLen && source[from] != '.') {
 				result[0] = new EnternalPluginEntity(item.getDescriptor().getPluginEntity());
 				return parsed;
 			}
-			throw new FProParsingException(FProUtil.toRowCol(source,from),"External plugin ["+new String(source,locations[0][0],locations[0][1])+"] was not found in the external plugin repo!");
+			throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"External plugin ["+new String(source,locations[0][0],locations[0][1])+"] was not found in the external plugin repo!");
 		}
 		else {
-			throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal external plugin definition format!");
+			throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Illegal external plugin definition format!");
 		}
 	}
 
-	private int parseOp(final char[] source, final int from, final IFProEntity[] result) throws FProParsingException, SyntaxException {
+	private int parseOp(final char[] source, final int from, final IFProEntity[] result) throws SyntaxException, SyntaxException {
 		final int[]	locations[] = new int[3][2], forPrty = new int[2];
 		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b%0d%b,%b%1c%b,%b%2c%b)",locations);
 		
@@ -837,7 +842,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			return parsed;
 		}
 		else {
-			throw new FProParsingException(FProUtil.toRowCol(source,from),"Illegal operator definition format!");
+			throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Illegal operator definition format!");
 		}
 	}	
 
@@ -884,7 +889,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 	}
 	
-	private int internalPutEntity(final IFProEntity entity, final char[] target, int from) throws IOException, FProPrintingException {
+	private int internalPutEntity(final IFProEntity entity, final char[] target, int from) throws IOException, PrintingException {
 		if (entity == null) {
 			throw new IllegalArgumentException("Entity places can't be null!"); 
 		}
@@ -1115,6 +1120,16 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 		return from;
 	}
+
+	private IFProEntity convert2Ruled(final IFProEntity entity) {
+		final IFProEntity left = ((IFProOperator)entity).getLeft(), right = ((IFProOperator)entity).getRight();
+		
+		((IFProPredicate)left).setRule(right);
+		right.setParent(left);
+		left.setParent(null);
+		
+		return left;
+	}
 }
 
 
@@ -1204,6 +1219,7 @@ class VarRepo implements AutoCloseable {
 		return "VarRepo [vars=" + vars + ", varRepo=" + Arrays.toString(varRepo) + ", varCount=" + varCount + "]";
 	}
 
+	
 	private static class VariableChain implements Comparable<VariableChain>{
 		public long				id;
 		public IFProVariable	chain = null;

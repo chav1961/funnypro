@@ -12,7 +12,6 @@ import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
-import chav1961.funnypro.core.exceptions.FProParsingException;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
@@ -23,7 +22,7 @@ import chav1961.funnypro.core.FProUtil.Change;
 
 public class FProUtilTest {
 	@Test
-	public void simpleParserStaticTest() throws FProParsingException {
+	public void simpleParserStaticTest()  {
 		final int[][]	locations = new int[5][];
 		
 		try{FProUtil.simpleParser(null, 0, "%", locations);			// Illegal calls
@@ -158,7 +157,7 @@ public class FProUtilTest {
 
 
 	@Test
-	public void unificationStaticTest() throws FProParsingException {
+	public void unificationStaticTest() {
 		final Change[]	list = new Change[1];
 
 		try{FProUtil.unify(null, null,null);

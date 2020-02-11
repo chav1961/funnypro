@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import chav1961.funnypro.core.exceptions.FProParsingException;
+import chav1961.purelib.basic.exceptions.SyntaxException;
 
 /**
  * <p>This interface describes string serializable items</p>
@@ -45,5 +45,5 @@ public interface IFProStringSerializable {
 	 * @param source char source containing item
 	 * @throws FProParsingException any data structure problems were detected
 	 */
-	void deserialize(Reader source) throws FProParsingException;
+	void deserialize(Reader source) throws SyntaxException;
 }
