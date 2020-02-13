@@ -37,7 +37,7 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * @author Alexander Chernomyrdin aka chav1961
 	 * @since 0.0.1
 	 */
-	public interface ExternalEntityDescriptor {
+	public interface ExternalEntityDescriptor<Global> {
 		/**
 		 * <p>Get entity template</p>
 		 * @return emtoty template
@@ -54,13 +54,13 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 		 * <p>Get resolver associated with the predicate</p>
 		 * @return resolver associated
 		 */
-		<Global,Local> IResolvable<Global,Local> getResolver();
+		<Local> IResolvable<Global,Local> getResolver();
 		
 		/**
-		 * <p>Get logbal object for the given resolver
+		 * <p>Get global object for the given resolver
 		 * @return global object for resolver
 		 */
-		Object getGlobal();
+		Global getGlobal();
 	}
 	
 	/**
@@ -122,7 +122,7 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * @param template template t get resolver for
 	 * @return resolver associated or null if not exists
 	 */
-	ExternalEntityDescriptor getResolver(IFProEntity template);
+	<Global> ExternalEntityDescriptor<Global> getResolver(IFProEntity template);
 	
 	/**
 	 * <p>Purge all resolver associations</p>

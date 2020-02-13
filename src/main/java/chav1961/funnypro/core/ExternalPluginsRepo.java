@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,7 +15,7 @@ import java.util.ServiceLoader;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
-import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
+import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IFProOperator;
@@ -25,15 +24,16 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 
 class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	public static final String						PLUGIN_PACKAGES = "pluginPackages";
 	
 	private final LoggerFacade						log;
 	private final Properties						props;
-	private final Map<PluginKey,List<PluginItem>>	plugins = new HashMap<>();
-	private final List<ExternalEntityDescriptor>	operators = new ArrayList<>();
-	private final List<ExternalEntityDescriptor>	predicates = new ArrayList<>();
+	private final Map<IFProExternalEntity,List<PluginItem>>	plugins = new HashMap<>();
+	private final List<ExternalEntityDescriptor<?>>	operators = new ArrayList<>();
+	private final List<ExternalEntityDescriptor<?>>	predicates = new ArrayList<>();
 
 	public ExternalPluginsRepo(final LoggerFacade log, final Properties prop) throws IOException {
 		if (log == null) {
@@ -44,19 +44,15 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		}
 		else {
 			this.log = log;				this.props = prop;
-			for (String packName : (this.getClass().getPackage().getName()+';'+prop.getProperty(PLUGIN_PACKAGES,"")).split("\\;")) {
-				if (packName != null && !packName.isEmpty()) {
-
-					for (FProPluginList 		desc : ServiceLoader.load(FProPluginList.class)) {
-						for (PluginDescriptor	item : desc.getPluginDescriptors()) {
-							final PluginKey		key = new PluginKey(item.getPluginEntity().getPluginName(),item.getPluginEntity().getPluginProducer(),item.getPluginEntity().getPluginVersion());
-							
-							if (!plugins.containsKey(key)) {
-								plugins.put(key,new ArrayList<PluginItem>());
-							}
-							plugins.get(key).add(new PluginItemImpl(item,null));
-						}
+			
+			for (FProPluginList 				desc : ServiceLoader.load(FProPluginList.class)) {
+				for (PluginDescriptor			item : desc.getPluginDescriptors()) {
+					final IFProExternalEntity	key = item.getPluginEntity();
+					
+					if (!plugins.containsKey(key)) {
+						plugins.put(key,new ArrayList<PluginItem>());
 					}
+					plugins.get(key).add(new PluginItemImpl(item,null));
 				}
 			}
 		}
@@ -66,7 +62,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	@Override public Properties getParameters() {return props;}		
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws SyntaxException {
 		for (List<PluginItem> desc : plugins.values()) {
 			for (PluginItem item : desc) {
 				item.getDescriptor().getPluginEntity().getResolver().onRemove(item.getGlobal());
@@ -80,13 +76,20 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new IllegalArgumentException("Entites repo can't be null"); 
 		}
 		else {
-			for (List<PluginItem> desc : plugins.values()) {
-				for (PluginItem item : desc) {
-					try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
-					} catch (SyntaxException  e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+			boolean	errosDetected = false;
+			
+			try (final LoggerFacade	logger = getDebug().transaction("externalPlugins")) {
+				for (List<PluginItem> desc : plugins.values()) {
+					for (PluginItem item : desc) {
+						try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
+						} catch (SyntaxException  e) {
+							logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
+							errosDetected = true;
+						}
 					}
+				}
+				if (!errosDetected) {
+					logger.rollback();
 				}
 			}
 		}
@@ -96,10 +99,8 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	public Iterable<PluginItem> seek(final String pluginName, final String pluginProducer, final int[] pluginVersion) {
 		final List<PluginItem>	collection = new ArrayList<PluginItem>();
 		
-		for (Entry<PluginKey, List<PluginItem>> item : plugins.entrySet()) {
-			if ((pluginName == null || pluginName.isEmpty() || item.getKey().getPluginName().equals(pluginName))
-				&& (pluginProducer == null || pluginProducer.isEmpty() || item.getKey().getPluginProducer().equals(pluginProducer))
-				&& (pluginVersion == null || pluginVersion.length == 0 || Arrays.equals(item.getKey().getPluginVersion(),pluginVersion))) {
+		for (Entry<IFProExternalEntity, List<PluginItem>> item : plugins.entrySet()) {
+			if (equals(item.getKey().getPluginName(),pluginName) && equals(item.getKey().getPluginProducer(),pluginProducer)  && equals(item.getKey().getPluginVersion(),pluginVersion)) {
 				for (PluginItem element : item.getValue()) {
 					collection.add(element);
 				}
@@ -111,51 +112,6 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	@Override
 	public Iterable<PluginItem> allPlugins() {
 		return seek(null,null,null);
-	}
-	
-	private static class PluginKey {
-		private final String	pluginName;
-		private final String	pluginProducer;
-		private final int[]		pluginVersion;
-		
-		public PluginKey(final String pluginName, final String pluginProducer, final int[] pluginVersion) {
-			this.pluginName = pluginName;
-			this.pluginProducer = pluginProducer;
-			this.pluginVersion = pluginVersion;
-		}
-
-		@Override public String toString() {return "PluginKey [pluginName=" + pluginName + ", pluginProducer=" + pluginProducer + ", pluginVersion=" + Arrays.toString(pluginVersion) + "]";}
-
-		public String getPluginName() {return pluginName;}
-		public String getPluginProducer() {return pluginProducer;}
-		public int[] getPluginVersion() {return pluginVersion;}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((pluginName == null) ? 0 : pluginName.hashCode());
-			result = prime * result + ((pluginProducer == null) ? 0 : pluginProducer.hashCode());
-			result = prime * result + Arrays.hashCode(pluginVersion);
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			PluginKey other = (PluginKey) obj;
-			if (pluginName == null) {
-				if (other.pluginName != null) return false;
-			} else if (!pluginName.equals(other.pluginName)) return false;
-			if (pluginProducer == null) {
-				if (other.pluginProducer != null) return false;
-			} else if (!pluginProducer.equals(other.pluginProducer)) return false;
-			if (!Arrays.equals(pluginVersion, other.pluginVersion)) return false;
-			return true;
-		}
-
 	}
 
 	@Override
@@ -184,7 +140,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	}
 
 	@Override
-	public ExternalEntityDescriptor getResolver(final IFProEntity template) {
+	public ExternalEntityDescriptor<?> getResolver(final IFProEntity template) {
 		if (template == null) {
 			throw new IllegalArgumentException("Template can't be null"); 
 		}
@@ -193,16 +149,14 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			
 			switch (template.getEntityType()) {
 				case operator 	:
-					for (ExternalEntityDescriptor item : operators) {
-						if (item.getTemplate().getEntityId() == idAwaited) {
-							if (((IFProOperator)template).getOperatorType() == ((IFProOperator)item.getTemplate()).getOperatorType()) {
-								return item;
-							}
+					for (ExternalEntityDescriptor<?> item : operators) {
+						if (item.getTemplate().getEntityId() == idAwaited && ((IFProOperator)template).getOperatorType() == ((IFProOperator)item.getTemplate()).getOperatorType()) {
+							return item;
 						}
 					}
 					break;
 				case predicate 	:
-					for (ExternalEntityDescriptor item : predicates) {
+					for (ExternalEntityDescriptor<?> item : predicates) {
 						if (item.getTemplate().getEntityId() == idAwaited && ((IFProPredicate)template).getArity() == ((IFProPredicate)item.getTemplate()).getArity()) {
 							return item;
 						}
@@ -233,6 +187,14 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			}
 		}
 	}
+
+	private static boolean equals(final String left, final String right) {
+		return right == null || right.isEmpty() || left.equals(right);
+	}
+
+	private static boolean equals(final int[] left, final int[] right) {
+		return right == null || right.length == 0|| Arrays.equals(left,right);
+	}
 	
 	private static class PluginItemImpl implements PluginItem {
 		private final PluginDescriptor		desc; 
@@ -251,13 +213,13 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		@Override public String toString() {return "PluginItem [desc=" + desc + ", global=" + global + "]";}
 	}
 	
-	private static class ExternalEntityDescriptorImpl implements ExternalEntityDescriptor {
+	private static class ExternalEntityDescriptorImpl<Global> implements ExternalEntityDescriptor<Global> {
 		final IFProEntity 			template;
 		final List<IFProVariable> 	vars;
-		final IResolvable 			resolver;
-		final Object 				global;
+		final IResolvable<Global,?>	resolver;
+		final Global 				global;
 		
-		public ExternalEntityDescriptorImpl(final IFProEntity template, final List<IFProVariable> vars, final IResolvable resolver, final Object global) {
+		public ExternalEntityDescriptorImpl(final IFProEntity template, final List<IFProVariable> vars, final IResolvable<Global,?> resolver, final Global global) {
 			this.template = template;
 			this.vars = vars;
 			this.resolver = resolver;
@@ -266,8 +228,8 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 
 		@Override public IFProEntity getTemplate() {return template;}
 		@Override public List<IFProVariable> getVars() {return vars;}
-		@Override public IResolvable getResolver() {return resolver;}
-		@Override public Object getGlobal() {return global;}
+		@Override public <Local> IResolvable<Global,Local> getResolver() {return (IResolvable<Global, Local>) resolver;}
+		@Override public Global getGlobal() {return global;}
 
 		@Override
 		public String toString() {
