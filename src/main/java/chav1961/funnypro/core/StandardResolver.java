@@ -1277,6 +1277,8 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	private ResolveRC iterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity, final Iterable<IFProEntity> iterable) throws SyntaxException {
 		local.stack.push(GlobalStack.getIteratorStackTop(iterable,IFProEntity.class));
 		
+		
+		try {
 		while ((((Iterable)((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator()).iterator().hasNext())) {
 			final IFProEntity	candidate = ((Iterable<IFProEntity>)((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator()).iterator().next(); 
 
@@ -1299,6 +1301,10 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					return ResolveRC.True;
 				}
 			}
+		}
+		} catch (ClassCastException exc) {
+			System.err.println("Stack: "+local.stack);
+			throw exc;
 		}
 		local.stack.pop();
 		return ResolveRC.False;

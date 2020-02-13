@@ -337,7 +337,7 @@ public class FProVM implements IFProVM, IFProModule {
 												if (entity.getEntityId() == opId && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													try{result[0] = inference(entity,vars,repo,callback);
 													} catch (ContentException e) {
-//														e.printStackTrace();
+														e.printStackTrace();
 														throw new SyntaxException(0,0,e.getMessage());
 													}
 												}

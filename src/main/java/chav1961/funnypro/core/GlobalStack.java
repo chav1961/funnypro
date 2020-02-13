@@ -106,9 +106,19 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "GlobalStack {"+top+"}";
+	}
+
 	private static class StackTop {
 		public StackTop 		prev; 
 		public GlobalStackTop	entity;
+		
+		@Override
+		public String toString() {
+			return "StackTop [entity=" + entity + ", prev=" + prev + "]";
+		}
 	}
 	
 	public static AndChainStackTop getAndChainStackTop(final IFProEntity entity) {
@@ -119,6 +129,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 			return new AndChainStackTop(){
 				@Override public StackTopType getTopType() {return StackTopType.andChain;}
 				@Override public IFProEntity getEntity() {return entity;}
+				@Override public String toString() {return "AndChainStackTop";}
 			};
 		}
 	}
@@ -191,6 +202,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.external;}
 				@Override public ExternalEntityDescriptor getDescriptor() {return desc;}
 				@Override public Object getLocalData() {return localData;}
+				@Override public String toString() {return "ExternalStackTop{"+desc+"}";}
 			};
 		}
 	}

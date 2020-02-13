@@ -361,6 +361,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 		
 			append2Log(MessageType.TOTAL_RESULT,result);
 		} catch (ContentException | ScriptException | IOException e) {
+			e.printStackTrace();
 			append2Log(MessageType.PROCESSING_ERROR,e.getMessage());
 			ss.message(Severity.error,e.getLocalizedMessage());
 		}
