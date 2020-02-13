@@ -68,88 +68,37 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 
 	@Override
 	public Global onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws SyntaxException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void onRemove(final Global global) throws SyntaxException {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Local beforeCall(final Global global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public ResolveRC firstResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public ResolveRC nextResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void endResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void afterCall(final Global global, final Local local) throws SyntaxException {
-		// TODO Auto-generated method stub
 	}
 
 	protected ResolveRC unify(final IFProEntity first, final IFProEntity second, final Global global, final Local local, final IFProEntity entity) {
 		return null;
-	}
-
-	private static class PredicateDescription<ProcessingType extends Enum<?>> {
-		final ProcessingType	processingType;
-		final IFProPredicate	pred;
-		final EntityType[]		template;
-		
-		PredicateDescription(final ProcessingType processingType, final IFProPredicate pred, final EntityType... templates) {
-			this.processingType = processingType;
-			this.pred = pred;
-			this.template = templates;
-		}
-
-		ProcessingType getProcessingType() {return processingType;}
-		IFProPredicate getPred() {return pred;}
-		EntityType[] getTemplate() {return template;}
-
-		@Override
-		public String toString() {
-			return "PredicateDescription [processingType=" + processingType + ", pred=" + pred + ", template=" + Arrays.toString(template) + "]";
-		}
-	}
-
-	private static class OperatorDescription<ProcessingType extends Enum<?>> {
-		final ProcessingType	processingType;
-		final IFProOperator		oper;
-		final EntityType[]		template;
-		
-		OperatorDescription(final ProcessingType processingType, final IFProOperator oper, final EntityType... templates) {
-			this.processingType = processingType;
-			this.oper = oper;
-			this.template = templates;
-		}
-
-		ProcessingType getProcessingType() {return processingType;}
-		IFProOperator getOper() {return oper;}
-		EntityType[] getTemplate() {return template;}
-
-		@Override
-		public String toString() {
-			return "OperatorDescription [processingType=" + processingType + ", oper=" + oper + ", template=" + Arrays.toString(template) + "]";
-		}
 	}
 }

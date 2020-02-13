@@ -35,12 +35,12 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	private final List<ExternalEntityDescriptor<?>>	operators = new ArrayList<>();
 	private final List<ExternalEntityDescriptor<?>>	predicates = new ArrayList<>();
 
-	public ExternalPluginsRepo(final LoggerFacade log, final Properties prop) throws IOException {
+	public ExternalPluginsRepo(final LoggerFacade log, final Properties prop) throws IOException, NullPointerException {
 		if (log == null) {
-			throw new IllegalArgumentException("Log can't be null"); 
+			throw new NullPointerException("Logger can't be null"); 
 		}
 		else if (prop == null) {
-			throw new IllegalArgumentException("Properties can't be null"); 
+			throw new NullPointerException("Properties can't be null"); 
 		}
 		else {
 			this.log = log;				this.props = prop;
@@ -65,7 +65,11 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	public void close() throws SyntaxException {
 		for (List<PluginItem> desc : plugins.values()) {
 			for (PluginItem item : desc) {
-				item.getDescriptor().getPluginEntity().getResolver().onRemove(item.getGlobal());
+				final Object	global = item.getGlobal();
+				
+				if (global != null) {
+					item.getDescriptor().getPluginEntity().getResolver().onRemove(global);
+				}
 			}
 		}
 	}
@@ -126,12 +130,15 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new IllegalArgumentException("resolver can't be null"); 
 		}
 		else {
+			@SuppressWarnings("unchecked")
+			final ExternalEntityDescriptor<?>	desc = new ExternalEntityDescriptorImpl(template,vars,resolver,global);
+			
 			switch (template.getEntityType()) {
 				case operator	:
-					operators.add(new ExternalEntityDescriptorImpl(template,vars,resolver,global));
+					operators.add(desc);
 					break;
 				case predicate	:
-					predicates.add(new ExternalEntityDescriptorImpl(template,vars,resolver,global));
+					predicates.add(desc);
 					break;
 				default:
 					throw new UnsupportedOperationException("Only operators and predicates are supported for external plugins"); 
@@ -140,7 +147,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	}
 
 	@Override
-	public ExternalEntityDescriptor<?> getResolver(final IFProEntity template) {
+	public <Global> ExternalEntityDescriptor<Global> getResolver(final IFProEntity template) {
 		if (template == null) {
 			throw new IllegalArgumentException("Template can't be null"); 
 		}
@@ -151,14 +158,14 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 				case operator 	:
 					for (ExternalEntityDescriptor<?> item : operators) {
 						if (item.getTemplate().getEntityId() == idAwaited && ((IFProOperator)template).getOperatorType() == ((IFProOperator)item.getTemplate()).getOperatorType()) {
-							return item;
+							return (ExternalEntityDescriptor<Global>) item;
 						}
 					}
 					break;
 				case predicate 	:
 					for (ExternalEntityDescriptor<?> item : predicates) {
 						if (item.getTemplate().getEntityId() == idAwaited && ((IFProPredicate)template).getArity() == ((IFProPredicate)item.getTemplate()).getArity()) {
-							return item;
+							return (ExternalEntityDescriptor<Global>) item;
 						}
 					}
 					break;
