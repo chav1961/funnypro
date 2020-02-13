@@ -160,7 +160,7 @@ public class FProUtilTest {
 	public void unificationStaticTest() {
 		final Change[]	list = new Change[1];
 
-		try{FProUtil.unify(null, null,null);
+		try{FProUtil.unify(null, null, null);
 			Assert.fail("Mandatory exception was not detected (null changes array)");
 		} catch (IllegalArgumentException exc) {
 		}

@@ -158,7 +158,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 			return new IteratorStackTop<T>(){
 				@Override public StackTopType getTopType() {return StackTopType.iterator;}
 				@Override public Iterable<T> getIterator() {return iterator;}
-				@Override public String toString(){return "IteratorStackTop [itratorClass="+clazz+"]";}
+				@Override public String toString(){return "IteratorStackTop [iteratorClass="+clazz+"]";}
 			};
 		}
 	}
