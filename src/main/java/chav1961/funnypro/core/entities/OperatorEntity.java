@@ -104,9 +104,6 @@ public class OperatorEntity implements IFProOperator {
 		if (left == null) {
 			if (other.left != null) return false;
 		} else if (!left.equals(other.left)) return false;
-		if (parent == null) {
-			if (other.parent != null) return false;
-		} else if (!parent.equals(other.parent)) return false;
 		if (prty != other.prty) return false;
 		if (right == null) {
 			if (other.right != null) return false;

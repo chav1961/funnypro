@@ -8,7 +8,7 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
  * @since 0.0.1
  */
 public class RealEntity implements IFProEntity {
-	private double			value;
+	private long			id;
 	private IFProEntity		parent = null;
 
 	/**
@@ -17,7 +17,8 @@ public class RealEntity implements IFProEntity {
 	 * @param parent parent node
 	 */
 	public RealEntity(final double value, final IFProEntity parent) {
-		this.value = value;	this.parent = parent;
+		this.id = Double.doubleToLongBits(value);	
+		this.parent = parent;
 	}	
 	
 	/**
@@ -25,24 +26,23 @@ public class RealEntity implements IFProEntity {
 	 * @param value real entity value
 	 */
 	public RealEntity(final double value) {
-		this.value = value;
+		this.id = Double.doubleToLongBits(value);
 	}
 	
 	@Override public EntityType getEntityType() {return EntityType.real;}
-	@Override public long getEntityId() {return Double.doubleToLongBits(value);}
-	@Override public IFProEntity setEntityId(final long entityId) {this.value = Double.longBitsToDouble(entityId); return this;}
+	@Override public long getEntityId() {return id;}
+	@Override public IFProEntity setEntityId(final long entityId) {this.id = entityId; return this;}
 	@Override public IFProEntity getParent() {return parent;}
 	@Override public IFProEntity setParent(final IFProEntity entity) {this.parent = entity; return this;}
 
-	@Override public String toString() {return "RealEntity [value=" + value + "]";}
+	@Override public String toString() {return "RealEntity [value=" + Double.longBitsToDouble(id) + "]";}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		long temp;
-		temp = Double.doubleToLongBits(value);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		return result;
 	}
 
@@ -52,8 +52,7 @@ public class RealEntity implements IFProEntity {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		RealEntity other = (RealEntity) obj;
-		if (Double.doubleToLongBits(value) != Double.doubleToLongBits(other.value))
-			return false;
+		if (id != other.id) return false;
 		return true;
 	}
 }

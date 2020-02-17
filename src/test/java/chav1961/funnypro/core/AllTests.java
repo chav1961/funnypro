@@ -5,9 +5,10 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({QuickListTest.class, FProUtilTest.class,
-		ParserAndPrinterTest.class, RepositoriesTest.class , VMTest.class,
-		GlobalStackTest.class, StandardResolverTest.class, ExternalPluginsRepoTest.class})
+@SuiteClasses({ CommonUtilsTest.class, EntitiesRepoTest.class, ExternalPluginsRepoTest.class, FactRuleRepoTest.class,
+		FProUtilTest.class, GlobalStackTest.class, IterablesCollectionTest.class, ParserAndPrinterTest.class,
+		QuickListTest.class, RepositoriesTest.class, StandardResolverTest.class, VMTest.class })
+
 public class AllTests {
 
 }

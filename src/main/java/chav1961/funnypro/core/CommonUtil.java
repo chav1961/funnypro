@@ -1,11 +1,14 @@
 package chav1961.funnypro.core;
 
+import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Properties;
 
@@ -18,54 +21,26 @@ class CommonUtil {
 	private static final int					SERIALIZATION_TREE_MAGIC = 0x12123030;
 	
 	/**
-	 * <p>Resolve paths with the given changes</p>
-	 * @param baseURI base URI. No any resolution can be higher than this path
-	 * @param actualURI actual path
-	 * @param changes changes in th actual path
-	 * @return new resolved path 
-	 */
-	public static URI resolvePath(final URI baseURI, final URI actualURI, final URI changes) {
-		if (baseURI == null) {
-			throw new IllegalArgumentException("Base URI can't be null!");
-		}
-		else if (actualURI == null) {
-			throw new IllegalArgumentException("Actual URI can't be null!");
-		}
-		else if (changes == null) {
-			throw new IllegalArgumentException("Changes can't be null!");
-		}
-		else {
-			final URI	result = changes.getPath().startsWith("/") ? URI.create(baseURI.toString()+changes.getPath().substring(1)).normalize() : actualURI.resolve(changes).normalize();
-			final URI	delta = baseURI.relativize(result).normalize();
-			
-			if (delta.getPath().startsWith(".") || delta.getPath().startsWith("/..") || result.toString().length() < baseURI.toString().length()) {
-				throw new IllegalArgumentException("Changes attempts to jump higher than base URI!");
-			}
-			else {
-				return result;
-			}
-		}
-	}
-	
-	/**
 	 * <pSerialize string to the output stream</p>
 	 * @param target output stream to serialize string to
 	 * @param value string to serialize
 	 * @throws IOException
 	 */
 	
-	public static void writeString(final DataOutputStream target, final String value) throws IOException {
+	public static void writeString(final DataOutput target, final String value) throws IOException, NullPointerException {
 		if (target == null) {
-			throw new IllegalArgumentException("Target can't be null");
+			throw new NullPointerException("Target can't be null");
 		}
 		else if (value == null) {
 			target.writeInt(-1);
 		}
 		else {
-			final byte[]	data = value.getBytes("UTF-8");
+			final char[]	data = value.toCharArray();
 			
 			target.writeInt(data.length);
-			target.write(data);
+			for (char symbol : data) {
+				target.writeChar(symbol);
+			}
 		}
 	}
 
@@ -75,9 +50,9 @@ class CommonUtil {
 	 * @return deserialized string
 	 * @throws IOException
 	 */
-	public static String readString(final DataInputStream source) throws IOException {
+	public static String readString(final DataInput source) throws IOException, NullPointerException {
 		if (source == null) {
-			throw new IllegalArgumentException("Source can't be null");
+			throw new NullPointerException("Source can't be null");
 		}
 		else {
 			final int	total = source.readInt();
@@ -89,20 +64,23 @@ class CommonUtil {
 				return "";
 			}
 			else {
-				final byte[]	buffer = new byte[total];
+				final char[]	buffer = new char[total];
 				int				displ = 0, len;
 				
-				while ((len = source.read(buffer,displ,total-displ)) > 0) {
-					if ((displ += len) >= total-1) {
-						break;
-					}
+				for (int index = 0, maxIndex = buffer.length; index < maxIndex; index++) {
+					buffer[index] = source.readChar();
 				}
-				if (len <= 0) {
-					throw new EOFException("End of file when reading string content");
-				}
-				else {
-					return new String(buffer,"UTF-8");
-				}
+//				while ((len = source.read(buffer,displ,total-displ)) > 0) {
+//					if ((displ += len) >= total-1) {
+//						break;
+//					}
+//				}
+//				if (len <= 0) {
+//					throw new EOFException("End of file when reading string content");
+//				}
+//				else {
+					return new String(buffer);
+//				}
 			}
 		}
 	}
@@ -113,12 +91,12 @@ class CommonUtil {
 	 * @param tree three to serialize
 	 * @throws IOException
 	 */
-	public static void writeTree(final DataOutputStream target, final SyntaxTreeInterface<?> tree) throws IOException {
+	public static void writeTree(final DataOutput target, final SyntaxTreeInterface<?> tree) throws IOException, NullPointerException {
 		if (target == null) {
-			throw new IllegalArgumentException("Target stream can't be null");
+			throw new NullPointerException("Target stream can't be null");
 		}
 		else if (tree == null) {
-			throw new IllegalArgumentException("Tree to serialize can't be null");
+			throw new NullPointerException("Tree to serialize can't be null");
 		}
 		else {
 			target.writeInt(SERIALIZATION_TREE_MAGIC);			// Tree magic.
@@ -142,7 +120,6 @@ class CommonUtil {
 				}
 			});
 			target.writeLong(SERIALIZATION_TREE_MAGIC);			// Tree magic end.
-			target.flush();
 		}
 	}
 	
@@ -153,12 +130,15 @@ class CommonUtil {
 	 * @throws IOException 
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void readTree(final DataInputStream source, final SyntaxTreeInterface tree, final Class<?> content) throws IOException {
+	public static void readTree(final DataInput source, final SyntaxTreeInterface tree, final Class<?> content) throws IOException, NullPointerException {
 		if (source == null) {
-			throw new IllegalArgumentException("Source stream can't be null");
+			throw new NullPointerException("Source stream can't be null");
 		}
 		else if (tree == null) {
-			throw new IllegalArgumentException("Tree to deserialize to can't be null");
+			throw new NullPointerException("Tree to deserialize to can't be null");
+		}
+		else if (content == null) {
+			throw new NullPointerException("Content class to deserialize to can't be null");
 		}
 		else if (source.readInt() != SERIALIZATION_TREE_MAGIC) {
 			throw new IOException("Illegal magic naumber in the tree serialization stream");
@@ -172,12 +152,11 @@ class CommonUtil {
 				final int		hasCargo = source.readInt();
 				
 				if (hasCargo == 1) {
-					try{final IFProStreamSerializable	inst = (IFProStreamSerializable) content.newInstance();
-						final DataInputStream			dis = new DataInputStream(source);
+					try{final IFProStreamSerializable	inst = (IFProStreamSerializable) content.getConstructor().newInstance();
 					
-						inst.deserialize(dis);
+						inst.deserialize(source);
 						tree.placeName(name.toCharArray(),0,name.length(),id,inst);
-					} catch (InstantiationException | IllegalAccessException e) {
+					} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 						throw new IOException("Instantiation failed when deserialise tree content: "+e.getClass().getName()+" ("+e.getMessage()+")");
 					}
 				}

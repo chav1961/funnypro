@@ -129,4 +129,6 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * @param resolver resolver to purge associations for
 	 */
 	<Global,Local> void purgeResolver(IResolvable<Global,Local> resolver);
+	
+	@Override public void close() throws RuntimeException; 
 }

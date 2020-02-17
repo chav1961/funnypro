@@ -1,7 +1,9 @@
 package chav1961.funnypro.core;
 
 
+import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,27 +82,29 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	private Set<OperatorDefRepo>				operatorsSet = new HashSet<>(); 
 	private int[]								operatorPriorities = new int[0];
 
-	public EntitiesRepo(final LoggerFacade log, final Properties prop) throws IOException {
+	public EntitiesRepo(final LoggerFacade log, final Properties prop) throws IOException, NullPointerException {
 		if (log == null) {
-			throw new IllegalArgumentException("Log can't be null"); 
+			throw new NullPointerException("Log can't be null"); 
 		}
 		else if (prop == null) {
-			throw new IllegalArgumentException("Properties can't be null"); 
+			throw new NullPointerException("Properties can't be null"); 
 		}
 		else {
 			this.log = log;			this.props = prop;
 			
 			this.stringRepo = new AndOrTree<SerializableString>(1,16); 
-			this.termRepo = new AndOrTree<SerializableString>(2,16); 
-			this.frRepo = new FactRuleRepo(log,props);
-			this.epRepo = new ExternalPluginsRepo(log, props);
-			this.epRepo.prepare(this);
+			this.termRepo = new AndOrTree<SerializableString>(2,16);
 			
 			this.anonymousId = this.termRepo.placeName("_",null);
 			this.opId = this.termRepo.placeName("op",null);
 			this.externId = this.termRepo.placeName("extern",null);
 			this.goalId = this.termRepo.placeName(":-",null);
 			this.questionId = this.termRepo.placeName("?-",null);
+			
+			this.frRepo = new FactRuleRepo(log,props);
+			this.epRepo = new ExternalPluginsRepo(log, props);
+			this.epRepo.prepare(this);
+			
 			
 			for (int index = 0; index < this.opTypes.length; index++) {
 				this.opTypes[index] = this.termRepo.placeName(OperatorType.values()[index].toString(),null);
@@ -109,7 +113,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 	
 	@Override
-	public void close() throws Exception {
+	public void close() throws RuntimeException {
 		for (long item : this.opTypes) {
 			termRepo.removeName(item);
 		}
@@ -125,7 +129,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	@Override public Properties getParameters() {return props;}		
 	
 	@Override
-	public void serialize(final DataOutputStream target) throws IOException {
+	public void serialize(final DataOutput target) throws IOException {
 		if (target == null) {
 			throw new IllegalArgumentException("Target stream can't be null");
 		}
@@ -165,7 +169,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public void deserialize(final DataInputStream source) throws IOException {
+	public void deserialize(final DataInput source) throws IOException {
 		if (source == null) {
 			throw new IllegalArgumentException("Source stream can't be null"); 
 		}

@@ -1,7 +1,9 @@
 package chav1961.funnypro.core;
 
 
+import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -124,21 +126,23 @@ public class FProUtil {
 	 * @param entity entity to serialize
 	 * @throws IOException in any I/O errors
 	 */
-	public static void serialize(final DataOutputStream target, final IFProEntity entity) throws IOException {
+	public static void serialize(final DataOutput target, final IFProEntity entity) throws IOException, NullPointerException {
 		if (target == null) {
-			throw new IllegalArgumentException("Target stream can't be null!"); 
+			throw new NullPointerException("Target stream can't be null!"); 
 		}
 		else if (entity == null) {
-			throw new IllegalArgumentException("Entity to serialize can't be null!"); 
+			throw new NullPointerException("Entity to serialize can't be null!"); 
 		}
 		else {
 			target.writeInt(entity.getEntityType().ordinal());		// Write operator type
 			switch (entity.getEntityType()) {
 				case string			:
 				case integer		:
-				case real			:
 				case variable		:
 					target.writeLong(entity.getEntityId());
+					break;
+				case real			:
+					target.writeDouble(Double.longBitsToDouble(entity.getEntityId()));
 					break;
 				case anonymous		:
 					break;
@@ -189,9 +193,9 @@ public class FProUtil {
 	 * @return deserialized entity
 	 * @throws IOException on any I/O errors
 	 */
-	public static IFProEntity deserialize(final DataInputStream source) throws IOException {
+	public static IFProEntity deserialize(final DataInput source) throws IOException, NullPointerException {
 		if (source == null) {
-			throw new IllegalArgumentException("Target stream can't be null!"); 
+			throw new NullPointerException("Target stream can't be null!"); 
 		}
 		else {
 			final EntityType	type = EntityType.values()[source.readInt()];
@@ -202,7 +206,7 @@ public class FProUtil {
 				case integer		:
 					return new IntegerEntity(source.readLong());
 				case real			:
-					return new RealEntity(Double.longBitsToDouble(source.readLong()));
+					return new RealEntity(source.readDouble());
 				case variable		:
 					return new VariableEntity(source.readLong());
 				case anonymous		:
@@ -239,13 +243,11 @@ public class FProUtil {
 					final long				predicateId = source.readLong();
 					final int				arity = source.readInt();
 					final IFProEntity[]		parms = new IFProEntity[arity];
-					final PredicateEntity	predEntity = new PredicateEntity(predicateId,parms); 
 					
 					for (int index = 0; index < parms.length; index++) {
 						parms[index] = deserialize(source);
-						parms[index].setParent(predEntity);
 					}
-					return predEntity;
+					return new PredicateEntity(predicateId,parms); 
 				default :
 					throw new UnsupportedOperationException("Type ["+type+"] of the node is not supported!");
 			}
@@ -385,7 +387,7 @@ public class FProUtil {
 				case integer		:
 					return new IntegerEntity(source.getEntityId());
 				case real			:
-					return new RealEntity(source.getEntityId());
+					return new RealEntity(Double.longBitsToDouble(source.getEntityId()));
 				case anonymous		:
 					return new AnonymousEntity(); 
 				case list			:
@@ -489,9 +491,9 @@ public class FProUtil {
 	 * @param type check type (according to FRpo tests)
 	 * @return true if entity is a tested type
 	 */
-	public static boolean isEntityA(final IFProEntity entity, final ContentType type) {
+	public static boolean isEntityA(final IFProEntity entity, final ContentType type) throws NullPointerException {
 		if (type == null) {
-			throw new IllegalArgumentException("Type can't be null");
+			throw new NullPointerException("Type can't be null");
 		}
 		else if (entity == null) {
 			return false;
@@ -503,7 +505,7 @@ public class FProUtil {
 				case Var		:
 					return entity.getEntityType() == EntityType.variable;
 				case NonVar		:
-					return entity.getEntityType() != EntityType.variable;
+					return entity.getEntityType() != EntityType.variable && entity.getEntityType() != EntityType.anonymous;
 				case Atom		:
 					return entity.getEntityType() == EntityType.string || entity.getEntityType() == EntityType.predicate; 
 				case Integer	:
@@ -513,43 +515,12 @@ public class FProUtil {
 				case Number		:
 					return entity.getEntityType() == EntityType.integer || entity.getEntityType() == EntityType.real; 
 				case Atomic		:
-					return entity.getEntityType() == EntityType.integer || entity.getEntityType() == EntityType.real || entity.getEntityType() == EntityType.string || entity.getEntityType() == EntityType.predicate; 
+					return entity.getEntityType() == EntityType.integer || entity.getEntityType() == EntityType.real || entity.getEntityType() == EntityType.string || entity.getEntityType() == EntityType.predicate || entity.getEntityType() == EntityType.anonymous; 
 				case Compound	:	
 					return entity.getEntityType() == EntityType.list || entity.getEntityType() == EntityType.operator;
 				default :
 					return false;
 			}
-		}
-	}
-	
-	/**
-	 * <p>Convert location inside string to row/col pair
-	 * @param source string located
-	 * @param location position inside string
-	 * @return row[0]/col[1]
-	 */
-	public static int[] toRowCol(final char[] source, final int location) {
-		if (source == null) {
-			throw new IllegalArgumentException("Source string can't be null"); 
-		}
-		else if (location < 0 || location >= source.length + 1) {
-			throw new IllegalArgumentException("Location ["+location+"] out of range 0.."+source.length); 
-		}
-		else {
-			final int[]		result = new int[2];
-			
-			for (int index = Math.min(location,source.length-1); index >= 0; index--) {
-				if (source[index] == '\n') {
-					result[0]++;
-					result[1] = 0;
-				}
-				else {
-					result[1]++;
-				}
-			}
-			result[0]++;
-			result[1]++;
-			return result;
 		}
 	}
 	

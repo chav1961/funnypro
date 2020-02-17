@@ -3,6 +3,7 @@ package chav1961.funnypro.core;
 import java.util.Iterator;
 
 import chav1961.funnypro.core.FProUtil.Change;
+import chav1961.funnypro.core.FProUtil.ContentType;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.OperatorEntity;
 import chav1961.funnypro.core.entities.PredicateEntity;
@@ -14,52 +15,63 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 
-class IterablesCollection { 
+class IterablesCollection {
+	private static final Iterator<NameAndArity>	NULL_NA_ITERATOR = new Iterator<NameAndArity>() {
+													@Override public boolean hasNext() {return false;}
+													@Override public NameAndArity next() {return null;}
+													
+												};
+	private static final Iterator<IFProEntity>	NULL_ENTITY_ITERATOR = new Iterator<IFProEntity>() {
+													@Override public boolean hasNext() {return false;}
+													@Override public IFProEntity next() {return null;}
+													
+												};
+	
 	public static class IterableNameAndArity implements Iterable<IFProEntity> {
 		private final Iterator<NameAndArity>		iterator;
 		private final IFProOperator					def;
 		
 		public IterableNameAndArity(final IFProEntitiesRepo repo, final IFProOperator nameAndArity) {
 			if (repo == null) {
-				throw new IllegalArgumentException("Repo can't be null"); 
+				throw new NullPointerException("Repo can't be null"); 
 			}
-			else if (nameAndArity == null) {
-				throw new IllegalArgumentException("Name and arity can't be null"); 
+			else if (nameAndArity == null) { 
+				throw new NullPointerException("Name and arity can't be null"); 
 			}
 			else if (nameAndArity.getLeft() == null || nameAndArity.getRight() == null) {
-				iterator = null;
+				iterator = NULL_NA_ITERATOR;
 			}
-			else if (nameAndArity.getLeft().getEntityType() == EntityType.variable || nameAndArity.getLeft().getEntityType() == EntityType.anonymous) {
-				if (nameAndArity.getRight().getEntityType() == EntityType.variable || nameAndArity.getRight().getEntityType() == EntityType.anonymous) {
+			else if (!FProUtil.isEntityA(nameAndArity.getLeft(),ContentType.NonVar)) {
+				if (!FProUtil.isEntityA(nameAndArity.getRight(),ContentType.NonVar)) {
 					iterator = repo.predicateRepo().content(-1).iterator();
 				}
 				else if (nameAndArity.getRight().getEntityType() == EntityType.integer && nameAndArity.getRight().getEntityId() >= IFProPredicate.MIN_ARITY && nameAndArity.getRight().getEntityId() <= IFProPredicate.MAX_ARITY) {
 					iterator = repo.predicateRepo().content((int)nameAndArity.getRight().getEntityId()).iterator();
 				}
 				else {
-					iterator = null;
+					iterator = NULL_NA_ITERATOR;
 				}
 			}
 			else if (nameAndArity.getLeft().getEntityType() == EntityType.predicate) {
-				if (nameAndArity.getRight().getEntityType() == EntityType.variable || nameAndArity.getRight().getEntityType() == EntityType.anonymous) {
+				if (!FProUtil.isEntityA(nameAndArity.getRight(),ContentType.NonVar)) {
 					iterator = repo.predicateRepo().content(-1,nameAndArity.getLeft().getEntityId()).iterator();
 				}
 				else if (nameAndArity.getRight().getEntityType() == EntityType.integer && nameAndArity.getRight().getEntityId() >= IFProPredicate.MIN_ARITY && nameAndArity.getRight().getEntityId() <= IFProPredicate.MAX_ARITY) {
 					iterator = repo.predicateRepo().content((int)nameAndArity.getRight().getEntityId(),nameAndArity.getLeft().getEntityId()).iterator();
 				}
 				else {
-					iterator = null;
+					iterator = NULL_NA_ITERATOR;
 				}
 			}
 			else {
-				iterator = null;
+				iterator = NULL_NA_ITERATOR;
 			}
-			def = nameAndArity;
+			this.def = nameAndArity;
 		}		
 		
 		@Override 
 		public Iterator<IFProEntity> iterator() {return new Iterator<IFProEntity>(){
-				@Override public boolean hasNext() {return iterator != null && iterator.hasNext();}
+				@Override public boolean hasNext() {return iterator.hasNext();}
 	
 				@Override
 				public IFProEntity next() {
@@ -71,35 +83,32 @@ class IterablesCollection {
 		}		
 	}
 	
-	
 	public static class IterableCall implements Iterable<IFProEntity> {
 		private final Iterator<IFProEntity>		iterator, callIterator;
 		private final IFProEntity				template;
 		
-		public IterableCall(final IFProEntitiesRepo repo, final IFProPredicate call) {
+		public IterableCall(final IFProEntitiesRepo repo, final IFProPredicate call) {	// call(pred(...)) or call(op(...)) only
 			if (repo == null) {
-				throw new IllegalArgumentException("Repo can't be null"); 
+				throw new NullPointerException("Repo can't be null"); 
 			}
 			else if (call == null) {
-				throw new IllegalArgumentException("Name and arity can't be null"); 
+				throw new NullPointerException("Name and arity can't be null"); 
 			}
-			else if (call.getArity() != 1) {
-				iterator = null;
-			}
-			else if (call.getParameters()[0].getEntityType() == EntityType.variable || call.getParameters()[0].getEntityType() == EntityType.anonymous) {
-				iterator = null;
+			else if (call.getArity() != 1 || !FProUtil.isEntityA(call.getParameters()[0],ContentType.NonVar)) {
+				this.iterator = NULL_ENTITY_ITERATOR;
 			}
 			else {
-				iterator = repo.predicateRepo().call(call.getParameters()[0]).iterator();
+				this.iterator = repo.predicateRepo().call(call.getParameters()[0]).iterator();
 			}
-			template = call.getParameters()[0];	// Important order - don't change this string with the next one 
-			callIterator = new Iterator<IFProEntity>(){
+			this.template = call.getParameters()[0];	// Important order - don't change this string with the next one 
+			
+			this.callIterator = new Iterator<IFProEntity>(){
 				final Change[]	temp = new Change[1];
 				IFProEntity		item;
 			
 				@Override 
 				public boolean hasNext() {
-					if (iterator != null && iterator.hasNext()) {
+					if (iterator.hasNext()) {
 						
 						do{ item = iterator.next();
 							if (FProUtil.unify(template,item,temp)) {
@@ -110,6 +119,7 @@ class IterablesCollection {
 								FProUtil.unbind(temp[0]);
 							}
 						} while (iterator.hasNext());
+						
 						return false;
 					}
 					else {
@@ -135,18 +145,15 @@ class IterablesCollection {
 			else if (call == null) {
 				throw new IllegalArgumentException("Name and arity can't be null"); 
 			}
-			else if (call.getArity() != 3) {
-				iterator = null;
-			}
-			else if (call.getParameters()[1].getEntityType() == EntityType.variable || call.getParameters()[1].getEntityType() == EntityType.anonymous) {
-				iterator = null;
+			else if (call.getArity() != 3 || !FProUtil.isEntityA(call.getParameters()[1],ContentType.NonVar)) {
+				this.iterator = NULL_ENTITY_ITERATOR;
 			}
 			else {
-				iterator = repo.predicateRepo().call(call.getParameters()[1]).iterator();
+				this.iterator = repo.predicateRepo().call(call.getParameters()[1]).iterator();
 			}
-			template = call.getParameters()[1];
-			image = call.getParameters()[0];		// Important order - don't change this string with the next one
-			bagofIterator = new Iterator<IFProEntity>(){
+			this.template = call.getParameters()[1];
+			this.image = call.getParameters()[0];		// Important order - don't change this string with the next one
+			this.bagofIterator = new Iterator<IFProEntity>(){
 								final Change[]	temp = new Change[1];
 								IFProEntity		item;
 							
@@ -164,6 +171,7 @@ class IterablesCollection {
 												FProUtil.unbind(temp[0]);
 											}
 										} while (iterator.hasNext());
+										
 										return false;
 									}
 									else {
@@ -185,6 +193,7 @@ class IterablesCollection {
 		
 		public IterableList(final IFProPredicate call) {
 			this.list = (IFProList) call.getParameters()[0];
+			
 			this.template = call.getParameters()[1];
 			this.iterator = new Iterator<IFProEntity>(){
 				final Change[]	temp = new Change[1];
@@ -204,6 +213,7 @@ class IterablesCollection {
 								FProUtil.unbind(temp[0]);
 							}
 						} while ((start = (IFProList) start.getTail()) != null && start.getEntityType() == EntityType.list);
+						
 						return false;
 					}
 					else {

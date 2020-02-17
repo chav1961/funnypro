@@ -19,7 +19,8 @@ public class ExternalPluginsRepoTest {
 	public void basicAndSPITest() throws SyntaxException, IOException {
 		final Properties	props = Utils.mkProps();
 		
-		try(final ExternalPluginsRepo	repo = new ExternalPluginsRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+		try(final EntitiesRepo			entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props);
+			final ExternalPluginsRepo	repo = new ExternalPluginsRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final Set<String>			pluginList = new HashSet<>();
 			
 			Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,repo.getDebug());
@@ -29,6 +30,8 @@ public class ExternalPluginsRepoTest {
 				pluginList.add(item.getDescriptor().getPluginDescription());
 			}
 			Assert.assertEquals(2,pluginList.size());
+			
+			repo.prepare(entities);
 		}
 		
 		try{new ExternalPluginsRepo(null,props);

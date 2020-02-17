@@ -23,7 +23,9 @@ import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.charsource.ArrayCharSource;
+import chav1961.purelib.streams.chartarget.WriterCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class StandardResolverTest {
 
@@ -43,6 +45,11 @@ public class StandardResolverTest {
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
 										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
+											try{pap.putEntity(entity,new WriterCharTarget(System.err,true));
+											} catch (PrintingException e) {
+												e.printStackTrace();
+											}
+											System.err.println();
 											repo.predicateRepo().assertZ(entity);
 											return true;
 										}
@@ -54,6 +61,11 @@ public class StandardResolverTest {
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
 										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
+											try{pap.putEntity(entity,new WriterCharTarget(System.err,true));
+											} catch (PrintingException e) {
+												e.printStackTrace();
+											}
+											System.err.println();
 											processing(sr,global,stack,entity,vars,true);
 											vars.clear();
 											return true;
@@ -66,6 +78,11 @@ public class StandardResolverTest {
 			pap.parseEntities(cs,new FProParserCallback(){
 										@Override
 										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
+											try{pap.putEntity(entity,new WriterCharTarget(System.err,true));
+											} catch (PrintingException e) {
+												e.printStackTrace();
+											}
+											System.err.println();
 											processing(sr,global,stack,entity,vars,false);
 											vars.clear();
 											return true;
@@ -105,6 +122,10 @@ public class StandardResolverTest {
 				pap.parseEntities(content,0,new FProParserCallback(){
 												@Override
 												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
+													try{pap.putEntity(entity,new WriterCharTarget(System.err,true));
+													} catch (PrintingException e) {
+														e.printStackTrace();
+													}
 													processing(sr,global,stack,entity,vars,true);
 													vars.clear();
 													return true;
@@ -124,7 +145,7 @@ public class StandardResolverTest {
 								@Override public void afterLastCall() {}
 								@Override
 								public boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws SyntaxException {
-									return false;
+									return true;
 								}
 							}; 
 		Assert.assertTrue(stack.isEmpty());

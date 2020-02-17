@@ -61,14 +61,17 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	@Override public LoggerFacade getDebug() {return log;}
 	@Override public Properties getParameters() {return props;}		
 
-	@Override
-	public void close() throws SyntaxException {
+	@Override 
+	public void close() throws RuntimeException {
 		for (List<PluginItem> desc : plugins.values()) {
 			for (PluginItem item : desc) {
 				final Object	global = item.getGlobal();
 				
 				if (global != null) {
-					item.getDescriptor().getPluginEntity().getResolver().onRemove(global);
+					try{item.getDescriptor().getPluginEntity().getResolver().onRemove(global);
+					} catch (SyntaxException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -81,14 +84,32 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		}
 		else {
 			boolean	errosDetected = false;
+			boolean	standardResolverDetected = false;
 			
 			try (final LoggerFacade	logger = getDebug().transaction("externalPlugins")) {
 				for (List<PluginItem> desc : plugins.values()) {
+					for (PluginItem item : desc) {	// Standard resolver must be always prepared first!
+						if (StandardResolver.PLUGIN_DESCRIPTION.equals(item.getDescriptor().getPluginDescription())) {
+							try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
+								standardResolverDetected = true;
+							} catch (SyntaxException  e) {
+								logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
+								errosDetected = true;
+							}
+						}
+					}
+				}
+				if (!standardResolverDetected) {
+					logger.message(Severity.error,"Standard resolver is missing or inaccessible in the plugins. FPro repository can't be properly prepared without it!");
+				}
+				for (List<PluginItem> desc : plugins.values()) {
 					for (PluginItem item : desc) {
-						try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
-						} catch (SyntaxException  e) {
-							logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
-							errosDetected = true;
+						if (!StandardResolver.PLUGIN_DESCRIPTION.equals(item.getDescriptor().getPluginDescription())) {
+							try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
+							} catch (SyntaxException  e) {
+								logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
+								errosDetected = true;
+							}
 						}
 					}
 				}

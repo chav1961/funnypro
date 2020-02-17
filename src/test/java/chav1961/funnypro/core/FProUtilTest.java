@@ -1,6 +1,11 @@
 package chav1961.funnypro.core;
 
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,13 +17,16 @@ import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
+import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.purelib.basic.growablearrays.InOutGrowableByteArray;
 import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.FProUtil.Change;
+import chav1961.funnypro.core.FProUtil.ContentType;
 
 public class FProUtilTest {
 	@Test
@@ -28,7 +36,7 @@ public class FProUtilTest {
 		try{FProUtil.simpleParser(null, 0, "%", locations);			// Illegal calls
 			Assert.fail("Mandatory exception was not detected (null parsed string)");
 		} catch (IllegalArgumentException exc) {
-		}
+		} 
 		try{FProUtil.simpleParser("".toCharArray(), 0, "%", locations);
 			Assert.fail("Mandatory exception was not detected (empty parsed string)");
 		} catch (IllegalArgumentException exc) {
@@ -283,4 +291,115 @@ public class FProUtilTest {
 		FProUtil.unbind(list[0]);								// undo joining
 		Assert.assertEquals(boundPredicate.getParameters()[1].getEntityId(),123);
 	}
+
+	@Test
+	public void otherStaticTest() {
+		IFProEntity		left;
+		
+		left = new AnonymousEntity();
+		Assert.assertEquals(left,FProUtil.duplicate(left));
+		checkType(left,new ContentType[] {ContentType.Anon, ContentType.Atomic});
+		FProUtil.removeEntity(left);
+
+		left = new IntegerEntity(100);
+		Assert.assertEquals(left,FProUtil.duplicate(left));
+		checkType(left,new ContentType[] {ContentType.Integer, ContentType.Number, ContentType.NonVar, ContentType.Atomic});
+		FProUtil.removeEntity(left);
+
+		left = new RealEntity(123.456);
+		Assert.assertEquals(left,FProUtil.duplicate(left));
+		checkType(left,new ContentType[] {ContentType.Float, ContentType.Number, ContentType.NonVar, ContentType.Atomic});
+		FProUtil.removeEntity(left);
+
+		left = new StringEntity(123);
+		Assert.assertEquals(left,FProUtil.duplicate(left));
+		checkType(left,new ContentType[] {ContentType.Atom, ContentType.NonVar, ContentType.Atomic});
+		FProUtil.removeEntity(left);
+
+		left = new OperatorEntity(100,OperatorType.xfy,123).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200));
+		Assert.assertEquals(left,FProUtil.duplicate(left));
+		checkType(left,new ContentType[] {ContentType.Compound, ContentType.NonVar});
+		FProUtil.removeEntity(left);
+
+		left = new PredicateEntity(100,new IntegerEntity(100),new IntegerEntity(200));
+		Assert.assertEquals(left,FProUtil.duplicate(left));
+		checkType(left,new ContentType[] {ContentType.Atom, ContentType.Atomic, ContentType.NonVar});
+		FProUtil.removeEntity(left);
+
+		left = new ListEntity(new IntegerEntity(100),new IntegerEntity(200));
+		Assert.assertEquals(left,FProUtil.duplicate(left));
+		FProUtil.removeEntity(left);
+		
+		try{FProUtil.isEntityA(left,null);
+			Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+		} catch (NullPointerException exc) {
+		}
+	}
+
+	@Test
+	public void serializationStaticTest() throws IOException {
+		try(final InOutGrowableByteArray	iogba = new InOutGrowableByteArray(false)) {
+			final IFProEntity	entity1 = new AnonymousEntity();
+			final IFProEntity	entity2 = new IntegerEntity(100);
+			final IFProEntity	entity3 = new RealEntity(123.456);
+			final IFProEntity	entity4 = new StringEntity(123);
+			final IFProEntity	entity5 = new OperatorEntity(100,OperatorType.xfy,123).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200));
+			final IFProEntity	entity6 = new PredicateEntity(100,new IntegerEntity(100),new IntegerEntity(200));
+			final IFProEntity	entity7 = new ListEntity(new IntegerEntity(100),new IntegerEntity(200));
+			final IFProEntity	entity8 = new VariableEntity(100);
+			
+			FProUtil.serialize(iogba,entity1);
+			FProUtil.serialize(iogba,entity2);
+			FProUtil.serialize(iogba,entity3);
+			FProUtil.serialize(iogba,entity4);
+			FProUtil.serialize(iogba,entity5);
+			FProUtil.serialize(iogba,entity6);
+			FProUtil.serialize(iogba,entity7);
+			FProUtil.serialize(iogba,entity8);
+			
+			try{FProUtil.serialize(null,entity8);
+				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+			} catch (NullPointerException exc) {
+			}
+			try{FProUtil.serialize(iogba,null);
+				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+			} catch (NullPointerException exc) {
+			}
+			
+			iogba.flush();			
+			iogba.reset();
+			
+			Assert.assertEquals(entity1,FProUtil.deserialize(iogba));
+			Assert.assertEquals(entity2,FProUtil.deserialize(iogba));
+			Assert.assertEquals(entity3,FProUtil.deserialize(iogba));
+			Assert.assertEquals(entity4,FProUtil.deserialize(iogba));
+			Assert.assertEquals(entity5,FProUtil.deserialize(iogba));
+			Assert.assertEquals(entity6,FProUtil.deserialize(iogba));
+			Assert.assertEquals(entity7,FProUtil.deserialize(iogba));
+			Assert.assertEquals(entity8,FProUtil.deserialize(iogba));
+
+			try{FProUtil.deserialize(null);
+				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+			} catch (NullPointerException exc) {
+			}
+		}
+	}
+	
+
+	private void checkType(final IFProEntity entity, final ContentType[] trues) {
+		final Set<ContentType>	falseSet = new HashSet<>();
+		final Set<ContentType>	trueSet = new HashSet<>();
+		
+		trueSet.addAll(Arrays.asList(trues));
+		falseSet.addAll(Arrays.asList(ContentType.values()));
+		falseSet.removeAll(trueSet);
+		
+		for (ContentType item : trueSet) {
+			Assert.assertTrue("Assertion failed: item="+item,FProUtil.isEntityA(entity,item));
+		}
+		for (ContentType item : falseSet) {
+			Assert.assertFalse("Assertion failed: item="+item,FProUtil.isEntityA(entity,item));
+		}
+	}
+
 }

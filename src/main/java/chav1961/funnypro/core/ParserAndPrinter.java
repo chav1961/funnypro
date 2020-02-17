@@ -664,7 +664,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			from++;
 		}
 		result[0] = collapse(top,top.length-1);
-		if (result[0].getEntityType() == EntityType.operator
+		if (result[0] != null && result[0].getEntityType() == EntityType.operator
 			&& ((IFProOperator)result[0]).getOperatorType() == OperatorType.xfx
 			&& ((IFProOperator)result[0]).getEntityId() == goalId 
 			&& ((IFProOperator)result[0]).getLeft().getEntityType() == EntityType.predicate) {
@@ -785,7 +785,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			int		startName = from++;
 			
 			while (from < maxLength && source[from] != '\'') {
-				from++;
+				from++; 
 			}
 			if (from < maxLength) {
 				from++;

@@ -54,7 +54,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
 					@Override public IFProExternalEntity getPluginEntity() {return new EnternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new TutorialPlugin());}
-					@Override public String getPluginPredicate() {return null;}
+					@Override public String getPluginPredicate() {return new String(PREDICATE);}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}
 		};
@@ -90,6 +90,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 				actualLog.rollback();	// See Pure library about transactional logging
 				return global;
 			} catch (SyntaxException | IOException exc) {
+				exc.printStackTrace();
 				actualLog.message(Severity.info,"Predicate registration failed for scanlist(List,Item).: %1$s", exc.getMessage());
 				throw new IllegalArgumentException("Attempt to register predicate scanlist(List,Item) failed: "+exc.getMessage(),exc); 
 			}

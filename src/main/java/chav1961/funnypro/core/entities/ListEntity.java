@@ -61,9 +61,6 @@ public class ListEntity implements IFProList {
 		if (child == null) { 
 			if (other.child != null) return false;
 		} else if (!child.equals(other.child)) return false;
-		if (parent == null) {
-			if (other.parent != null) return false;
-		} else if (!parent.equals(other.parent)) return false;
 		if (tail == null) {
 			if (other.tail != null) return false;
 		} else if (!tail.equals(other.tail)) return false;

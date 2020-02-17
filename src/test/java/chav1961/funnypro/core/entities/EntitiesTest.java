@@ -284,7 +284,8 @@ public class EntitiesTest {
 		Assert.assertEquals(pred.getEntityType(),EntityType.predicate);
 		Assert.assertEquals(pred.getArity(),3);
 		Assert.assertArrayEquals(pred.getParameters(),new IFProEntity[]{integer,real,string});
-		Assert.assertEquals(pred,serializeAndDeserialize(pred));
+		PredicateEntity	pred1 = (PredicateEntity) serializeAndDeserialize(pred);
+		Assert.assertEquals(pred,pred1);
 	}
 
 	private IFProEntity serializeAndDeserialize(final IFProEntity entity) throws IOException {

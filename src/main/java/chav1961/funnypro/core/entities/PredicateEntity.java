@@ -22,7 +22,11 @@ public class PredicateEntity implements IFProPredicate {
 	 * @param parm predicate parameters (up to 64)
 	 */
 	public PredicateEntity(final long id, final IFProEntity... parm) {
-		this.id = id;			this.parm = parm;
+		this.id = id;			
+		this.parm = parm;
+		for (IFProEntity item : parm) {
+			item.setParent(this);
+		}
 	}
 
 	@Override public EntityType getEntityType() {return EntityType.predicate;}
