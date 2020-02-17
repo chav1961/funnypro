@@ -6,15 +6,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Proxy;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.interfaces.IFProEntity;
+import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 
 public class EntitiesTest {
@@ -25,6 +28,7 @@ public class EntitiesTest {
 		Assert.assertEquals(EntityType.anonymous,e1.getEntityType());
 		Assert.assertEquals(IFProEntity.ANON_ENTITY_ID,e1.getEntityId());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 		
 		e1.setParent(e2);
@@ -40,6 +44,7 @@ public class EntitiesTest {
 		Assert.assertEquals(EntityType.integer,e1.getEntityType());
 		Assert.assertEquals(123,e1.getEntityId());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 
 		e1.setParent(e2);
@@ -55,6 +60,7 @@ public class EntitiesTest {
 		Assert.assertEquals(EntityType.real,e1.getEntityType());
 		Assert.assertEquals(123,Double.longBitsToDouble(e1.getEntityId()),0.001);
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 
 		e1.setParent(e2);
@@ -70,6 +76,7 @@ public class EntitiesTest {
 		Assert.assertEquals(EntityType.string,e1.getEntityType());
 		Assert.assertEquals(123,e1.getEntityId());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 
 		e1.setParent(e2);
@@ -83,6 +90,7 @@ public class EntitiesTest {
 		Assert.assertEquals(EntityType.variable,e1.getEntityType());
 		Assert.assertEquals(123,e1.getEntityId());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 		Assert.assertEquals(e1,e1.getChain());
 
@@ -103,6 +111,7 @@ public class EntitiesTest {
 		Assert.assertEquals(EntityType.list,e1.getEntityType());
 		Assert.assertEquals(IFProEntity.LIST_ENTITY_ID,e1.getEntityId());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 
 		e1.setParent(e2);
@@ -125,6 +134,7 @@ public class EntitiesTest {
 		Assert.assertEquals(1000,e1.getPriority());
 		Assert.assertEquals(OperatorType.xfx,e1.getOperatorType());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 
 		e1.setParent(e2);
@@ -142,6 +152,7 @@ public class EntitiesTest {
 		Assert.assertEquals(1000,e1.getPriority());
 		Assert.assertEquals(OperatorType.xfx,e1.getOperatorType());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 
 		e1.setParent(e2);
@@ -203,6 +214,7 @@ public class EntitiesTest {
 		Assert.assertEquals(123,e1.getEntityId());
 		Assert.assertEquals(2,e1.getArity());
 		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());
 		Assert.assertArrayEquals(new IFProEntity[]{ie1,ie2},e1.getParameters());
 		
@@ -216,6 +228,24 @@ public class EntitiesTest {
 		Assert.assertEquals(e2,e1.getRule());
 	}
 
+	@Test
+	public void externalEntityTest() {
+		final IResolvable<?,?>			res = (IResolvable<?, ?>) Proxy.newProxyInstance(this.getClass().getClassLoader(),new Class[]{IResolvable.class},(a,b,c)->{return null;});
+		final ExternalPluginEntity<?,?>	e1 = new ExternalPluginEntity<>(123,"name1","vendor1",new int[] {1,2},res), e2 = new ExternalPluginEntity<>(123,"name1","vendor1",new int[] {1,2},res);
+
+		Assert.assertEquals(EntityType.externalplugin,e1.getEntityType());
+		Assert.assertEquals(123,e1.getEntityId());
+		Assert.assertEquals("name1",e1.getPluginName());
+		Assert.assertEquals("vendor1",e1.getPluginProducer());
+		Assert.assertArrayEquals(new int[] {1,2},e1.getPluginVersion());
+		Assert.assertEquals(e1,e2);
+		Assert.assertEquals(e1.hashCode(),e2.hashCode());
+		Assert.assertEquals(e1.toString(),e2.toString());
+		
+		e1.setParent(e2);
+		Assert.assertEquals(e2,e1.getParent());
+	}
+	
 	@Test
 	public void serializationTest() throws IOException {
 		final AnonymousEntity	anon = new AnonymousEntity();

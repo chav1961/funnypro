@@ -5,7 +5,7 @@ package chav1961.funnypro.core.interfaces;
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
  */
-public interface IFProExternalEntity extends IFProEntity {
+public interface IFProExternalEntity<Global,Local> extends IFProEntity {
 	/**
 	 * <p>Get plugin name for the given entity</p>
 	 * @return plugin name. Can't be null
@@ -28,5 +28,5 @@ public interface IFProExternalEntity extends IFProEntity {
 	 * <p>Get resolver to process plugin rule.
 	 * @return resolver to process plugin rule. Can't be null
 	 */
-	<Global,Local> IResolvable<Global,Local> getResolver();
+	 IResolvable<Global,Local> getResolver();
 }

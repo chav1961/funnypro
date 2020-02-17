@@ -47,7 +47,6 @@ public class ListEntity implements IFProList {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((child == null) ? 0 : child.hashCode());
-		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		result = prime * result + ((tail == null) ? 0 : tail.hashCode());
 		return result;
 	}

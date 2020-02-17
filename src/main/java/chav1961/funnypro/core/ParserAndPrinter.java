@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Properties;
 
 import chav1961.funnypro.core.entities.AnonymousEntity;
-import chav1961.funnypro.core.entities.EnternalPluginEntity;
+import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
@@ -819,7 +819,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			for (PluginItem item : repo.pluginsRepo().seek(new String(source,locations[0][0],locations[0][1])
 														  ,new String(source,locations[1][0],locations[1][1])
 														  ,new int[]{Integer.valueOf(new String(source,locations[2][0],locations[2][1]))})) {
-				result[0] = new EnternalPluginEntity(item.getDescriptor().getPluginEntity());
+				result[0] = new ExternalPluginEntity(item.getDescriptor().getPluginEntity());
 				return parsed;
 			}
 			throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"External plugin ["+new String(source,locations[0][0],locations[0][1])+"] was not found in the external plugin repo!");

@@ -86,7 +86,6 @@ public class OperatorEntity implements IFProOperator {
 		int result = 1;
 		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((left == null) ? 0 : left.hashCode());
-		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		result = prime * result + prty;
 		result = prime * result + ((right == null) ? 0 : right.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());

@@ -47,7 +47,6 @@ public class PredicateEntity implements IFProPredicate {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (int) (id ^ (id >>> 32));
-		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		result = prime * result + Arrays.hashCode(parm);
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		return result;
@@ -60,9 +59,6 @@ public class PredicateEntity implements IFProPredicate {
 		if (getClass() != obj.getClass()) return false;
 		PredicateEntity other = (PredicateEntity) obj;
 		if (id != other.id) return false;
-		if (parent == null) {
-			if (other.parent != null) return false;
-		} else if (!parent.equals(other.parent)) return false;
 		if (!Arrays.equals(parm, other.parm)) return false;
 		if (rule == null) {
 			if (other.rule != null) return false;

@@ -8,7 +8,7 @@ import java.util.Properties;
 import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.GlobalStack;
 import chav1961.funnypro.core.ParserAndPrinter;
-import chav1961.funnypro.core.entities.EnternalPluginEntity;
+import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.StringEntity;
@@ -51,7 +51,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new EnternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StringProcessorPlugin());}
+					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StringProcessorPlugin());}
 					@Override public String getPluginPredicate() {return null;}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}

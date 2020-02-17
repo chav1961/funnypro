@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import chav1961.funnypro.core.entities.EnternalPluginEntity;
+import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -47,7 +47,7 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 			this.pluginVersion = pluginVersion;
 			this.desc = new PluginDescriptor[]{
 					new PluginDescriptor(){
-						@Override public IFProExternalEntity getPluginEntity() {return new EnternalPluginEntity(1,pluginName,pluginProducer,pluginVersion,AbstractExternalPlugin.this);}
+						@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,pluginName,pluginProducer,pluginVersion,AbstractExternalPlugin.this);}
 						@Override public String getPluginPredicate() {return null;}
 						@Override public String getPluginDescription() {return pluginDescription;}
 					}

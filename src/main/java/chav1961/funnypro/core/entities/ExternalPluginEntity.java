@@ -1,5 +1,7 @@
 package chav1961.funnypro.core.entities;
 
+import java.util.Arrays;
+
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IResolvable;
@@ -9,18 +11,18 @@ import chav1961.funnypro.core.interfaces.IResolvable;
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
  */
-public class EnternalPluginEntity implements IFProExternalEntity {
+public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
 	private final long			pluginId;
 	private final String		pluginName, pluginProducer;
 	private final int[]			pluginVersion;
-	private final IResolvable	resolver;
+	private final IResolvable<G,L>	resolver;
 	private IFProEntity			parent;
 
 	/**
 	 * <p>Constructor of the object</p>
 	 * @param entity plugin descriptor
 	 */
-	public EnternalPluginEntity(final IFProExternalEntity entity){
+	public ExternalPluginEntity(final IFProExternalEntity<G,L> entity){
 		this(entity.getEntityId(),entity.getPluginName(),entity.getPluginProducer(),entity.getPluginVersion(),entity.getResolver());
 	}
 	
@@ -32,7 +34,7 @@ public class EnternalPluginEntity implements IFProExternalEntity {
 	 * @param pluginVersion any non-empty version number
 	 * @param resolver any implementation of plugin resolver
 	 */
-	public EnternalPluginEntity(final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable resolver){
+	public ExternalPluginEntity(final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable<G,L> resolver){
 		this(null,pluginId,pluginName,pluginProducer,pluginVersion,resolver);
 	}
 	
@@ -45,7 +47,7 @@ public class EnternalPluginEntity implements IFProExternalEntity {
 	 * @param pluginVersion any non-empty version number
 	 * @param resolver any implementation of plugin resolver
 	 */
-	public EnternalPluginEntity(final IFProEntity parent, final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable resolver){
+	public ExternalPluginEntity(final IFProEntity parent, final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable<G,L> resolver){
 		if (pluginName == null || pluginName.isEmpty()) {
 			throw new IllegalArgumentException("Plugin name can't be null or empty");
 		}
@@ -73,11 +75,11 @@ public class EnternalPluginEntity implements IFProExternalEntity {
 	@Override public String getPluginName() {return pluginName;}
 	@Override public String getPluginProducer() {return pluginProducer;}
 	@Override public int[] getPluginVersion() {return pluginVersion.clone();}
-	@Override public IResolvable getResolver() {return resolver;}
+	@Override public IResolvable<G,L> getResolver() {return resolver;}
 
 	@Override
 	public String toString() {
-		return "EnternalPluginEntity [pluginName=" + pluginName + ", pluginProducer=" + pluginProducer + ", pluginVersion=" + pluginVersion + "]";
+		return "EnternalPluginEntity [pluginName=" + pluginName + ", pluginProducer=" + pluginProducer + ", pluginVersion=" + Arrays.toString(pluginVersion) + "]";
 	}
 
 	@Override
@@ -86,7 +88,7 @@ public class EnternalPluginEntity implements IFProExternalEntity {
 		int result = 1;
 		result = prime * result + ((pluginName == null) ? 0 : pluginName.hashCode());
 		result = prime * result + ((pluginProducer == null) ? 0 : pluginProducer.hashCode());
-		result = prime * result + ((pluginVersion == null) ? 0 : pluginVersion.hashCode());
+		result = prime * result + ((pluginVersion == null) ? 0 : Arrays.hashCode(pluginVersion));
 		return result;
 	}
 
@@ -95,16 +97,14 @@ public class EnternalPluginEntity implements IFProExternalEntity {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		EnternalPluginEntity other = (EnternalPluginEntity) obj;
-		if (pluginName == null) {
-			if (other.pluginName != null) return false;
+		@SuppressWarnings("unchecked")
+		ExternalPluginEntity<G,L> other = (ExternalPluginEntity<G,L>) obj;
+		if (pluginName == null) { if (other.pluginName != null) return false;
 		} else if (!pluginName.equals(other.pluginName)) return false;
-		if (pluginProducer == null) {
-			if (other.pluginProducer != null) return false;
+		if (pluginProducer == null) { if (other.pluginProducer != null) return false;
 		} else if (!pluginProducer.equals(other.pluginProducer)) return false;
-		if (pluginVersion == null) {
-			if (other.pluginVersion != null) return false;
-		} else if (!pluginVersion.equals(other.pluginVersion)) return false;
+		if (pluginVersion == null) { if (other.pluginVersion != null) return false;
+		} else if (!Arrays.equals(pluginVersion,other.pluginVersion)) return false;
 		return true;
 	}
 }

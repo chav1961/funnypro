@@ -42,7 +42,6 @@ public class RealEntity implements IFProEntity {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (int) (id ^ (id >>> 32));
-		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		return result;
 	}
 

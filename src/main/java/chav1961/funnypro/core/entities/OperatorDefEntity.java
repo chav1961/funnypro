@@ -54,7 +54,7 @@ public class OperatorDefEntity implements IFProOperator {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
+		int result = 1;
 		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + prty;
 		result = prime * result + ((type == null) ? 0 : type.hashCode());

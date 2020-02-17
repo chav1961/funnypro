@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Properties;
 
 import chav1961.funnypro.core.ParserAndPrinter;
-import chav1961.funnypro.core.entities.EnternalPluginEntity;
+import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -42,7 +42,7 @@ public class AdvancedResolverPlugin implements IResolvable<StringProcessorGlobal
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new EnternalPluginEntity(2,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StringProcessorPlugin());}
+					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(2,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StringProcessorPlugin());}
 					@Override public String getPluginPredicate() {return null;}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}

@@ -8,7 +8,7 @@ import java.util.Properties;
 import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.GlobalStack;
 import chav1961.funnypro.core.ParserAndPrinter;
-import chav1961.funnypro.core.entities.EnternalPluginEntity;
+import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
@@ -53,7 +53,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new EnternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new TutorialPlugin());}
+					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new TutorialPlugin());}
 					@Override public String getPluginPredicate() {return new String(PREDICATE);}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}

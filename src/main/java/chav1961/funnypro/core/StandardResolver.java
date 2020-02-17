@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import chav1961.funnypro.core.FProUtil.Change;
-import chav1961.funnypro.core.entities.EnternalPluginEntity;
+import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
@@ -205,7 +205,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new EnternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StandardResolver());}
+					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StandardResolver());}
 					@Override public String getPluginPredicate() {return null;}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}
