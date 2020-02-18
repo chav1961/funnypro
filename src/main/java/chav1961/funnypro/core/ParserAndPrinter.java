@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Properties;
 
 import chav1961.funnypro.core.entities.AnonymousEntity;
-import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
@@ -21,7 +20,6 @@ import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProExternalEntity;
-import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginItem;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
@@ -74,15 +72,15 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		VALID_LOWER_LETTERS.add('\u0451');
 	}
 	
-	public ParserAndPrinter(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) throws SyntaxException {
+	public ParserAndPrinter(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) throws SyntaxException, NullPointerException {
 		if (log == null) {
-			throw new IllegalArgumentException("Log can't be null"); 
+			throw new NullPointerException("Log can't be null"); 
 		}
 		else if (prop == null) {
-			throw new IllegalArgumentException("Properties can't be null"); 
+			throw new NullPointerException("Properties can't be null"); 
 		}
 		else if (repo == null) {
-			throw new IllegalArgumentException("Entities repo can't bw null"); 
+			throw new NullPointerException("Entities repo can't bw null"); 
 		}
 		else {
 			this.log = log;			this.props = prop;
@@ -101,16 +99,16 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	}
 
 	@Override
-	public void parseEntities(final CharacterSource source, final FProParserCallback callback) throws SyntaxException, IOException, ContentException {
+	public void parseEntities(final CharacterSource source, final FProParserCallback callback) throws SyntaxException, IOException, ContentException, NullPointerException {
 		if (source == null) {
-			throw new IllegalArgumentException("Source reader can't be null");
+			throw new NullPointerException("Source reader can't be null");
 		}
 		else if (callback == null) {
-			throw new IllegalArgumentException("Callback can't be null");
+			throw new NullPointerException("Callback can't be null");
 		}
 		else {
-			final GrowableCharArray	gca = new GrowableCharArray(false);
-			char					symbol;
+			final GrowableCharArray<GrowableCharArray<?>>	gca = new GrowableCharArray<>(false);
+			char						symbol;
 			
 			while ((symbol = source.next()) != CharacterSource.EOF) {
 				gca.append(symbol);
@@ -121,35 +119,46 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	}
 
 	@Override
-	public int parseEntities(final char[] source, int from, final FProParserCallback callback)  throws SyntaxException, IOException {
-		final List<IFProVariable>	vars = new ArrayList<>();
-		
-		try{final IFProEntity[]		result = new IFProEntity[1];
+	public int parseEntities(final char[] source, int from, final FProParserCallback callback) throws SyntaxException, IOException, NullPointerException, IllegalArgumentException {
+		if (source == null) {
+			throw new NullPointerException("Source array can't be null");
+		}
+		else if (from < 0 || from >= source.length) {
+			throw new IllegalArgumentException("From position ["+from+"] out of range 0.."+(source.length-1));
+		}
+		else if (callback == null) {
+			throw new NullPointerException("Parser callback can't be null");
+		}
+		else {
+			final List<IFProVariable>	vars = new ArrayList<>();
 			
-			while (from < source.length) {
-				try(final VarRepo	varRepo = new VarRepo(vars)) {
-					from = parse(source,from,repo.getOperatorPriorities(),IFProOperator.MAX_PRTY,varRepo,result);
-				}
-				if (result[0] != null) {
-					if (!callback.process(result[0],vars)) {
-						break;
+			try{final IFProEntity[]		result = new IFProEntity[1];
+				
+				while (from < source.length) {
+					try(final VarRepo	varRepo = new VarRepo(vars)) {
+						from = parse(source,from,repo.getOperatorPriorities(),IFProOperator.MAX_PRTY,varRepo,result);
+					}
+					if (result[0] != null) {
+						if (!callback.process(result[0],vars)) {
+							break;
+						}
+						else {
+							vars.clear();
+						}
 					}
 					else {
-						vars.clear();
+						break;
 					}
 				}
-				else {
-					break;
+				return from;
+			} catch (Exception e) {
+				if (e instanceof SyntaxException) {
+					throw (SyntaxException)e;
 				}
-			}
-			return from;
-		} catch (Exception e) {
-			if (e instanceof SyntaxException) {
-				throw (SyntaxException)e;
-			}
-			else {
-				e.printStackTrace();
-				throw new SyntaxException(0,0,e.getMessage(),e);
+				else {
+					e.printStackTrace();
+					throw new SyntaxException(0,0,e.getMessage(),e);
+				}
 			}
 		}
 	}
@@ -267,9 +276,6 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 				case operatordef		:
 					target.put(String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getOperatorType(),repo.termRepo().getName(entity.getEntityId())));
 					break;
-				case externalplugin		:
-					target.put(String.format("$external$(\"%1$s\",\"%2$s\",\"%3$s\")",((IFProExternalEntity)entity).getPluginName(),((IFProExternalEntity)entity).getPluginProducer(),((IFProExternalEntity)entity).getPluginVersion()));
-					break;
 				default :
 					throw new UnsupportedOperationException("Unknown type ti upload: "+entity.getEntityType());
 			}
@@ -332,7 +338,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 							}
 						}
 					}
-					break;
+					break; 
 				case '('	:
 					from++;
 					if (!prefixNow) {
@@ -521,7 +527,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 												while (from < maxLen && source[from] <= ' ') {
 													from++;
 												}
-												if (from < maxLen && source[from] == ')') {
+												if (from < maxLen && source[from] == ')') { 
 													from++;
 												}
 												else {
@@ -539,17 +545,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 													}												
 												}
 											}
-											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
-											prefixNow = false;
-										}
-										break;
-									case extern		:
-										if (!prefixNow) {
-											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
-										}
-										else {
-											from = parseExtern(source,from,result);
-											top[0] = result[0];
 											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
 											prefixNow = false;
 										}
@@ -811,24 +806,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 	}
 	
-	private int parseExtern(final char[] source, final int from, final IFProEntity[] result) throws SyntaxException {
-		final int[]	locations[] = new int[3][2];
-		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b\"%0c\"%b,%b\"%1c\"%b,%b\"%2d\"%b)",locations);
-		
-		if (parsed > from) {
-			for (PluginItem item : repo.pluginsRepo().seek(new String(source,locations[0][0],locations[0][1])
-														  ,new String(source,locations[1][0],locations[1][1])
-														  ,new int[]{Integer.valueOf(new String(source,locations[2][0],locations[2][1]))})) {
-				result[0] = new ExternalPluginEntity(item.getDescriptor().getPluginEntity());
-				return parsed;
-			}
-			throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"External plugin ["+new String(source,locations[0][0],locations[0][1])+"] was not found in the external plugin repo!");
-		}
-		else {
-			throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Illegal external plugin definition format!");
-		}
-	}
-
 	private int parseOp(final char[] source, final int from, final IFProEntity[] result) throws SyntaxException, SyntaxException {
 		final int[]	locations[] = new int[3][2], forPrty = new int[2];
 		final int	parsed = FProUtil.simpleParser(source,from,"%b(%b%0d%b,%b%1c%b,%b%2c%b)",locations);
@@ -1105,14 +1082,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 						opDef.getChars(0,opDef.length(),target,from);
 					}
 					from += opDef.length();
-					break;
-				case externalplugin		:
-					final String	extDef = String.format("$external$(\"%1$s\",\"%2$s\",\"%3$s\")",((IFProExternalEntity)entity).getPluginName(),((IFProExternalEntity)entity).getPluginProducer(),((IFProExternalEntity)entity).getPluginVersion());
-
-					if (from + extDef.length() < targetEnd) {
-						extDef.getChars(0,extDef.length(),target,from);
-					}
-					from += extDef.length();
 					break;
 				default :
 					throw new UnsupportedOperationException("Unknown type ti upload: "+entity.getEntityType());

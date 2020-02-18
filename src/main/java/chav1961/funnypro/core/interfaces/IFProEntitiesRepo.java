@@ -31,13 +31,12 @@ public interface IFProEntitiesRepo extends IFProStreamSerializable, AutoCloseabl
 	 * <li>anonymous - term is anonymous variable</li> 
 	 * <li>variable - term is variable</li> 
 	 * <li>op - term is :- op/3</li> 
-	 * <li>exterm - term is external predicate description</li> 
 	 * </ul> 
 	 * @author Alexander Chernomyrdin aka chav1961
 	 * @since 0.0.1
 	 */
 	public enum Classification {
-		operator, term, anonymous, variable, op, extern
+		operator, term, anonymous, variable, op
 	}
 
 	/**

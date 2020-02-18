@@ -115,7 +115,7 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * @param resolver resolver for the entity
 	 * @param global global object associated with the given resolver
 	 */
-	<Global,Local> void registerResolver(IFProEntity template, List<IFProVariable> vars, IResolvable<Global,Local> resolver, Object global);
+	<Global,Local> void registerResolver(IFProEntity template, List<IFProVariable> vars, IResolvable<Global,Local> resolver, Global global);
 	
 	/**
 	 * <p>Get resolver for the given template.</p>

@@ -73,7 +73,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	private final ExternalPluginsRepo			epRepo;
 	private final long							anonymousId;
 	private final long							opId;
-	private final long							externId;
 	private final long							goalId;
 	private final long							questionId;
 	private final long[]						opTypes = new long[OperatorType.values().length];
@@ -97,7 +96,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			
 			this.anonymousId = this.termRepo.placeName("_",null);
 			this.opId = this.termRepo.placeName("op",null);
-			this.externId = this.termRepo.placeName("extern",null);
 			this.goalId = this.termRepo.placeName(":-",null);
 			this.questionId = this.termRepo.placeName("?-",null);
 			
@@ -117,7 +115,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		for (long item : this.opTypes) {
 			termRepo.removeName(item);
 		}
-		termRepo.removeName(externId);
 		termRepo.removeName(opId);
 		termRepo.removeName(anonymousId);
 		termRepo.removeName(goalId);
@@ -129,9 +126,9 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	@Override public Properties getParameters() {return props;}		
 	
 	@Override
-	public void serialize(final DataOutput target) throws IOException {
+	public void serialize(final DataOutput target) throws IOException, NullPointerException {
 		if (target == null) {
-			throw new IllegalArgumentException("Target stream can't be null");
+			throw new NullPointerException("Target stream can't be null");
 		}
 		else {
 			target.writeInt(SERIALIZATION_MAGIC);				// Write magic
@@ -169,9 +166,9 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public void deserialize(final DataInput source) throws IOException {
+	public void deserialize(final DataInput source) throws IOException, NullPointerException, IllegalArgumentException {
 		if (source == null) {
-			throw new IllegalArgumentException("Source stream can't be null"); 
+			throw new NullPointerException("Source stream can't be null"); 
 		}
 		else if (source.readInt() != SERIALIZATION_MAGIC) {
 			throw new IllegalArgumentException("Illegal content of the source. Magic !"); 
@@ -211,9 +208,6 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		else if (id == opId) {
 			return Classification.op;
 		}
-		else if (id == externId) {
-			return Classification.extern;
-		}
 		else if (operators.contains(id)) {
 			return Classification.operator;
 		}
@@ -223,13 +217,13 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public OperatorType operatorType(long id) {
+	public OperatorType operatorType(final long id) {
 		for (int index = 0; index < opTypes.length; index++) {
 			if (opTypes[index] == id) {
 				return OperatorType.values()[index];
 			}
 		}
-		return null;
+		throw new IllegalArgumentException("Unknown id ["+id+"] for operator type"); 
 	}
 	
 	@Override
@@ -240,11 +234,14 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		else if (maxPrty < IFProOperator.MIN_PRTY || maxPrty > IFProOperator.MAX_PRTY) {
 			throw new IllegalArgumentException("Max priority ["+maxPrty+"] out of bounds. Need be in "+IFProOperator.MIN_PRTY+".."+IFProOperator.MAX_PRTY);
 		}
+		else if (sort == null) {
+			throw new NullPointerException("Operator sort can't be null");
+		}
 		else {
 			final OperatorDefRepo	found = operators.get(id);
 			
 			if (found != null) {
-				final int			min = Math.min(minPrty,maxPrty), max = Math.max(minPrty,maxPrty); 
+				final int			min = Math.min(minPrty,maxPrty), max = Math.max(minPrty,maxPrty); // Max prty can be less than min prty when seek postfix operators
 				IFProOperator		root = found.data, temp;
 				int					count = 0, prty;
 				
@@ -283,10 +280,10 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public void putOperatorDef(final IFProOperator op) {
+	public void putOperatorDef(final IFProOperator op) throws NullPointerException, IllegalArgumentException {
 		if (op == null) {
-			throw new IllegalArgumentException(); 
-		}
+			throw new NullPointerException("Operador def to add can't be null"); 
+		} 
 		else {
 			final OperatorDefRepo	odr = new OperatorDefRepo(op.getEntityId(),op); 
 			OperatorDefRepo			found = operators.get(op.getEntityId()); 
@@ -336,37 +333,34 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 	
 	@Override
-	public void consult(final CharacterSource source) throws SyntaxException {
+	public void consult(final CharacterSource source) throws SyntaxException, NullPointerException {
 		if (source == null) {
-			throw new IllegalArgumentException("Source can't be null");
+			throw new NullPointerException("Source can't be null");
 		}
 		else {
 			final ParserAndPrinter	pap = new ParserAndPrinter(getDebug(),getParameters(),this);
 			int[]					count = new int[1], ops = new int[1];
 			
-			try{pap.parseEntities(source,new FProParserCallback(){
-										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
+			try{pap.parseEntities(source,(entity,vars)->
+										   {if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
 													ops[0]++;
 												}
 												else {
-													getDebug().message(Severity.warning,"Consulted data contains goal. It will be ignored");
+													getDebug().message(Severity.warning,"Consulted data contains goal. Content will be ignored");
 												}
 											}
 											else if (entity.getEntityId() == questionId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
-												getDebug().message(Severity.warning,"Consulted data contains question. It will be ignored");
+												getDebug().message(Severity.warning,"Consulted data contains question. Content will be ignored");
 											}
 											else {
 												predicateRepo().assertZ(entity);
 												count[0]++;
 											}
 											return true;
-										}
-									}
-				);
+										   }
+										);
 			} catch (IOException | ContentException e) {
 				throw new SyntaxException(0,0,e.getMessage()); 
 			} 
@@ -375,9 +369,9 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public int consult(final char[] source, int from) throws SyntaxException {
+	public int consult(final char[] source, int from) throws SyntaxException, NullPointerException, IllegalArgumentException {
 		if (source == null) {
-			throw new IllegalArgumentException("Source can't be null");
+			throw new NullPointerException("Source can't be null");
 		}
 		else if (from < 0 || from >= source.length) {
 			throw new IllegalArgumentException("From location ["+from+"] outside the range 0.."+(source.length-1));
@@ -386,29 +380,26 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			final ParserAndPrinter	pap = new ParserAndPrinter(getDebug(),getParameters(),this);
 			int[]					count = new int[1], ops = new int[1];
 			
-			try{from = pap.parseEntities(source,from,new FProParserCallback(){
-										@Override
-										public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-											if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
+			try{from = pap.parseEntities(source,from,(entity,vars)->
+											{if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
 													ops[0]++;
 												}
 												else {
-													getDebug().message(Severity.warning,"Consulted data contains goal. It will be ignored");
+													getDebug().message(Severity.warning,"Consulted data contains goal. Content will be ignored");
 												}
 											}
 											else if (entity.getEntityId() == questionId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
-												getDebug().message(Severity.warning,"Consulted data contains question. It will be ignored");
+												getDebug().message(Severity.warning,"Consulted data contains question. Content will be ignored");
 											}
 											else {
 												predicateRepo().assertZ(entity);
 												count[0]++;
 											}
 											return true;
-										}
-									}
-				);
+											}
+										);
 			} catch (SyntaxException | IOException e) {
 //				e.printStackTrace();
 				throw new SyntaxException(0,0,e.getMessage()); 
@@ -419,9 +410,9 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public void save(final CharacterTarget target) throws PrintingException {
+	public void save(final CharacterTarget target) throws PrintingException, NullPointerException {
 		if (target == null) {
-			throw new IllegalArgumentException("Target can't be null");
+			throw new NullPointerException("Target can't be null");
 		}
 		else {
 			try{final IFProParserAndPrinter	pap = new ParserAndPrinter(getDebug(),getParameters(),this);
@@ -434,7 +425,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 					
 					for (IFProEntity item : predicateRepo().call(new PredicateEntity(naa.getId(),parm))) {
 						pap.putEntity(item,target);
-						target.put('.');
+						target.put(" . ");
 						count++;
 					}
 				}
@@ -446,9 +437,9 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 
 	@Override
-	public int save(final char[] target, final int from) throws PrintingException {
+	public int save(final char[] target, final int from) throws PrintingException, NullPointerException, IllegalArgumentException {
 		if (target == null) {
-			throw new IllegalArgumentException("Target can't be null");
+			throw new NullPointerException("Target can't be null");
 		}
 		else if (from < 0 || from >= target.length) {
 			throw new IllegalArgumentException("From location ["+from+"] outside the range 0.."+(target.length-1));
@@ -477,7 +468,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 
 	@Override
 	public String toString() {
-		return "EntitiesRepo [anonymousId=" + anonymousId + ", opId=" + opId + ", externId=" + externId + ", operators=" + operatorsSet + "]";
+		return "EntitiesRepo [anonymousId=" + anonymousId + ", opId=" + opId + ", operators=" + operatorsSet + "]";
 	}
 
 	private static class OperatorDefRepo implements Comparable<OperatorDefRepo>{

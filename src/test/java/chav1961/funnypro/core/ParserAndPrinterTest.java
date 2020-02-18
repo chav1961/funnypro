@@ -26,22 +26,74 @@ import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.PureLibSettings;
+import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
-import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.streams.charsource.StringCharSource;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class ParserAndPrinterTest {
 	private static final String		EXPRESSION = "predicate(123,123.456,\"mzinana\",X,_,test(X)):-predicate([X|_]),predicate((789,200));predicate(test)";
+	private static final String		FULL_EXPRESSION = "% comment\n"+EXPRESSION+"\r\n.\n";
 
 	@Test
-	public void simpleParserTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
+	public void basicAndExceptionsTest() throws Exception {
+		final Properties	props = Utils.mkProps();
 		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
+			
+			Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,pap.getDebug());
+			Assert.assertEquals(props,pap.getParameters());
+			Assert.assertEquals(repo,pap.getRepo());
+			
+			try {new ParserAndPrinter(null,props,repo);
+				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+			} catch (NullPointerException exc) {
+			}
+			try {new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,null,repo);
+				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+			} catch (NullPointerException exc) {
+			}
+			try {new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,null);
+				Assert.fail("Mandatory exception was not detected (null 3-rd argument)");
+			} catch (NullPointerException exc) {
+			}
+			
+			try {pap.parseEntities(null,0,(e,v)->{return true;});
+				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+			} catch (NullPointerException exc) {
+			}
+			try {pap.parseEntities("test".toCharArray(),-1,(e,v)->{return true;});
+				Assert.fail("Mandatory exception was not detected (2-nd argument out of range)");
+			} catch (IllegalArgumentException exc) {
+			}
+			try {pap.parseEntities("test".toCharArray(),666,(e,v)->{return true;});
+				Assert.fail("Mandatory exception was not detected (2-nd argument out of range)");
+			} catch (IllegalArgumentException exc) {
+			}
+			try {pap.parseEntities("test".toCharArray(),0,null);
+				Assert.fail("Mandatory exception was not detected (null 3-rd argument)");
+			} catch (NullPointerException exc) {
+			}
+
+			try {pap.parseEntities(null,(e,v)->{return true;});
+				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+			} catch (NullPointerException exc) {
+			}
+			try {pap.parseEntities(new StringCharSource("test"),null); 
+				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+			} catch (NullPointerException exc) {
+			}
+		}
+	}
+	
+	@Test
+	public void simpleParserTest() throws Exception {
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 
 			final IFProEntity		integer = buildEntity(pap,"122 .");
 			Assert.assertEquals(integer.getEntityType(),EntityType.integer);
@@ -57,19 +109,85 @@ public class ParserAndPrinterTest {
 
 			final IFProEntity		anon = buildEntity(pap,"_.");
 			Assert.assertEquals(anon.getEntityType(),EntityType.anonymous);
+
+			final IFProEntity		var = buildEntity(pap,"X.");
+			Assert.assertEquals(EntityType.variable,var.getEntityType());
 			
 			final IFProEntity		term = buildEntity(pap,"testString.");
 			Assert.assertEquals(term.getEntityType(),EntityType.predicate);
 			Assert.assertEquals(term.getEntityId(),repo.termRepo().seekName("testString"));
+
+			try{buildEntity(pap,"10 20 .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"10 \"a\" .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"10 [] .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"10 () .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"10 ! .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"10 X .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"10 _ .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+			
+			try{buildEntity(pap,"_ 10 .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"X 10 .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+			
+			try{buildEntity(pap,"x 10 .");
+				Assert.fail("Mandatory exception was not detected (two operands without operator)");
+			} catch (SyntaxException exc) {
+			}
+			
+			try{buildEntity(pap,"[10 .");
+				Assert.fail("Mandatory exception was not detected (unclosed bracket)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"(10 .");
+				Assert.fail("Mandatory exception was not detected (unclosed bracket)");
+			} catch (SyntaxException exc) {
+			}
+
+			try{buildEntity(pap,"\"a \n");
+				Assert.fail("Mandatory exception was not detected (unquoted string)");
+			} catch (SyntaxException exc) {
+			}
 		}
 	}
 
 	@Test
 	public void listParserTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 
 			final IFProEntity		emptyList = buildEntity(pap,"[] .");
 			Assert.assertEquals(emptyList.getEntityType(),EntityType.list);
@@ -121,10 +239,8 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void bracketsParserTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 
 			Assert.assertNull(buildEntity(pap,"()."));
 			
@@ -161,10 +277,8 @@ public class ParserAndPrinterTest {
 	
 	@Test
 	public void predicateParserTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			
 			final IFProEntity		arity0 = buildEntity(pap,"predicate.");
 			Assert.assertEquals(arity0.getEntityType(),EntityType.predicate);
@@ -206,10 +320,8 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void unaryPriorityParserTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			
 			final long				id200x = repo.termRepo().placeName(":200",null);
 			final long				id200y = repo.termRepo().placeName("::200",null);
@@ -302,10 +414,8 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void binaryPriorityParserTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			
 			final long				xfx = repo.termRepo().placeName("::xfx::",null);
 			final long				xfy = repo.termRepo().placeName("::xfy::",null);
@@ -371,10 +481,8 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void variableParserTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 
 			final IFProEntity		variable = buildEntity(pap,"Variable.");
 			Assert.assertEquals(variable.getEntityType(),EntityType.variable);
@@ -410,10 +518,8 @@ public class ParserAndPrinterTest {
 	
 	@Test
 	public void putEntityTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			final StringBuilder		sb = new StringBuilder();
 			final CharacterTarget	ct = new StringBuilderCharTarget(sb);
 		
@@ -479,12 +585,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void complexTest() throws Exception {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		
-		try(final EntitiesRepo		repo = new EntitiesRepo(log,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(log,new Properties(),repo);
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 
-			final IFProEntity		entity = buildEntity(pap,EXPRESSION+".");
+			final IFProEntity		entity = buildEntity(pap,FULL_EXPRESSION+".");
 			final StringBuilder		sb = new StringBuilder();
 			final CharacterTarget	ct = new StringBuilderCharTarget(sb);
 			

@@ -191,7 +191,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 				}
 				else {
 					for (long item : ids) {
-						if (predicates[actualArity].get(item).start != null) {
+						if (predicates[actualArity].get(item) != null && predicates[actualArity].get(item).start != null) {
 							result.add(new ContentDescriptor(predicates[actualArity].get(item).predicateId,predicates[actualArity].get(item).start.getEntityType(),actualArity));
 						}
 					}

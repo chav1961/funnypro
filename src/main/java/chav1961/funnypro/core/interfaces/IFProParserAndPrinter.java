@@ -20,6 +20,7 @@ public interface IFProParserAndPrinter {
 	 * @author Alexander Chernomyrdin aka chav1961
 	 * @since 0.0.1
 	 */
+	@FunctionalInterface
 	public interface FProParserCallback {
 		/**
 		 * <p>Process one resolved goal (question)</p>

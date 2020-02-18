@@ -19,15 +19,15 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 	
 	private StackTop				top = null;
 
-	public GlobalStack(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) {
+	public GlobalStack(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) throws NullPointerException {
 		if (log == null) {
-			throw new IllegalArgumentException("Log can't be null"); 
+			throw new NullPointerException("Log can't be null"); 
 		}
 		else if (prop == null) {
-			throw new IllegalArgumentException("Properties can't be null"); 
+			throw new NullPointerException("Properties can't be null"); 
 		}
 		else if (repo == null) {
-			throw new IllegalArgumentException("Repo can't be null"); 
+			throw new NullPointerException("Repo can't be null"); 
 		}
 		else {
 			this.log = log;			this.props = prop;
@@ -63,9 +63,9 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 	}
 
 	@Override
-	public IFProGlobalStack push(final GlobalStackTop entity) {
+	public IFProGlobalStack push(final GlobalStackTop entity) throws NullPointerException {
 		if (entity == null) {
-			throw new IllegalArgumentException("Entity can't be null");
+			throw new NullPointerException("Entity can't be null");
 		}
 		else {
 			final StackTop	newTop = new StackTop();
@@ -121,9 +121,9 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 	}
 	
-	public static AndChainStackTop getAndChainStackTop(final IFProEntity entity) {
+	public static AndChainStackTop getAndChainStackTop(final IFProEntity entity) throws NullPointerException {
 		if (entity == null) {
-			throw new IllegalArgumentException("Entity can't be null");
+			throw new NullPointerException("Entity can't be null");
 		}
 		else {
 			return new AndChainStackTop(){
@@ -134,9 +134,9 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 	}
 
-	public static OrChainStackTop getOrChainStackTop(final IFProEntity entity, final boolean isFirst) {
+	public static OrChainStackTop getOrChainStackTop(final IFProEntity entity, final boolean isFirst) throws NullPointerException {
 		if (entity == null) {
-			throw new IllegalArgumentException("Entity can't be null");
+			throw new NullPointerException("Entity can't be null");
 		}
 		else {
 			return new IFProGlobalStack.OrChainStackTop(){
@@ -147,12 +147,12 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 	}
 
-	public static <T> IteratorStackTop<T> getIteratorStackTop(final Iterable<T> iterator, final Class<T> clazz) {
+	public static <T> IteratorStackTop<T> getIteratorStackTop(final Iterable<T> iterator, final Class<T> clazz) throws NullPointerException {
 		if (iterator == null) {
-			throw new IllegalArgumentException("Iterator can't be null");
+			throw new NullPointerException("Iterator can't be null");
 		}
 		else if (clazz == null) {
-			throw new IllegalArgumentException("Iterator content class can't be null");
+			throw new NullPointerException("Iterator content class can't be null");
 		}
 		else {
 			return new IteratorStackTop<T>(){
@@ -163,12 +163,12 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 	}
 	
-	public static BoundStackTop<Change> getBoundStackTop(final IFProEntity mark, final Change change) {
+	public static BoundStackTop<Change> getBoundStackTop(final IFProEntity mark, final Change change) throws NullPointerException {
 		if (mark == null) {
-			throw new IllegalArgumentException("Mark can't be null");
+			throw new NullPointerException("Mark can't be null");
 		}
 		else if (change == null) {
-			throw new IllegalArgumentException("Change chain can't be null");
+			throw new NullPointerException("Change chain can't be null");
 		}
 		else {
 			return new BoundStackTop<Change>(){
@@ -180,9 +180,9 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 	}
 
-	public static TemporaryStackTop getTemporaryStackTop(final IFProEntity entity) {
+	public static TemporaryStackTop getTemporaryStackTop(final IFProEntity entity) throws NullPointerException {
 		if (entity == null) {
-			throw new IllegalArgumentException("Entity can't be null");
+			throw new NullPointerException("Entity can't be null");
 		}
 		else {
 			return new TemporaryStackTop(){
@@ -193,14 +193,14 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 	}
 
-	public static ExternalStackTop getExternalStackTop(final ExternalEntityDescriptor desc, final Object localData) {
+	public static ExternalStackTop getExternalStackTop(final ExternalEntityDescriptor<?> desc, final Object localData) throws NullPointerException {
 		if (desc == null) {
-			throw new IllegalArgumentException("Entity descriptor can't be null");
+			throw new NullPointerException("Entity descriptor can't be null");
 		}
 		else {
 			return new ExternalStackTop(){
 				@Override public StackTopType getTopType() {return StackTopType.external;}
-				@Override public ExternalEntityDescriptor getDescriptor() {return desc;}
+				@Override public ExternalEntityDescriptor<?> getDescriptor() {return desc;}
 				@Override public Object getLocalData() {return localData;}
 				@Override public String toString() {return "ExternalStackTop{"+desc+"}";}
 			};

@@ -39,7 +39,7 @@ class IterablesCollection {
 				throw new NullPointerException("Name and arity can't be null"); 
 			}
 			else if (nameAndArity.getLeft() == null || nameAndArity.getRight() == null) {
-				iterator = NULL_NA_ITERATOR;
+				iterator = NULL_NA_ITERATOR; 
 			}
 			else if (!FProUtil.isEntityA(nameAndArity.getLeft(),ContentType.NonVar)) {
 				if (!FProUtil.isEntityA(nameAndArity.getRight(),ContentType.NonVar)) {
@@ -100,7 +100,7 @@ class IterablesCollection {
 			else {
 				this.iterator = repo.predicateRepo().call(call.getParameters()[0]).iterator();
 			}
-			this.template = call.getParameters()[0];	// Important order - don't change this string with the next one 
+			this.template = call.getArity() == 1 ? call.getParameters()[0] : null;	// Important order - don't change this string with the next one 
 			
 			this.callIterator = new Iterator<IFProEntity>(){
 				final Change[]	temp = new Change[1];
@@ -136,23 +136,29 @@ class IterablesCollection {
 	
 	public static class IterableCallBagof implements Iterable<IFProEntity> {
 		private final Iterator<IFProEntity>		iterator, bagofIterator;
-		private final IFProEntity				template,image;
+		private final IFProEntity				template, image;
 		
-		public IterableCallBagof(final IFProEntitiesRepo repo, final IFProPredicate call) {
+		public IterableCallBagof(final IFProEntitiesRepo repo, final IFProPredicate call) throws NullPointerException {
 			if (repo == null) {
-				throw new IllegalArgumentException("Repo can't be null"); 
+				throw new NullPointerException("Repo can't be null"); 
 			}
 			else if (call == null) {
-				throw new IllegalArgumentException("Name and arity can't be null"); 
+				throw new NullPointerException("Name and arity can't be null"); 
 			}
-			else if (call.getArity() != 3 || !FProUtil.isEntityA(call.getParameters()[1],ContentType.NonVar)) {
+			else if (call.getArity() != 3 || !(call.getParameters()[1].getEntityType() == EntityType.predicate || call.getParameters()[1].getEntityType() == EntityType.operator)) {
 				this.iterator = NULL_ENTITY_ITERATOR;
 			}
 			else {
 				this.iterator = repo.predicateRepo().call(call.getParameters()[1]).iterator();
 			}
-			this.template = call.getParameters()[1];
-			this.image = call.getParameters()[0];		// Important order - don't change this string with the next one
+			if (call.getArity() == 3) {				
+				this.template = call.getParameters()[1];
+				this.image = call.getParameters()[0];		// Important order - don't change this string with the next one
+			}
+			else {
+				this.template = null;
+				this.image = null;
+			}
 			this.bagofIterator = new Iterator<IFProEntity>(){
 								final Change[]	temp = new Change[1];
 								IFProEntity		item;
@@ -172,7 +178,7 @@ class IterablesCollection {
 											}
 										} while (iterator.hasNext());
 										
-										return false;
+										return false; 
 									}
 									else {
 										return false;
@@ -192,37 +198,47 @@ class IterablesCollection {
 		private final Iterator<IFProEntity>	iterator;
 		
 		public IterableList(final IFProPredicate call) {
-			this.list = (IFProList) call.getParameters()[0];
-			
-			this.template = call.getParameters()[1];
-			this.iterator = new Iterator<IFProEntity>(){
-				final Change[]	temp = new Change[1];
-				IFProEntity		item;
-				IFProList		start = list;
-			
-				@Override 
-				public boolean hasNext() {
-					if (start != null && start.getEntityType() == EntityType.list) {
-						do{if (FProUtil.unify(template,start.getChild(),temp)) {
-								FProUtil.unbind(temp[0]);
-								item = start.getChild();
-								start = (IFProList) start.getTail();
-								return true;
-							}
-							else {
-								FProUtil.unbind(temp[0]);
-							}
-						} while ((start = (IFProList) start.getTail()) != null && start.getEntityType() == EntityType.list);
-						
-						return false;
+			if (call == null) {
+				throw new NullPointerException("Call predicate can't be null"); 
+			}
+			else if (call.getArity() != 2 || call.getParameters()[0].getEntityType() != EntityType.list) {
+				this.list = null;
+				this.template = null;
+				this.iterator = NULL_ENTITY_ITERATOR;
+			}
+			else {
+				this.list = (IFProList) call.getParameters()[0];
+				this.template = call.getParameters()[1];	// Important order - don't change this string with the next one
+				
+				this.iterator = new Iterator<IFProEntity>(){
+					final Change[]	temp = new Change[1];
+					IFProEntity		item;
+					IFProList		start = list;
+				
+					@Override 
+					public boolean hasNext() {
+						if (start != null && start.getEntityType() == EntityType.list) {
+							do{if (FProUtil.unify(template,start.getChild(),temp)) {
+									FProUtil.unbind(temp[0]);
+									item = start.getChild();
+									start = (IFProList) start.getTail();
+									return true;
+								}
+								else {
+									FProUtil.unbind(temp[0]);
+								}
+							} while ((start = (IFProList) start.getTail()) != null && start.getEntityType() == EntityType.list);
+							
+							return false;
+						}
+						else {
+							return false;
+						}
 					}
-					else {
-						return false;
-					}
-				}
-	
-				@Override public IFProEntity next() {return item;}
-			};
+		
+					@Override public IFProEntity next() {return item;}
+				};
+			}
 		}
 		
 		@Override public Iterator<IFProEntity> iterator() {return iterator;}		
