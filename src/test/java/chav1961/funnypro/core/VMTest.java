@@ -81,7 +81,7 @@ public class VMTest {
 			final StringBuilder	save = new StringBuilder();
 			
 			vm.save(new StringBuilderCharTarget(save));
-			Assert.assertEquals(save.toString(),"predicate(100).");
+			Assert.assertEquals(save.toString(),"predicate(100) . ");
 			
 			Assert.assertTrue(vm.question("?-predicate(X)",EMPTY));
 			try{vm.question(null,EMPTY);

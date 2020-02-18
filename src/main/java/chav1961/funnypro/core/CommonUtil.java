@@ -141,7 +141,7 @@ class CommonUtil {
 			throw new NullPointerException("Content class to deserialize to can't be null");
 		}
 		else if (source.readInt() != SERIALIZATION_TREE_MAGIC) {
-			throw new IOException("Illegal magic naumber in the tree serialization stream");
+			throw new IOException("Illegal magic number in the tree serialization stream");
 		}
 		else {
 			final long	amount = source.readLong();				// Size of the tree
