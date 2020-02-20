@@ -37,7 +37,7 @@ public class OperatorDefEntity implements IFProOperator {
 	@Override public IFProOperator setLeft(final IFProEntity node) {throw new UnsupportedOperationException("Don't use this method for this class!");}
 	@Override public IFProOperator setRight(IFProEntity node) {throw new UnsupportedOperationException("Don't use this method for this class!");}
 	@Override public IFProEntity getRule() {return null;}
-	@Override public void setRule(IFProEntity rule) {throw new UnsupportedOperationException("Don't use this method for this class!");}
+	@Override public IFProEntity setRule(IFProEntity rule) {throw new UnsupportedOperationException("Don't use this method for this class!");}
 
 	@Override
 	public int getUnderlyingPriority() {

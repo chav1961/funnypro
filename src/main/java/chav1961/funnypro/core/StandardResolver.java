@@ -71,7 +71,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 														new StandardOperators(1200,OperatorType.fx,"?-",RegisteredEntities.Op1200fxQuestion),
 														new StandardOperators(1100,OperatorType.xfy,";",RegisteredEntities.Op1100xfyOr),
 														new StandardOperators(1100,OperatorType.xfx,"|",RegisteredEntities.Op1100xfxSeparator),
-														new StandardOperators(1050,OperatorType.xfy,"->",RegisteredEntities.Op1050xfyArrow),
+							 							new StandardOperators(1050,OperatorType.xfy,"->",RegisteredEntities.Op1050xfyArrow),
 														new StandardOperators(1000,OperatorType.xfy,",",RegisteredEntities.Op1000xfyAnd),
 														new StandardOperators(900,OperatorType.fy,"not",RegisteredEntities.Op900fyNot),
 														new StandardOperators(900,OperatorType.fy,"\\+",RegisteredEntities.Op900fyNotPlus),

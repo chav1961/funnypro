@@ -38,7 +38,7 @@ public class PredicateEntity implements IFProPredicate {
 	@Override public IFProEntity[] getParameters() {return parm;}
 	@Override public void setParameters(final IFProEntity... entity) {this.parm = entity;}
 	@Override public IFProEntity getRule() {return rule;}
-	@Override public void setRule(final IFProEntity rule) {this.rule = rule;}
+	@Override public IFProEntity setRule(final IFProEntity rule) {this.rule = rule; return this;}
 
 	@Override public String toString() {return "PredicateEntity [id=" + id + ", arity=" + getArity() + ", rule=" + rule + "]";}
 

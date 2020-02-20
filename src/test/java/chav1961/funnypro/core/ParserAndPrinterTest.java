@@ -40,7 +40,7 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void basicAndExceptionsTest() throws Exception {
-		final Properties	props = Utils.mkProps();
+		final Properties	props = Utils.mkProps(); 
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -54,7 +54,7 @@ public class ParserAndPrinterTest {
 			} catch (NullPointerException exc) {
 			}
 			try {new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,null,repo);
-				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+				Assert.fail("Mandatory exception was not detected (null 2-nd argument)"); 
 			} catch (NullPointerException exc) {
 			}
 			try {new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,null);
@@ -99,6 +99,14 @@ public class ParserAndPrinterTest {
 			Assert.assertEquals(integer.getEntityType(),EntityType.integer);
 			Assert.assertEquals(integer.getEntityId(),122);
 
+			final IFProEntity		longInteger = buildEntity(pap,"123456789012345 .");
+			Assert.assertEquals(EntityType.integer,longInteger.getEntityType());
+			Assert.assertEquals(123456789012345L,longInteger.getEntityId());
+
+			final IFProEntity		realFloat = buildEntity(pap,"122.345f .");
+			Assert.assertEquals(EntityType.real,realFloat.getEntityType());
+			Assert.assertEquals(Double.longBitsToDouble(realFloat.getEntityId()),122.345,0.0001);
+			
 			final IFProEntity		real = buildEntity(pap,"122.345 .");
 			Assert.assertEquals(real.getEntityType(),EntityType.real);
 			Assert.assertEquals(Double.longBitsToDouble(real.getEntityId()),122.345,0.0001);
@@ -515,6 +523,67 @@ public class ParserAndPrinterTest {
 			Assert.assertEquals(count,3);
 		}
 	}
+
+	@Test
+	public void operatorDefParserTest() throws Exception {
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+
+			IFProOperator		op = (IFProOperator)buildEntity(pap,":-op(100,xfx,assa).");
+			Assert.assertEquals(EntityType.operatordef,op.getRight().getEntityType());
+			Assert.assertEquals(repo.termRepo().seekName("assa"),op.getRight().getEntityId());
+			Assert.assertEquals(100,((IFProOperator)op.getRight()).getPriority());
+			Assert.assertEquals(OperatorType.xfx,((IFProOperator)op.getRight()).getOperatorType());
+
+			op = (IFProOperator)buildEntity(pap,":-op(100,xfx,'assa').");
+			Assert.assertEquals(EntityType.operatordef,op.getRight().getEntityType());
+			Assert.assertEquals(repo.termRepo().seekName("'assa'"),op.getRight().getEntityId());
+			Assert.assertEquals(100,((IFProOperator)op.getRight()).getPriority());
+			Assert.assertEquals(OperatorType.xfx,((IFProOperator)op.getRight()).getOperatorType());
+			
+			try{buildEntity(pap,":-op 100,xfx,assa).");
+				Assert.fail("Mandatory exception was not detected (missing '(' )");
+			} catch (SyntaxException exc) {
+			}
+			try{buildEntity(pap,":-op(10000,xfx,assa).");
+				Assert.fail("Mandatory exception was not detected (priority out of range)");
+			} catch (SyntaxException exc) {
+			}
+			try{buildEntity(pap,":-op(10000 xfx,assa).");
+				Assert.fail("Mandatory exception was not detected (first ',' missing)");
+			} catch (SyntaxException exc) {
+			} 
+			try{buildEntity(pap,":-op(100,,assa).");
+				Assert.fail("Mandatory exception was not detected (missing operator type)");
+			} catch (SyntaxException exc) {
+			}
+			try{buildEntity(pap,":-op(100,xuj,assa).");
+				Assert.fail("Mandatory exception was not detected (unknown operator type)");
+			} catch (SyntaxException exc) {
+			} 
+
+			try{buildEntity(pap,":-op(100,xfx assa).");
+				Assert.fail("Mandatory exception was not detected (second ',' missing)");
+			} catch (SyntaxException exc) { 
+			} 
+			try{buildEntity(pap,":-op(100,xfx,).");
+				Assert.fail("Mandatory exception was not detected (mnemonics missing)");
+			} catch (SyntaxException exc) {
+			}
+			try{buildEntity(pap,":-op(100,xfx,'').");
+				Assert.fail("Mandatory exception was not detected (empty mnemonics)");
+			} catch (SyntaxException exc) {
+			}
+			try{buildEntity(pap,":-op(100,xfx,').");
+				Assert.fail("Mandatory exception was not detected (unquoted string)");
+			} catch (SyntaxException exc) {
+			} 
+			try{buildEntity(pap,":-op(100,xfx,assa.");
+				Assert.fail("Mandatory exception was not detected (missing ')')");
+			} catch (SyntaxException exc) {
+			}
+		}
+	}
 	
 	@Test
 	public void putEntityTest() throws Exception {
@@ -522,42 +591,73 @@ public class ParserAndPrinterTest {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			final StringBuilder		sb = new StringBuilder();
 			final CharacterTarget	ct = new StringBuilderCharTarget(sb);
+			final char[]			content = new char[1024];
+			int		len;
 		
 			pap.putEntity(new AnonymousEntity(),ct);
 			Assert.assertEquals(sb.toString(),"_");		
 			sb.setLength(0);
+			len = pap.putEntity(new AnonymousEntity(),content,0);
+			Assert.assertEquals("_",new String(content,0,len));		
+			
 			
 			pap.putEntity(new IntegerEntity(123),ct);
 			Assert.assertEquals(sb.toString(),"123");
 			sb.setLength(0);
+			len = pap.putEntity(new IntegerEntity(123),content,0);
+			Assert.assertEquals("123",new String(content,0,len));		
 
 			pap.putEntity(new RealEntity(123.456),ct);
 			Assert.assertEquals(sb.toString(),"123.456");
 			sb.setLength(0);
+			len = pap.putEntity(new RealEntity(123.456),content,0);
+			Assert.assertEquals("123.456",new String(content,0,len));		
 
 			final long		stringId = repo.stringRepo().placeName("mzinana",null);
 			pap.putEntity(new StringEntity(stringId),ct);
 			Assert.assertEquals(sb.toString(),"\"mzinana\"");
 			sb.setLength(0);
+			len = pap.putEntity(new StringEntity(stringId),content,0);
+			Assert.assertEquals("\"mzinana\"",new String(content,0,len));		
 
 			final long		varId = repo.termRepo().placeName("Variable",null);
 			pap.putEntity(new VariableEntity(varId),ct);
 			Assert.assertEquals(sb.toString(),"Variable");
 			sb.setLength(0);
+			len = pap.putEntity(new VariableEntity(varId),content,0);
+			Assert.assertEquals("Variable",new String(content,0,len));		
+			
+			pap.putEntity(new ListEntity(null,null),ct);
+			Assert.assertEquals(sb.toString(),"[]");
+			sb.setLength(0);
+			len = pap.putEntity(new ListEntity(null,null),content,0);
+			Assert.assertEquals("[]",new String(content,0,len));		
 			
 			pap.putEntity(new ListEntity(new IntegerEntity(123),new VariableEntity(varId)),ct);
 			Assert.assertEquals(sb.toString(),"[123|Variable]");
 			sb.setLength(0);
+			len = pap.putEntity(new ListEntity(new IntegerEntity(123),new VariableEntity(varId)),content,0);
+			Assert.assertEquals("[123|Variable]",new String(content,0,len));		
 
 			final long		predId = repo.termRepo().placeName("predicate",null);
 			pap.putEntity(new PredicateEntity(predId),ct);
 			Assert.assertEquals(sb.toString(),"predicate");
 			sb.setLength(0);
+			len = pap.putEntity(new PredicateEntity(predId),content,0);
+			Assert.assertEquals("predicate",new String(content,0,len));		
 
 			pap.putEntity(new PredicateEntity(predId,new IFProEntity[]{new IntegerEntity(123),new IntegerEntity(456)}),ct);
 			Assert.assertEquals(sb.toString(),"predicate(123,456)");
 			sb.setLength(0);
+			len = pap.putEntity(new PredicateEntity(predId,new IFProEntity[]{new IntegerEntity(123),new IntegerEntity(456)}),content,0);
+			Assert.assertEquals("predicate(123,456)",new String(content,0,len));		
 
+			pap.putEntity(new PredicateEntity(predId,new IFProEntity[]{new IntegerEntity(123),new IntegerEntity(456)}).setRule(new IntegerEntity(100)),ct);
+			Assert.assertEquals(sb.toString(),"predicate(123,456):-100");
+			sb.setLength(0);
+			len = pap.putEntity(new PredicateEntity(predId,new IFProEntity[]{new IntegerEntity(123),new IntegerEntity(456)}).setRule(new IntegerEntity(100)),content,0);
+			Assert.assertEquals("predicate(123,456):-100",new String(content,0,len));		
+			
 			final long		opId = repo.termRepo().placeName("***",null);
 			repo.putOperatorDef(new OperatorDefEntity(100,OperatorType.fx,opId));
 			repo.putOperatorDef(new OperatorDefEntity(100,OperatorType.xf,opId));
@@ -566,20 +666,50 @@ public class ParserAndPrinterTest {
 			pap.putEntity(new OperatorEntity(100,OperatorType.fx,opId).setRight(new IntegerEntity(123)),ct);
 			Assert.assertEquals(sb.toString(),"***123");
 			sb.setLength(0);
+			len = pap.putEntity(new OperatorEntity(100,OperatorType.fx,opId).setRight(new IntegerEntity(123)),content,0);
+			Assert.assertEquals("***123",new String(content,0,len));		
 			
 			pap.putEntity(new OperatorEntity(100,OperatorType.xf,opId).setLeft(new IntegerEntity(123)),ct);
 			Assert.assertEquals(sb.toString(),"123***");
 			sb.setLength(0);
+			len = pap.putEntity(new OperatorEntity(100,OperatorType.xf,opId).setLeft(new IntegerEntity(123)),content,0);
+			Assert.assertEquals("123***",new String(content,0,len));		
 
 			pap.putEntity(new OperatorEntity(100,OperatorType.xfx,opId).setLeft(new IntegerEntity(123)).setRight(new IntegerEntity(456)),ct);
 			Assert.assertEquals(sb.toString(),"123***456");
 			sb.setLength(0);
+			len = pap.putEntity(new OperatorEntity(100,OperatorType.xfx,opId).setLeft(new IntegerEntity(123)).setRight(new IntegerEntity(456)),content,0);
+			Assert.assertEquals("123***456",new String(content,0,len));		
+
+			pap.putEntity(new OperatorEntity(100,OperatorType.xfx,opId).setLeft(new IntegerEntity(123)).setRight(new IntegerEntity(456)).setRule(new IntegerEntity(100)),ct);
+			Assert.assertEquals(sb.toString(),"123***456:-100");
+			sb.setLength(0);
+			len = pap.putEntity(new OperatorEntity(100,OperatorType.xfx,opId).setLeft(new IntegerEntity(123)).setRight(new IntegerEntity(456)).setRule(new IntegerEntity(100)),content,0);
+			Assert.assertEquals("123***456:-100",new String(content,0,len));		
 			
-			final char[]	buffer = new char[100];
-			final int		filled = pap.putEntity(new IntegerEntity(123),buffer,0);
+			pap.putEntity(new OperatorDefEntity(100,OperatorType.xfx,opId),ct);
+			Assert.assertEquals(sb.toString(),"op(100,xfx,***)");
+			sb.setLength(0);
+			len = pap.putEntity(new OperatorDefEntity(100,OperatorType.xfx,opId),content,0);
+			Assert.assertEquals("op(100,xfx,***)",new String(content,0,len));		
 			
-			Assert.assertEquals(filled,3);
-			Assert.assertEquals(new String(buffer,0,filled),"123");
+			try{pap.putEntity(null,ct); 
+				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+			} catch (NullPointerException exc) {
+			} 
+			try{pap.putEntity(new IntegerEntity(123),null);
+				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+			} catch (NullPointerException exc) {
+			}
+
+			try{pap.putEntity(null,content,0);
+				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+			} catch (NullPointerException exc) {
+			}
+			try{pap.putEntity(new IntegerEntity(123),null,0);
+				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+			} catch (NullPointerException exc) {
+			}
 		}		
 	}
 
@@ -609,7 +739,7 @@ public class ParserAndPrinterTest {
 									return true;
 								}
 							}
-		);
+		); 
 		return result[0];
 	}
 

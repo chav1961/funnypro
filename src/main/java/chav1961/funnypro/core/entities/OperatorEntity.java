@@ -66,7 +66,7 @@ public class OperatorEntity implements IFProOperator {
 	@Override public IFProOperator setLeft(final IFProEntity node) {this.left = node; return this;}
 	@Override public IFProOperator setRight(IFProEntity node) {this.right = node; return this;}
 	@Override public IFProEntity getRule() {return rule;}
-	@Override public void setRule(final IFProEntity rule) {this.rule = rule;}
+	@Override public IFProEntity setRule(final IFProEntity rule) {this.rule = rule; return this;}
 
 	@Override
 	public int getUnderlyingPriority() {

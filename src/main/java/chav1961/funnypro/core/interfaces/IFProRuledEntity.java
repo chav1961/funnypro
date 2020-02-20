@@ -16,5 +16,5 @@ public interface IFProRuledEntity {
 	 * <p>Associate rule with the entity</p>
 	 * @param rule rule description for the given entity
 	 */
-	void setRule(IFProEntity rule);
+	IFProEntity setRule(IFProEntity rule);
 }
