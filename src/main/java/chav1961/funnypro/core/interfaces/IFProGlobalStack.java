@@ -35,6 +35,9 @@ public interface IFProGlobalStack extends AutoCloseable {
 		 * @return element type
 		 */
 		StackTopType getTopType();
+		
+		
+		IFProEntity getEntityAssicated();
 	}
 
 	/**

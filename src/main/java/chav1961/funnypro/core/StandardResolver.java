@@ -12,12 +12,15 @@ import java.util.Properties;
 import java.util.Set;
 
 import chav1961.funnypro.core.FProUtil.Change;
+import chav1961.funnypro.core.FProUtil.ContentType;
+import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
 import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
+import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
@@ -33,6 +36,7 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack.OrChainStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.TemporaryStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.ExternalStackTop;
+import chav1961.funnypro.core.interfaces.IFProGlobalStack.GlobalStackTop;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
@@ -44,10 +48,12 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.LongIdMap;
+import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
+import chav1961.purelib.streams.charsource.SyntaxTreeCharacterSource;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
@@ -73,7 +79,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 														new StandardOperators(1100,OperatorType.xfx,"|",RegisteredEntities.Op1100xfxSeparator),
 							 							new StandardOperators(1050,OperatorType.xfy,"->",RegisteredEntities.Op1050xfyArrow),
 														new StandardOperators(1000,OperatorType.xfy,",",RegisteredEntities.Op1000xfyAnd),
-														new StandardOperators(900,OperatorType.fy,"not",RegisteredEntities.Op900fyNot),
+									 					new StandardOperators(900,OperatorType.fy,"not",RegisteredEntities.Op900fyNot),
 														new StandardOperators(900,OperatorType.fy,"\\+",RegisteredEntities.Op900fyNotPlus),
 														new StandardOperators(700,OperatorType.xfx,"=",RegisteredEntities.Op700xfxUnify),
 														new StandardOperators(700,OperatorType.xfx,"\\=",RegisteredEntities.Op700xfxNotUnify),
@@ -277,13 +283,14 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 		desc.prepared = true;
 		desc.repo = repo;
+		desc.pap = new ParserAndPrinter(desc.log,desc.parameters,desc.repo);
 		return desc;
 	}
 
 	@Override
-	public void onRemove(final GlobalDescriptor global) throws SyntaxException {
+	public void onRemove(final GlobalDescriptor global) throws SyntaxException, NullPointerException {
 		if (global == null) {
-			throw new IllegalArgumentException("Global object can't be null!");
+			throw new NullPointerException("Global object can't be null!");
 		}
 		else {
 			final GlobalDescriptor	data = (GlobalDescriptor)global;
@@ -305,17 +312,23 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	@Override
-	public LocalDescriptor beforeCall(final GlobalDescriptor global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException {
+	public LocalDescriptor beforeCall(final GlobalDescriptor global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException, NullPointerException {
 		if (global == null) {
-			throw new IllegalArgumentException("Global object can't be null!");
+			throw new NullPointerException("Global object can't be null!");
+		}
+		else if (gs == null) {
+			throw new NullPointerException("Global stack descriptor can't be null!");
+		}
+		else if (vars == null) {
+			throw new NullPointerException("Resolved variables list can't be null!");
 		}
 		else if (callback == null) {
-			throw new IllegalArgumentException("Callback can't be null!");
+			throw new NullPointerException("Callback can't be null!");
 		}
 		else {
 			final LocalDescriptor	desc = new LocalDescriptor();
 			
-			desc.pap = new ParserAndPrinter(global.log,global.parameters,global.repo);
+			desc.pap = global.pap; //new ParserAndPrinter(global.log,global.parameters,global.repo);
 			desc.callback = callback;
 			desc.stack = gs;
 			desc.vars = vars;
@@ -324,12 +337,15 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	@Override
-	public ResolveRC firstResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException {
+	public ResolveRC firstResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException, NullPointerException {
 		if (global == null) {
-			throw new IllegalArgumentException("Global object can't be null!");
+			throw new NullPointerException("Global object can't be null!");
 		} 
 		else if (local == null) {
-			throw new IllegalArgumentException("Local object can't be null!");
+			throw new NullPointerException("Local object can't be null!");
+		}
+		else if (entity == null) {
+			throw new NullPointerException("Entity to resolve can't be null!");
 		}
 		else {
 			return firstResolveInternal(global, local, entity);
@@ -420,13 +436,20 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				return !unify(entity,((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight(),local.stack,forChange)  ? ResolveRC.True : ResolveRC.False;
 			case Op700xfx2List		:
 				final IFProEntity	left, right, created;
-				if (((IFProOperator)entity).getLeft().getEntityType() == EntityType.variable || ((IFProOperator)entity).getLeft().getEntityType() == EntityType.anonymous) {
+				
+				if (containsVars(((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight())) {
+					return ResolveRC.False;
+				}
+				else if (!FProUtil.isEntityA(((IFProOperator)entity).getLeft(),ContentType.NonVar) && ((IFProOperator)entity).getRight().getEntityType() == EntityType.list) {
 					left = ((IFProOperator)entity).getLeft();
 					created = right = list2Predicate((IFProList) ((IFProOperator)entity).getRight());
-				}
-				else {
+				} 
+				else if (((IFProOperator)entity).getLeft().getEntityType() == EntityType.predicate) {
 					created = left = predicate2List((IFProPredicate) ((IFProOperator)entity).getLeft());
 					right = ((IFProOperator)entity).getRight();
+				}
+				else {
+					return ResolveRC.False;
 				}
 				return unifyTemporaries(entity, left, right, created, local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxLess		:
@@ -450,9 +473,9 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			case Op700xfxDogGreaterEqual	:
 				return lexicalCompare(global.repo,((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight()) >= 0 ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxEqual		:
-				return isIdentical(((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight()) ? ResolveRC.True : ResolveRC.False;
+				return FProUtil.isIdentical(((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight()) ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxNotEqual	:
-				return !isIdentical(((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight()) ? ResolveRC.True : ResolveRC.False;
+				return !FProUtil.isIdentical(((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight()) ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxIs			:
 				return unify(entity,((IFProOperator)entity).getLeft(),calculate(global,((IFProOperator)entity).getRight()),local.stack,forChange) ? ResolveRC.True : ResolveRC.False;
 			case Op400yfxDivide		:
@@ -502,7 +525,10 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			case PredFunctor		:
 				final IFProEntity	left1, right1, created1;
 				
-				if (((IFProPredicate)entity).getParameters()[0].getEntityType() == EntityType.predicate) {
+				if (containsVars(((IFProPredicate)entity).getParameters()) || containsVars(((IFProPredicate)entity).getParameters()[0],((IFProPredicate)entity).getParameters()[1])) {
+					return ResolveRC.False;
+				}
+				else if (((IFProPredicate)entity).getParameters()[0].getEntityType() == EntityType.predicate) {
 					created = left = new PredicateEntity(((IFProPredicate)entity).getParameters()[0].getEntityId());
 					right = ((IFProPredicate)entity).getParameters()[1];
 					
@@ -513,10 +539,24 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 						if (unifyTemporaries(entity, left1, right1, created1, local.stack, forChange)) {
 							return ResolveRC.True;
 						}
-						releaseTemporaries(left,local.stack);
 					}
+					releaseTemporaries(entity,local.stack);
+					return ResolveRC.False;
 				}
-				return ResolveRC.False;
+				else if (containsVars(((IFProPredicate)entity).getParameters()[0]) && ((IFProPredicate)entity).getParameters()[1].getEntityType() == EntityType.predicate && ((IFProPredicate)entity).getParameters()[2].getEntityType() == EntityType.integer) {
+					final IFProEntity[]		content = new IFProEntity[(int) ((IFProPredicate)entity).getParameters()[2].getEntityId()];
+					
+					for (int index = 0, maxIndex = content.length; index < maxIndex; index++) {
+						content[index] = new AnonymousEntity();
+					}
+					left = ((IFProPredicate)entity).getParameters()[0];
+					right = created = new PredicateEntity(((IFProPredicate)entity).getParameters()[1].getEntityId(),content);
+					
+					return unifyTemporaries(entity, left, right, created, local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
+				}
+				else {
+					return ResolveRC.False;
+				}
 			case PredArg			:
 				if (((IFProPredicate)entity).getParameters()[0].getEntityType() == EntityType.predicate 
 					&& ((IFProPredicate)entity).getParameters()[1].getEntityType() == EntityType.integer
@@ -531,15 +571,41 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					return ResolveRC.False;
 				}
 			case PredName			:
-				if (((IFProPredicate)entity).getParameters()[0].getEntityType() == EntityType.predicate) {
-					created = left = new PredicateEntity(((IFProPredicate)entity).getParameters()[0].getEntityId());
-					right = ((IFProPredicate)entity).getParameters()[1];
+				if (containsVars(((IFProPredicate)entity).getParameters())) {
+					return ResolveRC.False;
+				}
+				else if (containsVars(((IFProPredicate)entity).getParameters()[1])) {
+					final StringBuilder	sb = new StringBuilder();
+
+					try{global.pap.putEntity(((IFProPredicate)entity).getParameters()[0],new StringBuilderCharTarget(sb));
+						final long	newId = global.repo.stringRepo().placeName(sb.toString(),null);
+
+						left = created = new StringEntity(newId);
+						right = ((IFProPredicate)entity).getParameters()[1];
+						
+						return unifyTemporaries(entity,left,right,created,local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
+					} catch (ContentException | IOException e) {
+						return ResolveRC.False;
+					}
 				}
 				else {
-					left = ((IFProPredicate)entity).getParameters()[0];
-					created = right = new PredicateEntity(((IFProPredicate)entity).getParameters()[1].getEntityId());
+					if (((IFProPredicate)entity).getParameters()[1].getEntityType() == EntityType.string) {
+						final IFProEntity[]	result = new IFProEntity[1];
+						
+						try{global.pap.parseEntities(new SyntaxTreeCharacterSource<>(global.repo.stringRepo(),((IFProPredicate)entity).getParameters()[1].getEntityId()),(e,v)->{result[0] = e; return false;});
+							
+							left = ((IFProPredicate)entity).getParameters()[0];
+							right = created = result[0];
+							
+							return unifyTemporaries(entity,left,right,created,local.stack,forChange) ? ResolveRC.True : ResolveRC.False;
+						} catch (ContentException | IOException e) {
+							return ResolveRC.False;
+						}
+					}
+					else {
+						return ResolveRC.False;
+					}
 				}
-				return unifyTemporaries(entity, left, right, created, local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
 			case PredBagOf			:
 				IFProList	bagofList = getBagof(global.repo,(IFProPredicate)entity);
 				if (bagofList.getChild() == null && bagofList.getTail() == null) {
@@ -567,7 +633,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					final Object	localData = eed.getResolver().beforeCall(eed.getGlobal(),local.stack,local.vars,local.callback);
 					
 					if (eed.getResolver().firstResolve(eed.getGlobal(),localData,entity) == ResolveRC.True) {
-						local.stack.push(GlobalStack.getExternalStackTop(eed,localData));
+						local.stack.push(GlobalStack.getExternalStackTop(entity,eed,localData));
 						return ResolveRC.True;
 					}
 					else {
@@ -582,14 +648,16 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}	
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public ResolveRC nextResolve(final GlobalDescriptor global, final LocalDescriptor local, IFProEntity entity) throws SyntaxException {
+	public ResolveRC nextResolve(final GlobalDescriptor global, final LocalDescriptor local, IFProEntity entity) throws SyntaxException, NullPointerException {
 		if (global == null) {
-			throw new IllegalArgumentException("Global object can't be null!");
+			throw new NullPointerException("Global object can't be null!");
 		} 
 		else if (local == null) {
-			throw new IllegalArgumentException("Local object can't be null!");
+			throw new NullPointerException("Local object can't be null!");
+		}
+		else if (entity == null) {
+			throw new NullPointerException("Entity to resolve can't be null!");
 		}
 		else {
 			try{return nextResolveInternal(global, local, entity);
@@ -758,14 +826,16 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void endResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException {
+	public void endResolve(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity entity) throws SyntaxException, NullPointerException {
 		if (global == null) {
-			throw new IllegalArgumentException("Global object can't be null!");
+			throw new NullPointerException("Global object can't be null!");
 		} 
 		else if (local == null) {
-			throw new IllegalArgumentException("Local object can't be null!");
+			throw new NullPointerException("Local object can't be null!");
+		}
+		else if (entity == null) {
+			throw new NullPointerException("Entity to resolve can't be null!");
 		}
 		else {
 			endResolveInternal(global, local, entity);
@@ -802,10 +872,11 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			case Op900fyNot			:
 			case Op700xfxUnify		:
 			case Op700xfxNotUnify	:
-				if (local.stack.getTopType() == StackTopType.bounds 
-					&& ((BoundStackTop)local.stack.peek()).getMark() == entity) {
-					FProUtil.unbind(((BoundStackTop<Change>)local.stack.pop()).getChangeChain());
-				}
+				releaseTemporaries(entity, local.stack);
+//				if (local.stack.getTopType() == StackTopType.bounds 
+//					&& ((BoundStackTop)local.stack.peek()).getMark() == entity) {
+//					FProUtil.unbind(((BoundStackTop<Change>)local.stack.pop()).getChangeChain());
+//				}
 				break;
 			case Op700xfx2List		:
 				releaseTemporaries(entity,local.stack);
@@ -886,11 +957,19 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}	
 	
 	@Override
-	public void afterCall(final GlobalDescriptor global, final LocalDescriptor local) throws SyntaxException {
-		local.vars = null;		
-		local.pap = null;
-		local.callback = null;
-		local.stack = null;		
+	public void afterCall(final GlobalDescriptor global, final LocalDescriptor local) throws SyntaxException, NullPointerException {
+		if (global == null) {
+			throw new NullPointerException("Global descriptor can't be null");
+		}
+		else if (local == null) {
+			throw new NullPointerException("Local descriptor can't be null");
+		}
+		else {
+			local.vars = null;		
+			local.pap = null;
+			local.callback = null;
+			local.stack = null;		
+		}
 	}
 
 	@Override
@@ -941,17 +1020,35 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			}
 		}
 	}
+
+	private boolean containsVars(final IFProEntity entity) {
+		return !FProUtil.isEntityA(entity,ContentType.NonVar);
+	}
+	
+	private boolean containsVars(final IFProEntity entity1, final IFProEntity entity2) {
+		return !FProUtil.isEntityA(entity1,ContentType.NonVar) && !FProUtil.isEntityA(entity2,ContentType.NonVar);
+	}
+
+	private boolean containsVars(final IFProEntity... entities) {
+		for (IFProEntity item : entities) {
+			if (FProUtil.isEntityA(item,ContentType.NonVar)) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	private IFProEntity calculate(final GlobalDescriptor global, final IFProEntity value) {
-		try{return calculate(global,global.registered,value,forInteger,forReal);
+		try{return calculate(global,value,forInteger,forReal);
+//		try{return calculate(global,global.registered,value,forInteger,forReal);
 		} catch (UnsupportedOperationException exc) {
 			return null;
 		}
 	}
 
-	private static IFProEntity calculate(final GlobalDescriptor global, final LongIdMap<QuickIds> repo, final IFProEntity value, final long[] forInteger, final double[] forReal) {
+	static IFProEntity calculate(final GlobalDescriptor global, final IFProEntity value, final long[] forInteger, final double[] forReal) throws NullPointerException {
 		if (value == null) {
-			throw new UnsupportedOperationException();
+			throw new NullPointerException("Null entity to calculate value");
 		}
 		else {
 			IFProEntity		right;
@@ -963,56 +1060,56 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				case operator	:
 					switch (detect(global.registered,value)) {
 						case Op500yfxPlus		:
-							if (convert2Real(calculate(global,repo,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0]+forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0]+forInteger[1]);
 							}
 						case Op500yfxMinus		:
-							if (convert2Real(calculate(global,repo,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0]-forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0]-forInteger[1]);
 							}
 						case Op400yfxMultiply	:
-							if (convert2Real(calculate(global,repo,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0]*forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0]*forInteger[1]);
 							}
 						case Op400yfxDivide		:
-							if (convert2Real(calculate(global,repo,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0]/forReal[1]);
 							}
 							else {
 								return new RealEntity(1.00*forInteger[0]/forInteger[1]);
 							}
 						case Op400yfxIntDivide	:
-							if (convert2Real(calculate(global,repo,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity((long)(forReal[0]/forReal[1]));
 							}
 							else {
 								return new IntegerEntity(forInteger[0]/forInteger[1]);
 							}
 						case Op400yfxMod		:
-							if (convert2Real(calculate(global,repo,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0]%forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0]%forInteger[1]);
 							}
 						case Op200xfxExponent	:
-							if (convert2Real(calculate(global,repo,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(Math.pow(forReal[0],forReal[1]));
 							}
 							else {
 								return new IntegerEntity((long)Math.pow(1.00*forInteger[0],1.00*forInteger[1]));
 							}
 						case Op200fyMinus		:
-							right = calculate(global,repo,((IFProOperator)value).getRight(),forInteger,forReal);
+							right = calculate(global,((IFProOperator)value).getRight(),forInteger,forReal);
 							if (right != null) {
 								if (right.getEntityType() == EntityType.real) {
 									return new RealEntity(-Double.longBitsToDouble(right.getEntityId()));
@@ -1022,13 +1119,15 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 								}
 							}
 							else {
-								return null;
+								throw new NullPointerException("Prefixed Unary minus doesn't have operand");
 							}
 						default : 
-							throw new UnsupportedOperationException();
+							final IFProOperator	op = (IFProOperator)value;
+							
+							throw new UnsupportedOperationException("Unregistered operator op("+op.getPriority()+","+op.getOperatorType()+",id["+op.getEntityId()+"]) is used in arthmetical expressions");
 					}
 				default :
-					throw new UnsupportedOperationException();
+					throw new UnsupportedOperationException("Neither number nor operator is used in in arthmetical expressions (id="+value.getEntityId()+",type="+value.getEntityType()+")");
 			}
 		}
 	}
@@ -1066,7 +1165,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		
 		if (result) {
 			if (list[0] != null) {
-				stack.push(GlobalStack.getBoundStackTop(mark,list[0]));
+				stack.push(GlobalStack.getBoundStackTop(mark,mark,list[0]));
 			}
 		}
 		else if (list[0] != null) {
@@ -1081,28 +1180,43 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			return false;
 		}
 		else {
-			stack.push(GlobalStack.getTemporaryStackTop(created));
+			stack.push(GlobalStack.getTemporaryStackTop(mark,created));
 			return true;
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	private static void releaseTemporaries(final IFProEntity mark, final IFProGlobalStack stack) {
-		if (stack.getTopType() == StackTopType.temporary) {
-			FProUtil.removeEntity(((TemporaryStackTop)stack.pop()).getEntity());
+		while (!stack.isEmpty() && stack.peek().getEntityAssicated() == mark) {
+			final GlobalStackTop item = stack.pop();
 			
-			if (stack.getTopType() == StackTopType.bounds && ((BoundStackTop)stack.peek()).getMark() == mark) {
-				FProUtil.unbind(((BoundStackTop<Change>)stack.pop()).getChangeChain());
+			switch (item.getTopType()) {
+				case andChain	:
+					break;
+				case bounds		:
+					FProUtil.unbind(((BoundStackTop<Change>)item).getChangeChain());
+					break;
+				case external	:
+					break;
+				case iterator	:
+					break;
+				case orChain	:
+					break;
+				case temporary	:
+					FProUtil.removeEntity(((TemporaryStackTop)item).getEntity());
+					break;
+				default	:
+					throw new UnsupportedOperationException();
 			}
 		}
 	}
 
 	private int compare(final GlobalDescriptor global,final IFProEntity left, final IFProEntity right) {
-		return compare(global,global.registered,left,right,forInteger,forReal);
+		return compare(global,left,right,forInteger,forReal);
 	}
 	
-	private static int compare(final GlobalDescriptor global,final LongIdMap<QuickIds> repo,final IFProEntity left, final IFProEntity right, final long[] forInteger, final double[] forReal) {
-		final IFProEntity	leftVal = calculate(global,repo,left,forInteger,forReal), rightVal = calculate(global,repo,right,forInteger,forReal);
+	static int compare(final GlobalDescriptor global,final IFProEntity left, final IFProEntity right, final long[] forInteger, final double[] forReal) {
+		final IFProEntity	leftVal = calculate(global,left,forInteger,forReal), rightVal = calculate(global,right,forInteger,forReal);
 		
 		if (leftVal == rightVal) {
 			return 0;
@@ -1123,7 +1237,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}
 
-	private static int lexicalCompare(final IFProEntitiesRepo repo, final IFProEntity left, final IFProEntity right) throws SyntaxException {
+	static int lexicalCompare(final IFProEntitiesRepo repo, final IFProEntity left, final IFProEntity right) throws SyntaxException {
 		int compare;
 		
 		if (left == right) {
@@ -1192,52 +1306,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}
 
-	private static boolean isIdentical(final IFProEntity left, final IFProEntity right) {
-		if (left == right) {
-			return true;
-		}
-		else if (left == null || right == null) {
-			return false;
-		}
-		else if (left.getEntityId() != right.getEntityId() || left.getEntityType() != right.getEntityType()) {
-			return false;
-		}
-		else {
-			switch (left.getEntityType()) {
-				case string		:
-				case integer	:
-				case real		:
-				case anonymous	:
-				case variable	:
-					return true;
-				case list		:
-					return isIdentical(((IFProList)left).getChild(),((IFProList)right).getChild()) && isIdentical(((IFProList)left).getTail(),((IFProList)right).getTail()); 
-				case operator	:
-					if (((IFProOperator)left).getPriority() == ((IFProOperator)right).getPriority() && ((IFProOperator)left).getOperatorType() == ((IFProOperator)right).getOperatorType()) {
-						return isIdentical(((IFProOperator)left).getLeft(),((IFProOperator)right).getLeft()) && isIdentical(((IFProOperator)left).getRight(),((IFProOperator)right).getRight()); 
-					}
-					else {
-						return false;
-					}						
-				case predicate	:
-					if (((IFProPredicate)left).getArity() == ((IFProPredicate)right).getArity()) {
-						for (int index = 0; index < ((IFProPredicate)left).getArity(); index++) {
-							if (!isIdentical(((IFProPredicate)left).getParameters()[index],((IFProPredicate)right).getParameters()[index])) {
-								return false;
-							}
-						}
-						return true;
-					}
-					else {
-						return false;
-					}
-				default :
-					throw new IllegalArgumentException();
-			}
-		}
-	}
-
-	private static IFProPredicate list2Predicate(final IFProList source) {
+	static IFProPredicate list2Predicate(final IFProList source) {
 		if (source.getChild().getEntityType() == EntityType.predicate) {
 			IFProPredicate	result = new PredicateEntity(source.getChild().getEntityId()); 
 			IFProList		actual = (IFProList) source.getTail();
@@ -1263,11 +1332,14 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		
 	}
 	
-	private static IFProList predicate2List(final IFProPredicate source) {
-		IFProList	actual = new ListEntity(new PredicateEntity(source.getEntityId()),null), result = actual;
+	static IFProList predicate2List(final IFProPredicate source) {
+		IFProList	actual = new ListEntity(new PredicateEntity(source.getEntityId()),null), result = actual, next;
 		
 		for (int index = 0; index < source.getArity(); index++) {
-			actual.setTail(new ListEntity(FProUtil.duplicate(source.getParameters()[index]),null).setParent(actual));
+			next = new ListEntity(FProUtil.duplicate(source.getParameters()[index]),null);
+			next.setParent(actual);
+			actual.setTail(next);
+			actual = next;
 		}
 		return result;
 	}
@@ -1275,7 +1347,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ResolveRC iterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity, final Iterable<IFProEntity> iterable) throws SyntaxException {
-		local.stack.push(GlobalStack.getIteratorStackTop(iterable,IFProEntity.class));
+		local.stack.push(GlobalStack.getIteratorStackTop(entity,iterable,IFProEntity.class));
 		
 		
 		try {
@@ -1287,7 +1359,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					ResolveRC	rcRule = firstResolveInternal(global,local,((IFProRuledEntity)candidate).getRule());
 					
 					if (rcRule == ResolveRC.True) {
-						local.stack.push(GlobalStack.getTemporaryStackTop(((IFProRuledEntity)candidate).getRule()));
+						local.stack.push(GlobalStack.getTemporaryStackTop(entity,((IFProRuledEntity)candidate).getRule()));
 						return ResolveRC.True;
 					}
 					else if (rcRule == ResolveRC.False) {
@@ -1321,7 +1393,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			ResolveRC	rcRule = nextResolveInternal(global,local,rule);
 			
 			if (rcRule == ResolveRC.True) {
-				local.stack.push(GlobalStack.getTemporaryStackTop(rule));
+				local.stack.push(GlobalStack.getTemporaryStackTop(entity,rule));
 				return ResolveRC.True;
 			}
 			else {
@@ -1341,7 +1413,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 						ResolveRC	rcRule = firstResolve(global,local,((IFProRuledEntity)candidate).getRule());
 						
 						if (rcRule == ResolveRC.True) {
-							local.stack.push(GlobalStack.getTemporaryStackTop(((IFProRuledEntity)candidate).getRule()));
+							local.stack.push(GlobalStack.getTemporaryStackTop(entity,((IFProRuledEntity)candidate).getRule()));
 							return ResolveRC.True;
 						}
 						else if (rcRule == ResolveRC.False) {
@@ -1438,7 +1510,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					start.setParent(last);
 				}
 			}
-			
+			 
 			return setofList;
 		}
 	}

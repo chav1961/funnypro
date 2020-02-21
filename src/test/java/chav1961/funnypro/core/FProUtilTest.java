@@ -298,35 +298,42 @@ public class FProUtilTest {
 		
 		left = new AnonymousEntity();
 		Assert.assertEquals(left,FProUtil.duplicate(left));
+		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Anon, ContentType.Atomic});
 		FProUtil.removeEntity(left);
 
 		left = new IntegerEntity(100);
 		Assert.assertEquals(left,FProUtil.duplicate(left));
+		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Integer, ContentType.Number, ContentType.NonVar, ContentType.Atomic});
 		FProUtil.removeEntity(left);
 
 		left = new RealEntity(123.456);
 		Assert.assertEquals(left,FProUtil.duplicate(left));
+		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Float, ContentType.Number, ContentType.NonVar, ContentType.Atomic});
 		FProUtil.removeEntity(left);
 
 		left = new StringEntity(123);
 		Assert.assertEquals(left,FProUtil.duplicate(left));
+		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Atom, ContentType.NonVar, ContentType.Atomic});
 		FProUtil.removeEntity(left);
 
 		left = new OperatorEntity(100,OperatorType.xfy,123).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200));
 		Assert.assertEquals(left,FProUtil.duplicate(left));
+		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Compound, ContentType.NonVar});
 		FProUtil.removeEntity(left);
 
 		left = new PredicateEntity(100,new IntegerEntity(100),new IntegerEntity(200));
 		Assert.assertEquals(left,FProUtil.duplicate(left));
+		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Atom, ContentType.Atomic, ContentType.NonVar});
 		FProUtil.removeEntity(left);
 
 		left = new ListEntity(new IntegerEntity(100),new IntegerEntity(200));
+		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		Assert.assertEquals(left,FProUtil.duplicate(left));
 		FProUtil.removeEntity(left);
 		
@@ -334,6 +341,17 @@ public class FProUtilTest {
 			Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
 		} catch (NullPointerException exc) {
 		}
+		
+		left = new PredicateEntity(100,new IntegerEntity(100),new IntegerEntity(200));
+		Assert.assertTrue(FProUtil.isIdentical(left,left));
+		Assert.assertFalse(FProUtil.isIdentical(null,left));
+		Assert.assertFalse(FProUtil.isIdentical(left,null));
+		Assert.assertFalse(FProUtil.isIdentical(left,new IntegerEntity(100)));
+		Assert.assertFalse(FProUtil.isIdentical(left,new PredicateEntity(100,new IntegerEntity(100),new IntegerEntity(300))));
+
+		left = new OperatorEntity(100,OperatorType.xfx,100).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200));
+		Assert.assertTrue(FProUtil.isIdentical(left,new OperatorEntity(100,OperatorType.xfx,100).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200))));
+		Assert.assertFalse(FProUtil.isIdentical(left,new OperatorEntity(100,OperatorType.xfx,100).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(300))));
 	}
 
 	@Test

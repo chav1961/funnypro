@@ -168,7 +168,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 					}
 					if (FProUtil.unify(list,temp.getRight(),local.list)) {
 						if (local.list[0] != null) {
-							local.stack.push(GlobalStack.getBoundStackTop(entity,local.list[0]));
+							local.stack.push(GlobalStack.getBoundStackTop(entity,entity,local.list[0]));
 						}
 						return ResolveRC.True;
 					}
@@ -213,7 +213,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 					
 					if (FProUtil.unify(temp.getLeft(),se,local.list)) {
 						if (local.list[0] != null) {
-							local.stack.push(GlobalStack.getBoundStackTop(entity,local.list[0]));
+							local.stack.push(GlobalStack.getBoundStackTop(entity,entity,local.list[0]));
 						}
 						return ResolveRC.True;
 					}

@@ -129,6 +129,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 			return new AndChainStackTop(){
 				@Override public StackTopType getTopType() {return StackTopType.andChain;}
 				@Override public IFProEntity getEntity() {return entity;}
+				@Override public IFProEntity getEntityAssicated() {return entity;}
 				@Override public String toString() {return "AndChainStackTop";}
 			};
 		}
@@ -142,12 +143,13 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 			return new IFProGlobalStack.OrChainStackTop(){
 				@Override public StackTopType getTopType() {return StackTopType.orChain;}
 				@Override public boolean isFirst() {return isFirst;}
+				@Override public IFProEntity getEntityAssicated() {return entity;}
 				@Override public String toString(){return "OrChainStackTop [isFirst="+isFirst()+"]";}
 			};
 		}
 	}
 
-	public static <T> IteratorStackTop<T> getIteratorStackTop(final Iterable<T> iterator, final Class<T> clazz) throws NullPointerException {
+	public static <T> IteratorStackTop<T> getIteratorStackTop(final IFProEntity entity, final Iterable<T> iterator, final Class<T> clazz) throws NullPointerException {
 		if (iterator == null) {
 			throw new NullPointerException("Iterator can't be null");
 		}
@@ -158,12 +160,13 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 			return new IteratorStackTop<T>(){
 				@Override public StackTopType getTopType() {return StackTopType.iterator;}
 				@Override public Iterable<T> getIterator() {return iterator;}
+				@Override public IFProEntity getEntityAssicated() {return entity;}
 				@Override public String toString(){return "IteratorStackTop [iteratorClass="+clazz+"]";}
 			};
 		}
 	}
 	
-	public static BoundStackTop<Change> getBoundStackTop(final IFProEntity mark, final Change change) throws NullPointerException {
+	public static BoundStackTop<Change> getBoundStackTop(final IFProEntity entity, final IFProEntity mark, final Change change) throws NullPointerException {
 		if (mark == null) {
 			throw new NullPointerException("Mark can't be null");
 		}
@@ -175,25 +178,27 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.bounds;}
 				@Override public Change getChangeChain() {return change;}
 				@Override public IFProEntity getMark() {return mark;}
+				@Override public IFProEntity getEntityAssicated() {return entity;}
 				@Override public String toString(){return "BoundStackTop [mark="+getMark()+"]";}
 			};
 		}
 	}
 
-	public static TemporaryStackTop getTemporaryStackTop(final IFProEntity entity) throws NullPointerException {
-		if (entity == null) {
+	public static TemporaryStackTop getTemporaryStackTop(final IFProEntity entity, final IFProEntity temporary) throws NullPointerException {
+		if (temporary == null) {
 			throw new NullPointerException("Entity can't be null");
 		}
 		else {
 			return new TemporaryStackTop(){
 				@Override public StackTopType getTopType() {return StackTopType.temporary;}
-				@Override public IFProEntity getEntity() {return entity;}
+				@Override public IFProEntity getEntity() {return temporary;}
+				@Override public IFProEntity getEntityAssicated() {return entity;}
 				@Override public String toString(){return "TemporaryStackTop [entity="+getEntity()+"]";}
 			};
 		}
 	}
 
-	public static ExternalStackTop getExternalStackTop(final ExternalEntityDescriptor<?> desc, final Object localData) throws NullPointerException {
+	public static ExternalStackTop getExternalStackTop(final IFProEntity entity, final ExternalEntityDescriptor<?> desc, final Object localData) throws NullPointerException {
 		if (desc == null) {
 			throw new NullPointerException("Entity descriptor can't be null");
 		}
@@ -202,6 +207,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.external;}
 				@Override public ExternalEntityDescriptor<?> getDescriptor() {return desc;}
 				@Override public Object getLocalData() {return localData;}
+				@Override public IFProEntity getEntityAssicated() {return entity;}
 				@Override public String toString() {return "ExternalStackTop{"+desc+"}";}
 			};
 		}

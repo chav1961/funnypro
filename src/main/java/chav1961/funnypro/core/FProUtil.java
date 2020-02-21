@@ -428,6 +428,13 @@ public class FProUtil {
 						pred.setParameters(NULL_ARRAY);
 					}
 					return pred;
+				case variable		:
+					final IFProVariable		var = new VariableEntity(source.getEntityId());
+					final IFProVariable		ref = ((IFProVariable)source).getChain();
+					
+					var.setChain(ref);
+					((IFProVariable)source).setChain(var);
+					return var;
 				default :
 					throw new UnsupportedOperationException("Entity duplication for ["+source.getEntityType()+"] is not supported yet!");
 			}
@@ -474,6 +481,15 @@ public class FProUtil {
 						removeEntity(parm[index]);
 						parm[index] = null;
 					}
+					break;
+				case variable		:
+					IFProVariable	current = ((IFProVariable)source).getChain();
+					
+					while (current.getChain() != source) {
+						current = current.getChain(); 
+					}
+					current.setChain(((IFProVariable)source).getChain());
+					((IFProVariable)source).setChain((IFProVariable)source);
 					break;
 				default :
 					throw new IllegalArgumentException("Entity type ["+source.getEntityType()+"] can't be removed!");
@@ -523,6 +539,59 @@ public class FProUtil {
 			}
 		}
 	}
+	
+	/**
+	 * <p>Test two entites are identical.</p>
+	 * @param left left entity to test
+	 * @param right right entity to test
+	 * @return true if entites are identical
+	 */
+	public static boolean isIdentical(final IFProEntity left, final IFProEntity right) {
+		if (left == right) {
+			return true;
+		}
+		else if (left == null || right == null) {
+			return false;
+		}
+		else if (left.getEntityId() != right.getEntityId() || left.getEntityType() != right.getEntityType()) {
+			return false;
+		}
+		else {
+			switch (left.getEntityType()) {
+				case string		:
+				case integer	:
+				case real		:
+				case anonymous	:
+				case variable	:
+					return true;
+				case list		:
+					return isIdentical(((IFProList)left).getChild(),((IFProList)right).getChild()) && isIdentical(((IFProList)left).getTail(),((IFProList)right).getTail()); 
+				case operator	:
+					if (((IFProOperator)left).getPriority() == ((IFProOperator)right).getPriority() && ((IFProOperator)left).getOperatorType() == ((IFProOperator)right).getOperatorType()) {
+						return isIdentical(((IFProOperator)left).getLeft(),((IFProOperator)right).getLeft()) && isIdentical(((IFProOperator)left).getRight(),((IFProOperator)right).getRight()); 
+					}
+					else {
+						return false;
+					}						
+				case predicate	:
+					if (((IFProPredicate)left).getArity() == ((IFProPredicate)right).getArity()) {
+						for (int index = 0; index < ((IFProPredicate)left).getArity(); index++) {
+							if (!isIdentical(((IFProPredicate)left).getParameters()[index],((IFProPredicate)right).getParameters()[index])) {
+								return false;
+							}
+						}
+						return true;
+					}
+					else {
+						return false;
+					}
+				default :
+					throw new IllegalArgumentException();
+			}
+		}
+	}
+
+	
 	
 	private static int simpleParser(final char[] source, final int from, final int to, final char[] template, final int templateFrom, final int templateTo, final int[][] locations, final boolean needRestore) {
 		int[]		lastTail = null;

@@ -22,6 +22,7 @@ public class GlobalStackTest {
 
 	@Test
 	public void basicStaticTest() throws Exception {
+		final IFProEntity		mark = new AnonymousEntity();	
 		final IFProEntity		entity = new AnonymousEntity();	
 
 		Assert.assertEquals(StackTopType.orChain,GlobalStack.getOrChainStackTop(entity,true).getTopType());
@@ -39,33 +40,33 @@ public class GlobalStackTest {
 		}
 		
 		final Change			ch = new Change();
-		Assert.assertEquals(GlobalStack.getBoundStackTop(entity,ch).getTopType(),StackTopType.bounds);
-		Assert.assertEquals(GlobalStack.getBoundStackTop(entity,ch).getChangeChain(),ch);
-		Assert.assertEquals(entity,GlobalStack.getBoundStackTop(entity,ch).getMark());
-		try{GlobalStack.getBoundStackTop(null,ch);
+		Assert.assertEquals(GlobalStack.getBoundStackTop(mark,entity,ch).getTopType(),StackTopType.bounds);
+		Assert.assertEquals(GlobalStack.getBoundStackTop(mark,entity,ch).getChangeChain(),ch);
+		Assert.assertEquals(entity,GlobalStack.getBoundStackTop(mark,entity,ch).getMark());
+		try{GlobalStack.getBoundStackTop(mark,null,ch);
 			Assert.fail("Mandatory exception was not detected (null 1-st argument)");
 		} catch (NullPointerException exc) {
 		}
-		try{GlobalStack.getBoundStackTop(entity,null);
+		try{GlobalStack.getBoundStackTop(mark,entity,null);
 			Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
 		} catch (NullPointerException exc) {
 		}
 		
 		final Iterable<String>	str = new ArrayList<>();
-		Assert.assertEquals(GlobalStack.getIteratorStackTop(str,String.class).getTopType(),StackTopType.iterator);
-		Assert.assertEquals(GlobalStack.getIteratorStackTop(str,String.class).getIterator(),str);
-		try{GlobalStack.getIteratorStackTop(null,String.class);
+		Assert.assertEquals(GlobalStack.getIteratorStackTop(mark,str,String.class).getTopType(),StackTopType.iterator);
+		Assert.assertEquals(GlobalStack.getIteratorStackTop(mark,str,String.class).getIterator(),str);
+		try{GlobalStack.getIteratorStackTop(mark,null,String.class);
 			Assert.fail("Mandatory exception was not detected (null argument)");
 		} catch (NullPointerException exc) {
 		}
-		try{GlobalStack.getIteratorStackTop(str,null);
+		try{GlobalStack.getIteratorStackTop(mark,str,null);
 			Assert.fail("Mandatory exception was not detected (null argument)");
 		} catch (NullPointerException exc) {
 		}
 		
-		Assert.assertEquals(StackTopType.temporary,GlobalStack.getTemporaryStackTop(entity).getTopType());
-		Assert.assertEquals(GlobalStack.getTemporaryStackTop(entity).getEntity(),entity);
-		try{GlobalStack.getTemporaryStackTop(null);
+		Assert.assertEquals(StackTopType.temporary,GlobalStack.getTemporaryStackTop(mark,entity).getTopType());
+		Assert.assertEquals(GlobalStack.getTemporaryStackTop(mark,entity).getEntity(),entity);
+		try{GlobalStack.getTemporaryStackTop(mark,null);
 			Assert.fail("Mandatory exception was not detected (null argument)");
 		} catch (NullPointerException exc) {
 		}
@@ -73,10 +74,10 @@ public class GlobalStackTest {
 		final ExternalEntityDescriptor<?> 	desc = (ExternalEntityDescriptor<?>) Proxy.newProxyInstance(this.getClass().getClassLoader(),new Class[] {ExternalEntityDescriptor.class},(a,b,c)->{return null;});
 		final Object						localData = new Object();
 		
-		Assert.assertEquals(StackTopType.external,GlobalStack.getExternalStackTop(desc,localData).getTopType());
-		Assert.assertTrue(desc == GlobalStack.getExternalStackTop(desc,localData).getDescriptor());
-		Assert.assertEquals(localData,GlobalStack.getExternalStackTop(desc,localData).getLocalData());
-		try{GlobalStack.getExternalStackTop(null,localData);
+		Assert.assertEquals(StackTopType.external,GlobalStack.getExternalStackTop(mark,desc,localData).getTopType());
+		Assert.assertTrue(desc == GlobalStack.getExternalStackTop(mark,desc,localData).getDescriptor());
+		Assert.assertEquals(localData,GlobalStack.getExternalStackTop(mark,desc,localData).getLocalData());
+		try{GlobalStack.getExternalStackTop(mark,null,localData);
 			Assert.fail("Mandatory exception was not detected (null 1-st argument)");
 		} catch (NullPointerException exc) {
 		}

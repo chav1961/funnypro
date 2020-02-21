@@ -15,6 +15,7 @@ class GlobalDescriptor {
 	public IFProEntitiesRepo		repo;
 	public LoggerFacade				log;
 	public Properties				parameters;
+	public ParserAndPrinter			pap;
 	public boolean					prepared = false;
 	
 	@Override public String toString() {return "GlobalDescriptor [registered=" + registered + ", repo=" + repo + ", parameters=" + parameters + ", prepared=" + prepared + "]";}

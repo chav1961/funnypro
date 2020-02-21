@@ -129,7 +129,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 				// Unify the same first list item and second parameter
 				if (FProUtil.unify(local.currentItem.getChild(),((IFProPredicate)entity).getParameters()[1],local.list)) {
 					if (local.list[0] != null) {	// Unification successful - save rollback data for backtracking
-						local.stack.push(GlobalStack.getBoundStackTop(entity,local.list[0]));
+						local.stack.push(GlobalStack.getBoundStackTop(entity,entity,local.list[0]));
 					}
 					return ResolveRC.True;
 				}
@@ -167,7 +167,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 					// This code duplicates the same one from firstResolve method
 					if (FProUtil.unify(local.currentItem.getChild(),((IFProPredicate)entity).getParameters()[1],local.list)) {
 						if (local.list[0] != null) {	// Unification successful - save rollback data for backtracking
-							local.stack.push(GlobalStack.getBoundStackTop(entity,local.list[0]));
+							local.stack.push(GlobalStack.getBoundStackTop(entity,entity,local.list[0]));
 						}
 						return ResolveRC.True;
 					}
