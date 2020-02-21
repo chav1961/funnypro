@@ -136,7 +136,7 @@ class IterablesCollection {
 	
 	public static class IterableCallBagof implements Iterable<IFProEntity> {
 		private final Iterator<IFProEntity>		iterator, bagofIterator;
-		private final IFProEntity				template, image;
+		private final IFProEntity				template;
 		
 		public IterableCallBagof(final IFProEntitiesRepo repo, final IFProPredicate call) throws NullPointerException {
 			if (repo == null) {
@@ -153,11 +153,9 @@ class IterablesCollection {
 			}
 			if (call.getArity() == 3) {				
 				this.template = call.getParameters()[1];
-				this.image = call.getParameters()[0];		// Important order - don't change this string with the next one
 			}
 			else {
 				this.template = null;
-				this.image = null;
 			}
 			this.bagofIterator = new Iterator<IFProEntity>(){
 								final Change[]	temp = new Change[1];
@@ -169,7 +167,7 @@ class IterablesCollection {
 										
 										do{ item = iterator.next();
 											if (FProUtil.unify(template,item,temp)) {
-												item = FProUtil.duplicate(image);								
+												item = FProUtil.duplicate(call.getParameters()[0]);								
 												FProUtil.unbind(temp[0]);
 												return true;
 											}
@@ -201,14 +199,14 @@ class IterablesCollection {
 			if (call == null) {
 				throw new NullPointerException("Call predicate can't be null"); 
 			}
-			else if (call.getArity() != 2 || call.getParameters()[0].getEntityType() != EntityType.list) {
+			else if (call.getArity() != 2 || call.getParameters()[1].getEntityType() != EntityType.list) {
 				this.list = null;
 				this.template = null;
 				this.iterator = NULL_ENTITY_ITERATOR;
 			}
 			else {
-				this.list = (IFProList) call.getParameters()[0];
-				this.template = call.getParameters()[1];	// Important order - don't change this string with the next one
+				this.list = (IFProList) call.getParameters()[1];
+				this.template = call.getParameters()[0];	// Important order - don't change this string with the next one
 				
 				this.iterator = new Iterator<IFProEntity>(){
 					final Change[]	temp = new Change[1];

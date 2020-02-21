@@ -385,8 +385,8 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 															@Override public boolean hasNext() {return actual != null;}
 										
 															@Override
-															public IFProEntity next() {
-																final IFProEntity	returned = actual;
+															public IFProEntity next() {	// Clone - to protect side effects of unification in the fact/rule repo (about variables)
+																final IFProEntity	returned = FProUtil.hasAnyVariable(actual) ? FProUtil.cloneEntity(actual) : actual;
 																
 																actual = actual.getParent();
 																return returned;

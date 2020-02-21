@@ -377,6 +377,16 @@ public class FProUtil {
 	 * @return duplicated item
 	 */
 	public static IFProEntity duplicate(final IFProEntity source) {
+		return duplicate(source,null);
+	}
+	
+	public static IFProEntity cloneEntity(final IFProEntity source) {
+		try(final VarRepo	repo = new VarRepo()) {
+			return duplicate(source,repo);
+		}
+	}		
+	
+	private static IFProEntity duplicate(final IFProEntity source, final VarRepo repo) {
 		if (source == null) {
 			return null;
 		}
@@ -430,11 +440,18 @@ public class FProUtil {
 					return pred;
 				case variable		:
 					final IFProVariable		var = new VariableEntity(source.getEntityId());
-					final IFProVariable		ref = ((IFProVariable)source).getChain();
 					
-					var.setChain(ref);
-					((IFProVariable)source).setChain(var);
-					return var;
+					if (repo == null) {
+						final IFProVariable		ref = ((IFProVariable)source).getChain();
+						
+						var.setChain(ref);
+						((IFProVariable)source).setChain(var);
+						return var;
+					}
+					else {
+						repo.storeVariable(var);
+						return var;
+					}					
 				default :
 					throw new UnsupportedOperationException("Entity duplication for ["+source.getEntityType()+"] is not supported yet!");
 			}
@@ -496,6 +513,59 @@ public class FProUtil {
 			}
 		}
 	}
+	
+	public static boolean hasAnyVariable(final IFProEntity source) {
+		if (source != null) {
+			switch (source.getEntityType()) {
+				case string			:
+				case integer		:
+				case real			:
+				case anonymous		:
+					return false;
+				case list			:
+					if (((IFProList)source).getChild() != null) {
+						if (hasAnyVariable(((IFProList)source).getChild())) {
+							return true;
+						}
+					}
+					if (((IFProList)source).getTail() != null) {
+						if (hasAnyVariable(((IFProList)source).getTail())) {
+							return true;
+						}
+					}
+					return false;
+				case operator		:
+					if (((IFProOperator)source).getLeft() != null) {
+						if (hasAnyVariable(((IFProOperator)source).getLeft())) {
+							return true;
+						}
+					}
+					if (((IFProOperator)source).getRight() != null) {
+						if (hasAnyVariable(((IFProOperator)source).getRight())) {
+							return true;
+						}
+					}
+					return false;
+				case predicate		:
+					final IFProEntity[]		parm = ((IFProPredicate)source).getParameters();
+					
+					for (int index = 0; index < parm.length; index++){
+						if (hasAnyVariable(parm[index])) {
+							return true;
+						}
+					}
+					return false;
+				case variable		:
+					return true;
+				default :
+					throw new IllegalArgumentException("Entity type ["+source.getEntityType()+"] can't be removed!");
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	
 	
 	public static enum ContentType {
 		Anon, Var, NonVar, Atom, Integer, Float, Number, Atomic, Compound,		

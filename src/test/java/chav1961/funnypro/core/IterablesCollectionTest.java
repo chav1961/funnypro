@@ -262,19 +262,19 @@ public class IterablesCollectionTest {
 			final IFProList			start = new ListEntity(new IntegerEntity(100), new ListEntity(new RealEntity(100), null));
 		
 			int	count = 0;
-			for (IFProEntity item : new IterablesCollection.IterableList(new PredicateEntity(1,start,new VariableEntity(100)))) {
+			for (IFProEntity item : new IterablesCollection.IterableList(new PredicateEntity(1,new VariableEntity(100),start))) {
 				count++;
 			}
 			Assert.assertEquals(2,count);
 
 			count = 0;
-			for (IFProEntity item : new IterablesCollection.IterableList(new PredicateEntity(1,start,new IntegerEntity(100)))) {
+			for (IFProEntity item : new IterablesCollection.IterableList(new PredicateEntity(1,new IntegerEntity(100),start))) {
 				count++;
 			}
 			Assert.assertEquals(1,count);
 
 			count = 0;
-			for (IFProEntity item : new IterablesCollection.IterableList(new PredicateEntity(1,start,new IntegerEntity(200)))) {
+			for (IFProEntity item : new IterablesCollection.IterableList(new PredicateEntity(1,new IntegerEntity(200),start))) {
 				count++;
 			}
 			Assert.assertEquals(0,count); 

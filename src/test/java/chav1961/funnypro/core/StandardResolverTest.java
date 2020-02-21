@@ -1,6 +1,8 @@
 package chav1961.funnypro.core;
 
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
+import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
@@ -682,6 +685,33 @@ public class StandardResolverTest {
 			final StandardResolver		sr = new StandardResolver();
 			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			final StringBuilder			sb = new StringBuilder();
+			final long					predId = repo.termRepo().placeName("pred",null);
+			final IFProPredicate		template = new PredicateEntity(predId,new AnonymousEntity());
+			
+			int	count = 0;
+			for (IFProEntity item : repo.predicateRepo().call(template)) {
+				count++;
+			}
+			Assert.assertEquals(0,count);
+			
+			pap.parseEntities(new StringCharSource("assert(pred(100)) ."),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			pap.parseEntities(new StringCharSource("assertz(pred(200)) ."),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			pap.parseEntities(new StringCharSource("asserta(pred(_)) ."),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			
+			count = 0;
+			for (IFProEntity item : repo.predicateRepo().call(template)) {
+				count++;
+			}
+			Assert.assertEquals(3,count);
 			
 			sr.onRemove(global);
 		}
@@ -695,6 +725,150 @@ public class StandardResolverTest {
 			final StandardResolver		sr = new StandardResolver();
 			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			final StringBuilder			sb = new StringBuilder();
+			final long					predId = repo.termRepo().placeName("pred",null);
+			final IFProPredicate		template = new PredicateEntity(predId,new AnonymousEntity());
+
+			pap.parseEntities(new StringCharSource("assert(pred(100)) . assert(pred(200)) . assert(pred(300)) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+
+			int count = 0;
+			for (IFProEntity item : repo.predicateRepo().call(template)) {
+				count++;
+			}
+			Assert.assertEquals(3,count);
+			
+			// Test call(X)
+			pap.parseEntities(new StringCharSource("?-call(pred(X)) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=100\nCall:\nX=200\nCall:\nX=300\n",sb.toString());
+
+			pap.parseEntities(new StringCharSource("?-call(unknown) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+			
+			// Test Name/Arity
+			pap.parseEntities(new StringCharSource("?-X/1 ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=pred\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-pred/X ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=1\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-X/Y ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=pred\nY=1\n",sb.toString());
+			
+			pap.parseEntities(new StringCharSource("?-X/2 ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+			
+			// Test memberof
+			pap.parseEntities(new StringCharSource("?-memberOf(1,[1,2,3]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-memberOf(X,[1,2,3]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=1\nCall:\nX=2\nCall:\nX=3\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-memberOf(4,[1,2,3]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+
+			// Test bagof(X,Y,Z)
+			pap.parseEntities(new StringCharSource("?-bagof(X,pred(X),Y) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\nY=[100,200,300]\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-bagof(X,pred(X),[100,200,300]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-bagof(X,pred(X),[100,200|_]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-bagof(X,pred(X),[200|_]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+
+			// Test setof(X,Y,Z)
+			pap.parseEntities(new StringCharSource("?-setof(X,pred(X),Y) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\nY=[100,200,300]\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-setof(X,pred(X),[100,200,300]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-setof(X,pred(X),[100,200|_]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-setof(X,pred(X),[200|_]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+
+			// Test findall(X,Y,Z)
+			pap.parseEntities(new StringCharSource("?-findall(X,pred(X),Y) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\nY=[100,200,300]\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-findall(X,pred(X),[100,200,300]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-findall(X,pred(X),[100,200|_]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-findall(X,unknown(X),[]) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\n",sb.toString());
+
+			// Test retract(X)
+			pap.parseEntities(new StringCharSource("?-retract(pred(_)) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nCall:\nCall:\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-retract(pred(_)) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+
+			count = 0;
+			for (IFProEntity item : repo.predicateRepo().call(template)) {
+				count++;
+			}
+			Assert.assertEquals(0,count);
 			
 			sr.onRemove(global);
 		}
@@ -708,11 +882,102 @@ public class StandardResolverTest {
 			final StandardResolver		sr = new StandardResolver();
 			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
 			final StringBuilder			sb = new StringBuilder();
+
+			// Test AND
+			pap.parseEntities(new StringCharSource("?-X = 10, Y = 10, X = Y ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=10\nY=10\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-X = 10, Y = 20, X = Y ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+
+			// Test OR
+			pap.parseEntities(new StringCharSource("?-X = 10, Y = 10, X = Y; X = 20, Y = 20, X = Y ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=10\nY=10\nCall:\nX=20\nY=20\n",sb.toString());
+			pap.parseEntities(new StringCharSource("?-X = 10, Y = 20, X = Y; X = 20, Y = 10, X = Y ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
+				return true;
+			});
+
+			// Test NOT
+			pap.parseEntities(new StringCharSource("?-not (X = 10, Y = 20, X = Y) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			Assert.assertEquals("Call:\nX=X\nY=Y\n",sb.toString());
+
+			sr.onRemove(global);
+		}
+	}
+
+	@Test
+	public void ruledEntityTest() throws Exception {
+		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())){
+			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+			final StandardResolver		sr = new StandardResolver();
+			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+			final StringBuilder			sb = new StringBuilder();
+
+			pap.parseEntities(new StringCharSource("pred(0) ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
+			pap.parseEntities(new StringCharSource("pred(Z):- Z < 0, !, fail ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
+			pap.parseEntities(new StringCharSource("pred(Z):- Z1 is Z - 1, pred(Z1) ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
+
+			// Test rules
+			pap.parseEntities(new StringCharSource("?-pred(0) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			pap.parseEntities(new StringCharSource("?-pred(1) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			pap.parseEntities(new StringCharSource("?-pred(2) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
 			
 			sr.onRemove(global);
 		}
 	}
 
+	@Test
+	public void cutOperatorTest() throws Exception {
+		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())){
+			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+			final StandardResolver		sr = new StandardResolver();
+			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+			final StringBuilder			sb = new StringBuilder();
+
+			pap.parseEntities(new StringCharSource("pred(0) ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
+			pap.parseEntities(new StringCharSource("pred(Z):- Z < 0, !, fail ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
+			pap.parseEntities(new StringCharSource("pred(Z):- Z1 is Z - 1, pred(Z1) ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
+
+			// Test rules
+			pap.parseEntities(new StringCharSource("?-pred(0) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			pap.parseEntities(new StringCharSource("?-pred(1) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			pap.parseEntities(new StringCharSource("?-pred(2) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			
+			sr.onRemove(global);
+		}
+	}
+	
 	@Test
 	public void externalCallTest() throws Exception {
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())){
