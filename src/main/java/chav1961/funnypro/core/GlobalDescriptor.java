@@ -17,6 +17,7 @@ class GlobalDescriptor {
 	public Properties				parameters;
 	public ParserAndPrinter			pap;
 	public boolean					prepared = false;
+	public boolean					trace = false;
 	
-	@Override public String toString() {return "GlobalDescriptor [registered=" + registered + ", repo=" + repo + ", parameters=" + parameters + ", prepared=" + prepared + "]";}
+	@Override public String toString() {return "GlobalDescriptor [registered=" + registered + ", repo=" + repo + ", parameters=" + parameters + ", prepared=" + prepared  + ", trace=" + trace + "]";}
 }

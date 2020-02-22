@@ -401,7 +401,7 @@ public class FProUtil {
 				case anonymous		:
 					return new AnonymousEntity(); 
 				case list			:
-					final IFProList			list = new ListEntity(duplicate(((IFProList)source).getChild()),duplicate(((IFProList)source).getTail())); 
+					final IFProList			list = new ListEntity(duplicate(((IFProList)source).getChild(),repo),duplicate(((IFProList)source).getTail(),repo)); 
 					
 					if (list.getChild() != null) {
 						list.getChild().setParent(list);
@@ -411,13 +411,16 @@ public class FProUtil {
 					}
 					return list;
 				case operator		:
-					final IFProOperator		op = new OperatorEntity((IFProOperator)source).setLeft(duplicate(((IFProOperator)source).getLeft())).setRight(duplicate(((IFProOperator)source).getRight())); 
+					final IFProOperator		op = new OperatorEntity((IFProOperator)source).setLeft(duplicate(((IFProOperator)source).getLeft(),repo)).setRight(duplicate(((IFProOperator)source).getRight(),repo)); 
 					
 					if (op.getLeft() != null) {
 						op.getLeft().setParent(op);
 					}
 					if (op.getRight() != null) {
 						op.getRight().setParent(op);
+					}
+					if (source.isRuled()) {
+						op.setRule(duplicate(((IFProOperator)source).getRule(),repo));
 					}
 					return op;
 				case predicate		:
@@ -428,7 +431,7 @@ public class FProUtil {
 						final IFProEntity[]		parm = new IFProEntity[arity];
 						
 						for (int index = 0; index < arity; index++){
-							if ((parm[index] = duplicate(((IFProPredicate)source).getParameters()[index])) != null) {
+							if ((parm[index] = duplicate(((IFProPredicate)source).getParameters()[index],repo)) != null) {
 								parm[index].setParent(pred);
 							}
 						}
@@ -436,6 +439,9 @@ public class FProUtil {
 					}
 					else {
 						pred.setParameters(NULL_ARRAY);
+					}
+					if (source.isRuled()) {
+						pred.setRule(duplicate(((IFProPredicate)source).getRule(),repo));
 					}
 					return pred;
 				case variable		:

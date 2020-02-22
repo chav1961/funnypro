@@ -265,7 +265,12 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		
 		return result > target.length ? -result : result;
 	}
-		
+
+	@FunctionalInterface
+	private interface ValidationError {
+		void print(String validationError) throws SyntaxException;
+	}
+	
 	private int parse(final char[] source, int from, final int[] priorities, final int maxPrty, final VarRepo vars, final IFProEntity[] result) throws ContentException, IOException, SyntaxException {
 		final IFProEntity[]	top = new IFProEntity[priorities.length+1];
 		final int			maxLen = source.length;
@@ -640,9 +645,98 @@ loop:	while (from < maxLen && source[from] != '.') {
 			&& ((IFProOperator)result[0]).getOperatorType() == OperatorType.xfx
 			&& ((IFProOperator)result[0]).getEntityId() == goalId 
 			&& ((IFProOperator)result[0]).getLeft().getEntityType() == EntityType.predicate) {
-			result[0] = convert2Ruled(result[0]);
+
+			if (((IFProOperator)result[0]).getRight() == null) {
+				throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing rule in ruled predicate/operator ["+repo.termRepo().getName(((IFProOperator)result[0]).getLeft().getEntityId())+"]!"); 
+			}
+			else {
+				result[0] = convert2Ruled(result[0]);
+			}
 		}
+		final int	localFrom = from;
+		
+		validateResult(result[0],(e)->{throw new SyntaxException(SyntaxException.toRow(source,localFrom),SyntaxException.toCol(source,localFrom),"Invalid parsed entity: "+e);});
 		return from;
+	}
+
+	private void validateResult(final IFProEntity entity, final ValidationError print) throws SyntaxException {
+		switch (entity.getEntityType()) {
+			case anonymous			:
+				break;
+			case externalplugin		:
+				break;
+			case integer			:
+				break;
+			case list				:
+				if (((IFProList)entity).getChild() != null) {
+					validateResult(((IFProList)entity).getChild(),print);
+				}
+				if (((IFProList)entity).getTail() != null) {
+					validateResult(((IFProList)entity).getTail(),print);
+				}
+				break;
+			case operator:
+				switch (((IFProOperator)entity).getOperatorType().getSort()) {
+					case infix		:
+						if (((IFProOperator)entity).getLeft() == null) {
+							print.print("Left operand of infix operator is missing");
+						}
+						else {
+							validateResult(((IFProOperator)entity).getLeft(), print);
+						}
+						if (((IFProOperator)entity).getRight() == null) {
+							print.print("Right operand of infix operator is missing");
+						}
+						else {
+							validateResult(((IFProOperator)entity).getRight(), print);
+						}
+						break;
+					case postfix	:
+						if (((IFProOperator)entity).getRight() == null) {
+							print.print("Operand of postfix operator is missing");
+						}
+						else {
+							validateResult(((IFProOperator)entity).getRight(), print);
+						}
+						break;
+					case prefix		:
+						if (((IFProOperator)entity).getLeft() == null) {
+							print.print("Operand of prefix operator is missing");
+						}
+						else {
+							validateResult(((IFProOperator)entity).getLeft(), print);
+						}
+						break;
+					default:
+						throw new UnsupportedOperationException();
+				}
+				if (entity.isRuled()) {
+					validateResult(((IFProOperator)entity).getRule(),print);
+				}
+				break;
+			case operatordef	:
+				break;
+			case predicate		:
+				final IFProEntity[]	parm = ((IFProPredicate)entity).getParameters();
+				
+				for (int index = 0; index < parm.length; index++) {
+					if (parm[index] == null) {
+						print.print("Parameter #["+index+"] of predicate is missing");
+					}
+				}
+				if (entity.isRuled()) {
+					validateResult(((IFProPredicate)entity).getRule(),print);
+				}
+				break;
+			case real			:
+				break;
+			case string			:
+				break;
+			case variable		:
+				break;
+			default:
+				throw new UnsupportedOperationException();
+		}
 	}
 
 	private IFProEntity collapse(final IFProEntity[] top, final int location) {
@@ -769,6 +863,11 @@ loop:	while (from < maxLen && source[from] != '.') {
 						
 			if (maxLex == -startName - 1) {
 				throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Unknown term/operator was detected!"); 
+			}
+			else if (maxLex >= 0) {
+				endName = startName + getRepo().termRepo().getNameLength(maxLex);
+				result[0] = maxLex;
+				return endName;
 			}
 			else {
 				endName = (int) - maxLex - 1;

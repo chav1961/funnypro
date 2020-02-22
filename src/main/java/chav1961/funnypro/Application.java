@@ -37,6 +37,7 @@ public class Application {
 			final LoggerFacade				logger = new SystemErrLoggerFacade()) {
 			
 			final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
+			
 			final ScriptEngineManager 		factory = new ScriptEngineManager();
 			final ScriptEngine 				engine = factory.getEngineByName("FunnyProlog");
 			final ArgParser					parsed = argParser.parse(true,true,args);

@@ -29,7 +29,7 @@ public interface IFProGlobalStack extends AutoCloseable {
 	 * @author Alexander Chernomyrdin aka chav1961
 	 * @since 0.0.1
 	 */
-	interface GlobalStackTop {
+	interface GlobalStackTop { 
 		/**
 		 * <p>Get element type</p>
 		 * @return element type

@@ -1,8 +1,6 @@
 package chav1961.funnypro.core;
 
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,21 +20,17 @@ import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
-import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
-import chav1961.purelib.basic.DefaultLoggerFacade;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.URIUtils;
 import chav1961.purelib.basic.Utils;
-import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
-import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.streams.charsource.ArrayCharSource;
 import chav1961.purelib.streams.charsource.StringCharSource;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
@@ -942,6 +936,10 @@ public class StandardResolverTest {
 				processing(sr,global,stack,entity,vars,true,sb);
 				return true;
 			});
+			pap.parseEntities(new StringCharSource("?-pred(10) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
 			
 			sr.onRemove(global);
 		}
@@ -963,6 +961,10 @@ public class StandardResolverTest {
 			// Test rules
 			pap.parseEntities(new StringCharSource("?-pred(0) ." ),(entity,vars)->{
 				processing(sr,global,stack,entity,vars,true,sb);
+				return true;
+			});
+			pap.parseEntities(new StringCharSource("?-pred(-1) ." ),(entity,vars)->{
+				processing(sr,global,stack,entity,vars,false,sb);
 				return true;
 			});
 			pap.parseEntities(new StringCharSource("?-pred(1) ." ),(entity,vars)->{
@@ -1148,6 +1150,8 @@ public class StandardResolverTest {
 			sr.afterCall(global,local);
 		}
 		
-		Assert.assertTrue(stack.isEmpty());
+		if (!stack.isEmpty()) {
+			Assert.assertTrue(stack.isEmpty());
+		}
 	}
 }

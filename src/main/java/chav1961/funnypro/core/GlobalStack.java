@@ -130,7 +130,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.andChain;}
 				@Override public IFProEntity getEntity() {return entity;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}
-				@Override public String toString() {return "AndChainStackTop";}
+				@Override public String toString() {return "AndChainStackTop [assoc=+getEntityAssicated()]";}
 			};
 		}
 	}
@@ -144,7 +144,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.orChain;}
 				@Override public boolean isFirst() {return isFirst;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}
-				@Override public String toString(){return "OrChainStackTop [isFirst="+isFirst()+"]";}
+				@Override public String toString(){return "OrChainStackTop [isFirst="+isFirst()+", assoc="+getEntityAssicated()+"]";}
 			};
 		}
 	}
@@ -158,10 +158,11 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 		else {
 			return new IteratorStackTop<T>(){
+				private IFProEntity	rule = null;
 				@Override public StackTopType getTopType() {return StackTopType.iterator;}
 				@Override public Iterable<T> getIterator() {return iterator;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}
-				@Override public String toString(){return "IteratorStackTop [iteratorClass="+clazz+"]";}
+				@Override public String toString(){return "IteratorStackTop [iteratorClass="+clazz+", assoc="+getEntityAssicated()+"]";}
 			};
 		}
 	}
@@ -179,7 +180,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public Change getChangeChain() {return change;}
 				@Override public IFProEntity getMark() {return mark;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}
-				@Override public String toString(){return "BoundStackTop [mark="+getMark()+"]";}
+				@Override public String toString(){return "BoundStackTop [mark="+getMark()+", assoc="+getEntityAssicated()+"]";}
 			};
 		}
 	}
@@ -193,7 +194,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.temporary;}
 				@Override public IFProEntity getEntity() {return temporary;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}
-				@Override public String toString(){return "TemporaryStackTop [entity="+getEntity()+"]";}
+				@Override public String toString(){return "TemporaryStackTop [entity="+getEntity()+", assoc="+getEntityAssicated()+"]";}
 			};
 		}
 	}
@@ -208,7 +209,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public ExternalEntityDescriptor<?> getDescriptor() {return desc;}
 				@Override public Object getLocalData() {return localData;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}
-				@Override public String toString() {return "ExternalStackTop{"+desc+"}";}
+				@Override public String toString() {return "ExternalStackTop{"+desc+", assoc="+getEntityAssicated()+"}";}
 			};
 		}
 	}

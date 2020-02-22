@@ -14,7 +14,6 @@ class LocalDescriptor {
 	public IFProParserAndPrinter	pap;
 	public List<IFProVariable>		vars;
 	public String[]					varNames = null;
-	public boolean					trace = false;
 	
-	@Override public String toString() {return "LocalDescriptor [stack=" + stack + ", pap=" + pap + ", trace=" + trace + "]";}
+	@Override public String toString() {return "LocalDescriptor [stack=" + stack + ", pap=" + pap + "]";}
 }

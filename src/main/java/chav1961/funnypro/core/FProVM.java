@@ -241,72 +241,75 @@ public class FProVM implements IFProVM, IFProModule {
 				target.write("Funny prolog console...\n>");
 				target.flush();
 				while (continuation[0] && (command = brdr.readLine()) != null) {
-					try{pap.parseEntities(command.toCharArray(),0,new FProParserCallback() {
-											@Override
-											public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-												try{
-												if (entity.getEntityId() == quit && entity.getEntityType().equals(EntityType.predicate) && ((IFProPredicate)entity).getArity() == 0) {
-													target.write("quit successful!\n");
-													continuation[0] = false;
-													return false;
-												}
-												else if (entity.getEntityId() == goal && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
-													target.write(String.valueOf(inference(entity,vars,repo,new IFProCallback(){
-														@Override public void beforeFirstCall() {}
-														@Override public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) {return true;}
-														@Override public void afterLastCall() {}
-													}))+"\n>");
-												}
-												else if (entity.getEntityId() == question && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
-													target.write("Answer="+String.valueOf(inference(entity,vars,repo,new IFProCallback(){
-														@Override public void beforeFirstCall() {}
-														
-														@Override 
-														public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws PrintingException, SyntaxException {
-															try{for (int index = 0, maxIndex = Math.min(names.length,resolvedVariables.length); index < maxIndex; index++) {
-																	final StringBuilder	sb = new StringBuilder();
-																	
-																	pap.putEntity((IFProEntity)resolvedVariables[index],new StringBuilderCharTarget(sb));
-																	target.write(String.format("%1$s = %2$s\n",names[index],sb));
+					if (!command.isEmpty()) {
+						try{pap.parseEntities(command.toCharArray(),0,new FProParserCallback() {
+												@Override
+												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
+													try{
+													if (entity.getEntityId() == quit && entity.getEntityType().equals(EntityType.predicate) && ((IFProPredicate)entity).getArity() == 0) {
+														target.write("quit successful!\n");
+														continuation[0] = false;
+														return false;
+													}
+													else if (entity.getEntityId() == goal && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
+														target.write(String.valueOf(inference(entity,vars,repo,new IFProCallback(){
+															@Override public void beforeFirstCall() {}
+															@Override public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) {return true;}
+															@Override public void afterLastCall() {}
+														}))+"\n>");
+													}
+													else if (entity.getEntityId() == question && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
+														target.write("Answer="+String.valueOf(inference(entity,vars,repo,new IFProCallback(){
+															@Override public void beforeFirstCall() {}
+															
+															@Override 
+															public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws PrintingException, SyntaxException {
+																try{for (int index = 0, maxIndex = Math.min(names.length,resolvedVariables.length); index < maxIndex; index++) {
+																		final StringBuilder	sb = new StringBuilder();
+																		
+																		pap.putEntity((IFProEntity)resolvedVariables[index],new StringBuilderCharTarget(sb));
+																		target.write(String.format("%1$s = %2$s\n",names[index],sb));
+																	}
+																	target.write("proceed? ");
+																	target.flush();
+																} catch (IOException | ContentException e) {
+																	throw new PrintingException(e);
 																}
-																target.write("proceed? ");
-																target.flush();
-															} catch (IOException | ContentException e) {
-																throw new PrintingException(e);
+	
+																try{final String	buffer = brdr.readLine();
+																	return "yY+tT".indexOf(buffer == null ? "" : buffer) >= 0;
+																} catch (IOException e) {
+																	return false;
+																}
 															}
-
-															try{final String	buffer = brdr.readLine();
-																return "yY+tT".indexOf(buffer == null ? "" : buffer) >= 0;
-															} catch (IOException e) {
-																return false;
-															}
-														}
-														
-														@Override public void afterLastCall() {}
-													}))+"\n>");
+															
+															@Override public void afterLastCall() {}
+														}))+"\n>");
+													}
+													else {
+														repo.predicateRepo().assertZ(entity);
+														target.write("Predicate was asserted\n>");
+													}
+													} catch (ContentException exc) {
+	//													exc.printStackTrace();
+														errors.write(String.format("Error executing input: "+exc.getMessage()));
+														return false;
+													}
+													return true;
 												}
-												else {
-													repo.predicateRepo().assertZ(entity);
-													target.write("Predicate was asserted\n>");
-												}
-												} catch (ContentException exc) {
-//													exc.printStackTrace();
-													errors.write(String.format("Error executing input: "+exc.getMessage()));
-													return false;
-												}
-												return true;
 											}
-										}
-							);
-					} catch (SyntaxException e) {
-						errors.write(e.getMessage());
-						throw new ContentException(e.getMessage()); 
-					} finally {
-						target.flush();
-						errors.flush();
+								);
+						} catch (SyntaxException e) {
+							errors.write(e.getMessage());
+							throw new ContentException(e.getMessage()); 
+						} finally {
+							target.flush();
+							errors.flush();
+						}
 					}
 				}				
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw new ContentException(e.getMessage()); 
 			} finally {
 				final long	quitName = repo.termRepo().seekName("quit"); 
