@@ -373,13 +373,13 @@ public class FProVM implements IFProVM, IFProModule {
 			
 			try{if (rag.resolver.firstResolve(rag.global,data,entity) == ResolveRC.True) {
 					while (rag.resolver.nextResolve(rag.global,data,entity) == ResolveRC.True) {}
+					rag.resolver.endResolve(rag.global,data,entity);
 					return true;
 				}
 				else {
 					return false;
 				}
 			} finally {
-				rag.resolver.endResolve(rag.global,data,entity);
 				rag.resolver.afterCall(rag.global,data);
 			}
 		} catch (Exception e) {

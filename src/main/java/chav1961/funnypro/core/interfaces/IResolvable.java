@@ -56,7 +56,7 @@ public interface IResolvable<Global,Local> {
 	 * @since 0.0.1
 	 */
 	public enum ResolveRC {
-		False, True, FalseWithoutBacktracking, UltimateFalse
+		False, True, FalseWithoutBacktracking, TrueWithoutBacktracking, UltimateFalse
 	}
 	
 	/**

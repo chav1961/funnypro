@@ -428,6 +428,9 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				if (rc == ResolveRC.False) {
 					return ResolveRC.True;
 				}
+				else if (rc == ResolveRC.FalseWithoutBacktracking) {
+					return ResolveRC.TrueWithoutBacktracking;
+				}
 			}
 		} catch (PrintingException e) {
 			throw new SyntaxException(0, 0,e.getLocalizedMessage());
@@ -1437,7 +1440,16 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					}
 					else if (rcRule == ResolveRC.FalseWithoutBacktracking) {
 						releaseTemporaries(entity, local.stack);
+						for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator())) {
+						}
 						break;
+					}
+					else if (rcRule == ResolveRC.TrueWithoutBacktracking) {
+						releaseTemporaries(entity, local.stack);
+						for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator())) {
+						}
+						return ResolveRC.True;
+//						break;
 					}
 					else {
 						releaseTemporaries(entity, local.stack);
@@ -1489,7 +1501,16 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 								}
 								else if (rcRule == ResolveRC.FalseWithoutBacktracking) {
 									releaseTemporaries(current, stack);
+									for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)item).getIterator())) {
+									}
 									break;
+								}
+								else if (rcRule == ResolveRC.TrueWithoutBacktracking) {
+									releaseTemporaries(current, stack);
+									for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)item).getIterator())) {
+									}
+									return ResolveRC.True;
+//									break;
 								}
 								else {
 									releaseTemporaries(current, stack);
