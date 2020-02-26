@@ -111,7 +111,8 @@ class JScreen extends JFrame implements LocaleChangeListener {
 	JScreen(final Localizer parent, final ContentMetadataInterface xda, final FunnyProEngine fpe, final LoggerFacade logger) throws IOException, EnvironmentException {
 		final Dimension		screen = Toolkit.getDefaultToolkit().getScreenSize();
 		final JSplitPane	split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		final JScrollPane	scroll = new JScrollPane(log);
+		final JScrollPane	scrollLog = new JScrollPane(log);
+		final JScrollPane	scrollConsole = new JScrollPane(console);
 		
 		this.parent = parent;
 		this.fpe = fpe;
@@ -131,8 +132,8 @@ class JScreen extends JFrame implements LocaleChangeListener {
 		
 		log.setEditable(false);
 		console.setRows(5);
-		split.setLeftComponent(scroll);
-		split.setRightComponent(console);
+		split.setLeftComponent(scrollLog);
+		split.setRightComponent(scrollConsole);
 		split.setDividerSize(5);
 		
 		getContentPane().add(menu,BorderLayout.NORTH);
@@ -149,7 +150,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 				
 				@Override 
 				public void keyPressed(final KeyEvent e) {
-					if (e.getKeyCode() == KeyEvent.VK_ENTER && (e.getModifiers() & InputEvent.CTRL_MASK) != 0) {
+					if (e.getKeyCode() == KeyEvent.VK_F5 && e.getModifiersEx() == 0) {
 						if (console.getSelectedText() != null) {
 							processSentence(console.getSelectedText());
 						}
