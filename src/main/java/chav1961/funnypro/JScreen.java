@@ -61,7 +61,6 @@ import chav1961.purelib.model.interfaces.ContentMetadataInterface;
 import chav1961.purelib.streams.charsource.ReaderCharSource;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
-import chav1961.purelib.ui.swing.SwingModelUtils;
 import chav1961.purelib.ui.swing.SwingUtils;
 import chav1961.purelib.ui.swing.interfaces.OnAction;
 import chav1961.purelib.ui.swing.useful.JFileSelectionDialog;
@@ -124,7 +123,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 		this.ss = new JStateString(this.localizer);
 		localizer.addLocaleChangeListener(this);
 		
-		this.menu = SwingModelUtils.toMenuEntity(xda.byUIPath(URI.create("ui:/model/navigation.top.mainmenu")),JMenuBar.class);
+		this.menu = SwingUtils.toJComponent(xda.byUIPath(URI.create("ui:/model/navigation.top.mainmenu")),JMenuBar.class);
 		SwingUtils.assignActionListeners(this.menu,this);
 		
 		((JMenuItem)SwingUtils.findComponentByName(this.menu,"menu.file.preparefrb")).setEnabled(false);
