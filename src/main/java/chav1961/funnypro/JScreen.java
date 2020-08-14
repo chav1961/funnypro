@@ -6,7 +6,6 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Toolkit;
-import java.awt.datatransfer.MimeTypeParseException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -46,6 +45,7 @@ import chav1961.purelib.basic.MimeType;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
 import chav1961.purelib.basic.exceptions.LocalizationException;
+import chav1961.purelib.basic.exceptions.MimeParseException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
@@ -293,7 +293,7 @@ class JScreen extends JFrame implements LocaleChangeListener {
 			});
 			
 			JOptionPane.showMessageDialog(this,pane,localizer.getValue(ABOUT_TITLE),JOptionPane.PLAIN_MESSAGE,icon);
-		} catch (LocalizationException | MimeTypeParseException | IOException e) {
+		} catch (LocalizationException | MimeParseException | IOException e) {
 			ss.message(Severity.error,e.getLocalizedMessage());
 		}
 	}
