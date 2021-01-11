@@ -1055,7 +1055,7 @@ public class StandardResolverTest {
 		}
 	}
 
-	//@Test
+//	@Test
 	public void performanceTest() throws Exception {
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);

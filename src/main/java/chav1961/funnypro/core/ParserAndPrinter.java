@@ -30,6 +30,7 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProModule;
+import chav1961.purelib.basic.BitCharSet;
 import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
 import chav1961.purelib.basic.exceptions.ContentException;
@@ -44,6 +45,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private static final ExtendedBitCharSet	VALID_LETTERS = new ExtendedBitCharSet(); 
 	private static final ExtendedBitCharSet	VALID_UPPER_LETTERS = new ExtendedBitCharSet(); 
 	private static final ExtendedBitCharSet	VALID_LOWER_LETTERS = new ExtendedBitCharSet(); 
+	private static final BitCharSet			PUNCTUATIONS = new BitCharSet(); 
 
 	private final long				colonId, tailId, goalId;
 	private final LoggerFacade		log;
@@ -71,6 +73,15 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		VALID_LOWER_LETTERS.addRange('a','z');
 		VALID_LOWER_LETTERS.addRange('\u0430','\u044F');
 		VALID_LOWER_LETTERS.add('\u0451');
+
+		PUNCTUATIONS.addRange((char)0x21,(char)0x26);
+		PUNCTUATIONS.addRange((char)0x2A,(char)0x2D);
+		PUNCTUATIONS.add((char)0x2F);
+		PUNCTUATIONS.add((char)0x3A);
+		PUNCTUATIONS.addRange((char)0x3C,(char)0x3F);
+		PUNCTUATIONS.add((char)0x5C);
+		PUNCTUATIONS.add((char)0x60);
+		PUNCTUATIONS.add((char)0x7E);
 	}
 
 	private final int[]		forIntResult = new int[2];
@@ -654,8 +665,10 @@ loop:	while (from < maxLen && source[from] != '.') {
 			}
 		}
 		final int	localFrom = from;
-		
-		validateResult(result[0],(e)->{throw new SyntaxException(SyntaxException.toRow(source,localFrom),SyntaxException.toCol(source,localFrom),"Invalid parsed entity: "+e);});
+
+		if (result[0] != null) {
+			validateResult(result[0],(e)->{throw new SyntaxException(SyntaxException.toRow(source,localFrom),SyntaxException.toCol(source,localFrom),"Invalid parsed entity: "+e);});
+		}
 		return from;
 	}
 
@@ -935,6 +948,14 @@ loop:	while (from < maxLen && source[from] != '.') {
 								else {
 									operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1]+1,null);
 								}
+							}
+							else if (PUNCTUATIONS.contains(source[from])) {
+								forIntResult[0] = from;
+								while (PUNCTUATIONS.contains(source[from])) {
+									from++;
+								}
+								forIntResult[1] = from;
+								operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1]+1,null);
 							}
 							else {
 								throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");
