@@ -17,7 +17,7 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 		 * <p>Get plugin entity to call it</p>
 		 * @return plugin entity
 		 */
-		IFProExternalEntity getPluginEntity();
+		<G,L> IFProExternalEntity<G,L> getPluginEntity();
 		
 		/**
 		 * <p>Get plugin predicate form to install the plugin</p>

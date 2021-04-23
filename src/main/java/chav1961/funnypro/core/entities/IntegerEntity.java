@@ -53,4 +53,9 @@ public class IntegerEntity implements IFProEntity {
 		if (id != other.id) return false;
 		return true;
 	}
+
+	@Override
+	public IntegerEntity clone() throws CloneNotSupportedException {
+		return (IntegerEntity)super.clone();
+	}
 }

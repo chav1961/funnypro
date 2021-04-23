@@ -2,12 +2,8 @@ package chav1961.funnypro.core;
 
 
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -25,15 +21,13 @@ import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
-import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProRepo;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
-import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.AndOrTree;
 import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.exceptions.ContentException;
@@ -178,7 +172,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			CommonUtil.readTree(source,termRepo,SerializableString.class);
 			frRepo.deserialize(source);
 	
-			final int	length2Read = source.readInt();
+			source.readInt();
 			source.readInt();
 			final int	counts2Read = source.readInt();
 			
@@ -242,7 +236,7 @@ class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			
 			if (found != null) {
 				final int			min = Math.min(minPrty,maxPrty), max = Math.max(minPrty,maxPrty); // Max prty can be less than min prty when seek postfix operators
-				IFProOperator		root = found.data, temp;
+				IFProOperator		root = found.data;
 				int					count = 0, prty;
 				
 				while (root != null) {

@@ -40,4 +40,9 @@ public class AnonymousEntity implements IFProEntity {
 		if (getClass() != obj.getClass()) return false;
 		return true;
 	}
+	
+	@Override
+	public AnonymousEntity clone() throws CloneNotSupportedException {
+		return (AnonymousEntity)super.clone();
+	}
 }

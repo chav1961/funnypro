@@ -1,19 +1,11 @@
 package chav1961.funnypro.core;
 
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.util.Properties;
 
 import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
-import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface.Walker;
 
@@ -101,7 +93,7 @@ class CommonUtil {
 		else {
 			target.writeInt(SERIALIZATION_TREE_MAGIC);			// Tree magic.
 			target.writeLong(tree.size());						// Size of the tree
-			tree.walk(new Walker(){							// Tree content
+			tree.walk(new Walker(){								// Tree content
 				@Override
 				public boolean process(char[] name, int len, long id, Object cargo) {
 					try{target.writeLong(id);

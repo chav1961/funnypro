@@ -3,7 +3,6 @@ package chav1961.funnypro.core;
 import java.util.Arrays;
 import java.util.List;
 
-import chav1961.funnypro.core.VarRepo.VariableChain;
 import chav1961.funnypro.core.entities.VariableEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 

@@ -54,4 +54,9 @@ public class RealEntity implements IFProEntity {
 		if (id != other.id) return false;
 		return true;
 	}
+
+	@Override
+	public RealEntity clone() throws CloneNotSupportedException {
+		return (RealEntity)super.clone();
+	}
 }

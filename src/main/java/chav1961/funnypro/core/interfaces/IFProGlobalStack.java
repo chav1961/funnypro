@@ -121,7 +121,7 @@ public interface IFProGlobalStack extends AutoCloseable {
 		 * <p>Get external entity descriptor</p>
 		 * @return entity descriptor
 		 */
-		ExternalEntityDescriptor getDescriptor();
+		<D> ExternalEntityDescriptor<D> getDescriptor();
 		
 		/**
 		 * <p>Get local data for entity descriptor</p>

@@ -6,10 +6,8 @@ import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.ExternalEntityDescriptor;
-import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProModule;
-import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 public class GlobalStack implements IFProGlobalStack, IFProModule {
@@ -158,7 +156,6 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		}
 		else {
 			return new IteratorStackTop<T>(){
-				private IFProEntity	rule = null;
 				@Override public StackTopType getTopType() {return StackTopType.iterator;}
 				@Override public Iterable<T> getIterator() {return iterator;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}

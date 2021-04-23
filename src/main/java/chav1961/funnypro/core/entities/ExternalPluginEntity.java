@@ -107,4 +107,10 @@ public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
 		} else if (!Arrays.equals(pluginVersion,other.pluginVersion)) return false;
 		return true;
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ExternalPluginEntity<G, L> clone() throws CloneNotSupportedException {
+		return (ExternalPluginEntity<G, L>)super.clone();
+	}
 }

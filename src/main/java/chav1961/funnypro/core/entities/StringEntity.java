@@ -53,4 +53,9 @@ public class StringEntity implements IFProEntity {
 		if (id != other.id) return false;
 		return true;
 	}
+
+	@Override
+	public StringEntity clone() throws CloneNotSupportedException {
+		return (StringEntity)super.clone();
+	}
 }

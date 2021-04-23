@@ -1,6 +1,5 @@
 package chav1961.funnypro.core;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -8,12 +7,9 @@ import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
-import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginDescriptor;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
-import chav1961.funnypro.core.interfaces.IFProOperator;
-import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
@@ -22,8 +18,8 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Local extends LocalDescriptor, ProcessingType extends Enum<?>> implements IResolvable<Global,Local>, FProPluginList {
 	private final String				pluginName;
-	private final String				pluginProducer;
-	private final String				pluginDescription;
+//	private final String				pluginProducer;
+//	private final String				pluginDescription;
 	private final int[]					pluginVersion;
 	private final PluginDescriptor[]	desc;
 	
@@ -42,12 +38,12 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 		}
 		else {
 			this.pluginName = pluginName;
-			this.pluginProducer = pluginProducer;
-			this.pluginDescription = pluginDescription;
+//			this.pluginProducer = pluginProducer;
+//			this.pluginDescription = pluginDescription;
 			this.pluginVersion = pluginVersion;
 			this.desc = new PluginDescriptor[]{
 					new PluginDescriptor(){
-						@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,pluginName,pluginProducer,pluginVersion,AbstractExternalPlugin.this);}
+						@Override public <G,L> IFProExternalEntity<G,L> getPluginEntity() {return new ExternalPluginEntity(1,pluginName,pluginProducer,pluginVersion,AbstractExternalPlugin.this);}
 						@Override public String getPluginPredicate() {return null;}
 						@Override public String getPluginDescription() {return pluginDescription;}
 					}

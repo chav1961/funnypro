@@ -2,9 +2,7 @@ package chav1961.funnypro.core;
 
 
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -377,29 +375,40 @@ public class FProUtil {
 	 * @return duplicated item
 	 */
 	public static IFProEntity duplicate(final IFProEntity source) {
-		return duplicate(source,null);
+		try{return duplicate(source,null);
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
 	}
 	
 	public static IFProEntity cloneEntity(final IFProEntity source) {
 		try(final VarRepo	repo = new VarRepo()) {
 			return duplicate(source,repo);
+		} catch (CloneNotSupportedException e) {
+			return null;
 		}
 	}		
 	
-	private static IFProEntity duplicate(final IFProEntity source, final VarRepo repo) {
+	private static IFProEntity duplicate(final IFProEntity source, final VarRepo repo) throws CloneNotSupportedException {
 		if (source == null) {
 			return null;
 		}
 		else {
+			IFProEntity	e;
+			
 			switch (source.getEntityType()) {
 				case string			:
-					return new StringEntity(source.getEntityId());
+					e = ((StringEntity)source).clone();
+					break;
 				case integer		:
-					return new IntegerEntity(source.getEntityId());
+					e = ((IntegerEntity)source).clone();
+					break;
 				case real			:
-					return new RealEntity(Double.longBitsToDouble(source.getEntityId()));
+					e = ((RealEntity)source).clone();
+					break;
 				case anonymous		:
-					return new AnonymousEntity(); 
+					e = ((AnonymousEntity)source).clone(); 
+					break;
 				case list			:
 					final IFProList			list = new ListEntity(duplicate(((IFProList)source).getChild(),repo),duplicate(((IFProList)source).getTail(),repo)); 
 					
@@ -461,6 +470,8 @@ public class FProUtil {
 				default :
 					throw new UnsupportedOperationException("Entity duplication for ["+source.getEntityType()+"] is not supported yet!");
 			}
+			e.setParent(null);
+			return e;
 		}
 	}
 

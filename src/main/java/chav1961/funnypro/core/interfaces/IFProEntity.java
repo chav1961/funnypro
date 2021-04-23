@@ -5,7 +5,7 @@ package chav1961.funnypro.core.interfaces;
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
  */
-public interface IFProEntity {
+public interface IFProEntity extends Cloneable {
 	static final int		ANON_ENTITY_ID = -2; 
 	static final int		LIST_ENTITY_ID = -3; 
 	static final int		OPEN_ENTITY_ID = -4; 
@@ -55,7 +55,7 @@ public interface IFProEntity {
 	
 	/**
 	 * <p>Get parent for the given entity</p>
-	 * @return parent for the given entity or null if missing. Can be invalid when entity is bounded durung unification, but will be restored to valid state after unbind.
+	 * @return parent for the given entity or null if missing. Can be invalid when entity is bounded during unification, but will be restored to valid state after unbind.
 	 */
 	IFProEntity getParent();
 	
