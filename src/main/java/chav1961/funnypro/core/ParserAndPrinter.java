@@ -47,7 +47,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private static final ExtendedBitCharSet	VALID_LOWER_LETTERS = new ExtendedBitCharSet(); 
 	private static final BitCharSet			PUNCTUATIONS = new BitCharSet(); 
 
-	private final long				colonId, tailId, goalId;
+	private final long				colonId, tailId, goalId, emptyStringId = 0;
 	private final LoggerFacade		log;
 	private final Properties		props;
 	private final IFProEntitiesRepo	repo;
@@ -82,6 +82,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		PUNCTUATIONS.add((char)0x5C);
 		PUNCTUATIONS.add((char)0x60);
 		PUNCTUATIONS.add((char)0x7E);
+		PUNCTUATIONS.add((char)0x2E);	// .
 	}
 
 	private final int[]		forIntResult = new int[2];
@@ -363,7 +364,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}
 					
 					if (from < maxLen && source[from] == '\"') {
-						final long	stringId = getRepo().stringRepo().placeName(source,startConst+1,from,null);
+						final long	stringId = startConst+1 == from ? emptyStringId : getRepo().stringRepo().placeName(source,startConst+1,from,null);
 						
 						if (!prefixNow) {
 							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 

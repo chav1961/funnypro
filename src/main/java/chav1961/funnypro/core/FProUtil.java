@@ -16,6 +16,8 @@ import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
+import chav1961.funnypro.core.interfaces.IFProGlobalStack;
+import chav1961.funnypro.core.interfaces.IFProGlobalStack.GlobalStackTop;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
@@ -582,7 +584,112 @@ public class FProUtil {
 			return false;
 		}
 	}
+
+	public static boolean hasAnyVariableOrAnonymous(final IFProEntity source) {
+		if (source != null) {
+			switch (source.getEntityType()) {
+				case string			:
+				case integer		:
+				case real			:
+					return false;
+				case list			:
+					if (((IFProList)source).getChild() != null) {
+						if (hasAnyVariableOrAnonymous(((IFProList)source).getChild())) {
+							return true;
+						}
+					}
+					if (((IFProList)source).getTail() != null) {
+						if (hasAnyVariableOrAnonymous(((IFProList)source).getTail())) {
+							return true;
+						}
+					}
+					return false;
+				case operator		:
+					if (((IFProOperator)source).getLeft() != null) {
+						if (hasAnyVariableOrAnonymous(((IFProOperator)source).getLeft())) {
+							return true;
+						}
+					}
+					if (((IFProOperator)source).getRight() != null) {
+						if (hasAnyVariableOrAnonymous(((IFProOperator)source).getRight())) {
+							return true;
+						}
+					}
+					return false;
+				case predicate		:
+					final IFProEntity[]		parm = ((IFProPredicate)source).getParameters();
+					
+					for (int index = 0; index < parm.length; index++){
+						if (hasAnyVariableOrAnonymous(parm[index])) {
+							return true;
+						}
+					}
+					return false;
+				case anonymous		:
+				case variable		:
+					return true;
+				default :
+					throw new IllegalArgumentException("Entity type ["+source.getEntityType()+"] can't be removed!");
+			}
+		}
+		else {
+			return false;
+		}
+	}
 	
+	public static boolean unify(final IFProEntity mark, final IFProEntity left, final IFProEntity right, final IFProGlobalStack stack, final Change[] list) {
+		list[0] = null;
+		final boolean	result = unify(left, right, list);
+		
+		if (result) {
+			if (list[0] != null) {
+				stack.push(GlobalStack.getBoundStackTop(mark,mark,list[0]));
+			}
+		}
+		else if (list[0] != null) {
+			unbind(list[0]);
+		}
+		return result;
+	}
+
+	public static boolean unifyTemporaries(final IFProEntity mark, final IFProEntity left, final IFProEntity right, final IFProEntity created, final IFProGlobalStack stack, final Change[] list) {
+		if (!unify(mark,left,right,stack,list)) {
+			removeEntity(created);
+			return false;
+		}
+		else {
+			stack.push(GlobalStack.getTemporaryStackTop(mark,created));
+			return true;
+		}
+	}
+	
+	@SuppressWarnings({ "unchecked" })
+	public static void releaseTemporaries(final IFProEntity mark, final IFProGlobalStack stack) {
+		while (!stack.isEmpty() && stack.peek().getEntityAssicated() == mark) {
+			final GlobalStackTop item = stack.peek();
+			
+			switch (item.getTopType()) {
+				case andChain	:
+					break;
+				case bounds		:
+					unbind(((GlobalStack.BoundStackTop<Change>)item).getChangeChain());
+					stack.pop();
+					break;
+				case external	:
+					break;
+				case iterator	:
+					return;
+				case orChain	:
+					break;
+				case temporary	:
+					removeEntity(((GlobalStack.TemporaryStackTop)item).getEntity());
+					stack.pop();
+					break;
+				default	:
+					throw new UnsupportedOperationException();
+			}
+		}
+	}
 	
 	public static enum ContentType {
 		Anon, Var, NonVar, Atom, Integer, Float, Number, Atomic, Compound,		

@@ -32,16 +32,19 @@ import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.pluginexample.TutorialPlugin;
+import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
+import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,StringProcessorLocal>, FProPluginList {
 	public static final String		PLUGIN_NAME = "StringProcessorPlugin";
 	public static final String		PLUGIN_DESCRIPTION = "This plugin supports a set of string predicates and operators";
 	public static final String		PLUGIN_PRODUCER = "(c) 2017, Alexander V. Chernomyrdin aka chav1961";
 	public static final int[]		PLUGIN_VERSION = {1,0};
-	public static final char[]		PREDICATE_SPLIT = "split(String,Divizir,Items).".toCharArray(); 
+	public static final char[]		PREDICATE_SPLIT = "split(String,Divizor,Items).".toCharArray(); 
 	public static final char[]		PREDICATE_LIST = "list(String,List).".toCharArray(); 
 	public static final char[]		OPERATOR_CHARARRAY = ":-op(700,xfx,=>..).".toCharArray();
 	
@@ -51,7 +54,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StringProcessorPlugin());}
+					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,StringProcessorPlugin.this);}
 					@Override public String getPluginPredicate() {return null;}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}
@@ -75,6 +78,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 			final IFProParserAndPrinter 	pap = new ParserAndPrinter(debug,parameters,repo);
 			
 			global.repo = repo;
+			global.pap = pap;
 			try{
 				pap.parseEntities(PREDICATE_SPLIT,0,new FProParserCallback(){
 						@Override
@@ -101,15 +105,18 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 				pap.parseEntities(OPERATOR_CHARARRAY,0,new FProParserCallback(){
 						@Override
 						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-							listId = entity.getEntityId();
-							repo.pluginsRepo().registerResolver(entity,vars,StringProcessorPlugin.this,global);
-							repo.putOperatorDef((IFProOperator)entity);
+							final IFProOperator	op = ((IFProOperator)((IFProOperator)entity).getRight());
+							
+							charArrayId = op.getEntityId();
+							repo.pluginsRepo().registerResolver(op,vars,StringProcessorPlugin.this,global);
+							repo.putOperatorDef(op);
 							return true;
 						}
 					}
 				);
 				actualLog.message(Severity.info,"Operator "+new String(OPERATOR_CHARARRAY)+" was registeded successfully");
 			} catch (SyntaxException | IOException exc) {
+				exc.printStackTrace();
 				actualLog.message(Severity.info,"Predicate registration failed for scanlist(List,Item).: %1$s", exc.getMessage());
 				throw new IllegalArgumentException("Attempt to register predicate scanlist(List,Item) failed: "+exc.getMessage(),exc); 
 			}
@@ -140,8 +147,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	public ResolveRC firstResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws SyntaxException {
 		if (entity.getEntityType() == EntityType.predicate) {
 			if (entity.getEntityId() == splitId && ((IFProPredicate)entity).getArity() == 3) {
-				
-				
+				return firstResolveSplit(global,local,((IFProPredicate)entity).getParameters()[0],((IFProPredicate)entity).getParameters()[1],((IFProPredicate)entity).getParameters()[2]);
 			}
 			else if (entity.getEntityId() == listId && ((IFProPredicate)entity).getArity() == 3) {
 				
@@ -267,4 +273,64 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	public void afterCall(final StringProcessorGlobal global, final StringProcessorLocal local) throws SyntaxException {
 		global.collection.add(local);
 	} 
+
+	private ResolveRC firstResolveSplit(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity first, final IFProEntity second, final IFProEntity third) {
+		if (first.getEntityType() == EntityType.anonymous) {	// (_,?,?) - always true
+			return ResolveRC.TrueWithoutBacktracking; 
+		}
+		else if (first.getEntityType() == EntityType.variable && (second.getEntityType() != EntityType.anonymous && second.getEntityType() != EntityType.variable) && third.getEntityType() == EntityType.list) {	// (X,?,[?]) - concatenate list
+			try{final String		divizor = asString(global, second);
+				
+				if (divizor != null) {
+					final StringBuilder	sb = new StringBuilder();
+					final IFProList		item = (IFProList)third;
+					
+					while (item != null) {
+						final String	value = asString(global, item.getChild());
+						
+						if (value == null) {
+							return ResolveRC.False;
+						}
+						else {
+							sb.append(divizor).append(value);
+						}
+					}
+					final IFProEntity		str = new StringEntity(charArrayId);
+					final FProUtil.Change[]	change = new FProUtil.Change[1];
+					
+					if (FProUtil.unify(third, str, change)) {
+						return ResolveRC.TrueWithoutBacktracking;
+					}
+					else {
+						FProUtil.unbind(change[0]);
+						return ResolveRC.False;
+					}
+				}
+				else {
+					return ResolveRC.False;
+				}
+			} catch (PrintingException | IOException exc) {
+				return ResolveRC.UltimateFalse;
+			}
+		}
+		else {
+			
+		}
+	}
+
+	private String asString(final StringProcessorGlobal global, final IFProEntity entity) throws PrintingException, IOException {
+		switch (entity.getEntityType()) {
+			case integer: case list: case real: case string	: case predicate: case operator:
+				final StringBuilder		sb = new StringBuilder();
+				final CharacterTarget	ct = new StringBuilderCharTarget(sb);
+					
+				global.pap.putEntity(entity, ct);
+				return sb.toString();
+			case operatordef: case externalplugin: case anonymous: case variable: case any:
+				return null;
+			default	:
+				throw new UnsupportedOperationException("Entity type ["+entity.getEntityType()+"] is not supported yet"); 
+		}
+	}
+
 }

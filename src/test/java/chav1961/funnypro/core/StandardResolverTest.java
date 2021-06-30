@@ -1,6 +1,7 @@
 package chav1961.funnypro.core;
 
 
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
+import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
@@ -1099,7 +1101,7 @@ public class StandardResolverTest {
 		}
 	}
 
-	private void processing(final StandardResolver sr, final GlobalDescriptor global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult) throws SyntaxException {
+	public static void processing(final IResolvable sr, final Object global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult) throws SyntaxException {
 		final IFProCallback	callback = new IFProCallback(){
 								@Override public void beforeFirstCall() {}
 								@Override public void afterLastCall() {}
@@ -1111,7 +1113,7 @@ public class StandardResolverTest {
 		processing(sr,global,stack,goal,vars,awaitedResult,callback);
 	}
 
-	private void processing(final StandardResolver sr, final GlobalDescriptor global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult, final StringBuilder sb) throws SyntaxException {
+	public static void processing(final IResolvable sr, final Object global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult, final StringBuilder sb) throws SyntaxException {
 		sb.setLength(0);
 		final IFProCallback	callback = new IFProCallback(){
 								@Override public void beforeFirstCall() {}
@@ -1133,10 +1135,10 @@ public class StandardResolverTest {
 		processing(sr,global,stack,goal,vars,awaitedResult,callback);
 	}
 
-	private void processing(final StandardResolver sr, final GlobalDescriptor global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult, final IFProCallback callback) throws SyntaxException {
+	public static void processing(final IResolvable sr, final Object global, final IFProGlobalStack stack, final IFProEntity goal, final List<IFProVariable> vars, final boolean awaitedResult, final IFProCallback callback) throws SyntaxException {
 		Assert.assertTrue(stack.isEmpty());
 
-		final LocalDescriptor	local = sr.beforeCall(global,stack,vars,callback);
+		final Object	local = sr.beforeCall(global,stack,vars,callback);
 		
 		try{if (sr.firstResolve(global,local,goal) == ResolveRC.True) {
 				while (sr.nextResolve(global,local,goal) == ResolveRC.True) {}
