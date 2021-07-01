@@ -18,5 +18,6 @@ module chav1961.funnypro {
 	uses chav1961.funnypro.core.interfaces.FProPluginList;
 	provides chav1961.funnypro.core.interfaces.FProPluginList with 
 				chav1961.funnypro.core.StandardResolver,
+				chav1961.funnypro.plugins.StringProcessorPlugin,
 				chav1961.funnypro.pluginexample.TutorialPlugin;
 }
