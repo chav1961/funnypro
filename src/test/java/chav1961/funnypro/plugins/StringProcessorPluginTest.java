@@ -8,9 +8,11 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import chav1961.funnypro.TestEntityRepo;
+import chav1961.funnypro.core.EntitiesRepo;
+import chav1961.funnypro.core.GlobalDescriptor;
 import chav1961.funnypro.core.GlobalStack;
 import chav1961.funnypro.core.ParserAndPrinter;
+import chav1961.funnypro.core.StandardResolver;
 import chav1961.funnypro.core.StandardResolverTest;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginDescriptor;
@@ -41,24 +43,89 @@ public class StringProcessorPluginTest {
 
 	@Test
 	public void lifeCycleTest() throws ContentException, NullPointerException, IOException {
+		final Properties			props = Utils.mkProps();
+		final StandardResolver		sr = new StandardResolver();
 		final StringProcessorPlugin	spp = new StringProcessorPlugin();
-		final IFProEntitiesRepo		repo = new TestEntityRepo();
-		final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.NULL_LOGGER, Utils.mkProps(), repo);
-		final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final IFProEntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props);
+		final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER, props, repo);
+		final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER, props,repo);
+		final GlobalDescriptor		srg = sr.onLoad(PureLibSettings.CURRENT_LOGGER, props, repo);
+		final StringProcessorGlobal	spg = spp.onLoad(PureLibSettings.CURRENT_LOGGER, props, repo);
 		final StringBuilder			sb = new StringBuilder();
 		
-		final Object				spg = spp.onLoad(PureLibSettings.NULL_LOGGER, Utils.mkProps(), repo);
-		
-		
-		pap.parseEntities(new StringCharSource("split(\"1:2\",\":\",[\"\",\"\"]) ."),(entity,vars)->{
-			final IResolvable<?, ?> rec = spp.getPluginDescriptors()[0].getPluginEntity().getResolver();
+		// split/3 predicate test
+		pap.parseEntities(new StringCharSource("?- split(X,\":\",[\"left\",\"right\"]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
 			
-			StandardResolverTest.processing(rec,spg,stack,entity,vars,true,sb);
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,true,sb);
+			Assert.assertEquals("Call:\nX=\"left:right\"\n", sb.toString());
+			return true;
+		});
+		pap.parseEntities(new StringCharSource("?- split(X,\":\",[]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,true,sb);
+			Assert.assertEquals("Call:\nX=\"\"\n", sb.toString());
+			return true;
+		});
+		pap.parseEntities(new StringCharSource("?- split(X,\"\",[\"left\",\"right\"]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,true,sb);
+			Assert.assertEquals("Call:\nX=\"leftright\"\n", sb.toString());
 			return true;
 		});
 
+		pap.parseEntities(new StringCharSource("?- split(\"left:right\",\":\",[\"left\",X]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,true,sb);
+			Assert.assertEquals("Call:\nX=\"right\"\n", sb.toString());
+			return true;
+		});
 		
+		pap.parseEntities(new StringCharSource("?- inList(\"3\",[\"1\",\"2\",\"3\"]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,true,sb);
+			Assert.assertEquals("Call:\n", sb.toString());
+			return true;
+		});
+		pap.parseEntities(new StringCharSource("?- inList(\"4\",[\"1\",\"2\",\"3\"]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,false,sb);
+			return true;
+		});
+		pap.parseEntities(new StringCharSource("?- inList(\"4\",[]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,false,sb);
+			return true;
+		});
+
+		pap.parseEntities(new StringCharSource("?- inList(X,[\"1\",\"2\",\"3\"]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,true,sb);
+			Assert.assertEquals("Call:\nX=\"1\"\nCall:\nX=\"2\"\nCall:\nX=\"3\"\n", sb.toString());
+			return true;
+		});
+		pap.parseEntities(new StringCharSource("?- inList(X,[]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,false,sb);
+			return true;
+		});
+		pap.parseEntities(new StringCharSource("?- inList(X,[\"1\",\"2\"|X]) ."),(entity,vars)->{
+			final IResolvable<?, ?> rec = sr.getPluginDescriptors()[0].getPluginEntity().getResolver();
+			
+			StandardResolverTest.processing(rec,srg,stack,entity,vars,true,sb);
+			Assert.assertEquals("Call:\nX=\"1\"\nCall:\nX=\"2\"\nCall:\nX=X\n", sb.toString());
+			return true;
+		});
 		
-		spp.onRemove((StringProcessorGlobal)spg);
+		spp.onRemove(spg);
+		sr.onRemove(srg);
 	}
 }

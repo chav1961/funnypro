@@ -23,6 +23,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.growablearrays.InOutGrowableByteArray;
 import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.FProUtil.Change;
@@ -162,7 +163,6 @@ public class FProUtilTest {
 		Assert.assertArrayEquals(locations[2],new int[]{5,6,9,9});
 		Assert.assertArrayEquals(locations[3],new int[]{10,11});
 	}
-
 
 	@Test
 	public void unificationStaticTest() {
@@ -402,7 +402,29 @@ public class FProUtilTest {
 			}
 		}
 	}
-	
+
+	@Test
+	public void utilStaticTest() throws ContentException, IOException {
+		final IFProList	list = FProUtil.toList(Arrays.asList("1","2","3"), (v)->new StringEntity(Integer.valueOf(v)));
+		
+		Assert.assertEquals(1, list.getChild().getEntityId());
+		Assert.assertEquals(2, ((IFProList)list.getTail()).getChild().getEntityId());
+		Assert.assertEquals(3, ((IFProList)((IFProList)list.getTail()).getTail()).getChild().getEntityId());
+
+		final IFProList	emptyList = FProUtil.toList(Arrays.asList(), (v)->new AnonymousEntity());
+
+		Assert.assertNull(emptyList.getChild());
+		Assert.assertNull(emptyList.getTail());
+
+		try{FProUtil.toList(null, (v)->new AnonymousEntity());
+			Assert.fail("Mandatory exception was not detected (null 1-st argument)");
+		} catch (NullPointerException exc) {
+		}
+		try{FProUtil.toList(Arrays.asList(), null);
+			Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+		} catch (NullPointerException exc) {
+		}
+	}	
 
 	private void checkType(final IFProEntity entity, final ContentType[] trues) {
 		final Set<ContentType>	falseSet = new HashSet<>();

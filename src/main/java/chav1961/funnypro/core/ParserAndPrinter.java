@@ -189,7 +189,12 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		else {
 			switch (entity.getEntityType()) {
 				case string				:
-					target.put('\"').put(getRepo().stringRepo().getName(entity.getEntityId())).put('\"');
+					if (entity.getEntityId() == StringEntity.EMPTY_STRING_ID) {
+						target.put("\"\"");
+					}
+					else {
+						target.put('\"').put(getRepo().stringRepo().getName(entity.getEntityId())).put('\"');
+					}
 					break;
 				case integer			:
 					target.put(String.valueOf(entity.getEntityId()));

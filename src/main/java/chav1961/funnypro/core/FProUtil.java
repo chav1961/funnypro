@@ -21,8 +21,14 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack.GlobalStackTop;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
+import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.enumerations.ContinueMode;
+import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
+import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 /**
  * <p>This class contains most common usable methods for this package</p> 
@@ -785,7 +791,100 @@ public class FProUtil {
 		}
 	}
 
+	public static String asString(final IFProParserAndPrinter pap, final IFProEntity entity) throws PrintingException, IOException {
+		final StringBuilder		sb = new StringBuilder();
+		final CharacterTarget	ct = new StringBuilderCharTarget(sb);
+			
+		switch (entity.getEntityType()) {
+			case string	:
+				pap.putEntity(entity, ct);
+				return sb.substring(1, sb.length() - 1);
+			case integer: case list: case real: case predicate: case operator:
+				pap.putEntity(entity, ct);
+				return sb.toString();
+			case operatordef: case externalplugin: case anonymous: case variable: case any:
+				return null;
+			default	:
+				throw new UnsupportedOperationException("Entity type ["+entity.getEntityType()+"] is not supported yet"); 
+		}
+	}
 	
+	@FunctionalInterface
+	public interface MakeListNodeCallback<T> {
+		IFProEntity toEntity(T value)  throws ContentException, IOException;
+	}
+	
+	public static <T> IFProList toList(final Iterable<T> list, final MakeListNodeCallback<T> callback) throws ContentException, IOException {
+		if (list == null) {
+			throw new NullPointerException("List to convert content can't be null"); 
+		}
+		else if (callback == null) {
+			throw new NullPointerException("Callback to process content can't be null"); 
+		}
+		else {
+			IFProList	actual = null, result = null;
+			
+			for (T item : list) {
+				final IFProEntity	entity = callback.toEntity(item);
+				final IFProList		next = new ListEntity(entity,null);
+				
+				if (result == null) {
+					result = next;
+				}
+				else {
+					actual.setTail(next);
+				}
+				next.setParent(actual);
+				actual = next;
+			}
+			return result == null ? new ListEntity(null, null) : result;
+		}
+	}
+
+	@FunctionalInterface
+	public interface ProcessListNodeCallback {
+		ContinueMode processEntity(IFProEntity node) throws ContentException, IOException;
+		
+		default ContinueMode processTail(IFProEntity node) throws ContentException, IOException {
+			return processEntity(node);
+		}
+	}
+	
+	/**
+	 * <p>Process list element-by-element</p>
+	 * @param list list to process
+	 * @param callback callback to process list items
+	 * @return Continue mode. Can't be null. Stop also means empty list
+	 * @throws IOException on any I/O errors
+	 * @throws ContentException on any content errors 
+	 */
+	public static ContinueMode forList(final IFProList list, final ProcessListNodeCallback callback) throws ContentException, IOException {
+		if (list == null) {
+			throw new NullPointerException("List to process content can't be null"); 
+		}
+		else if (callback == null) {
+			throw new NullPointerException("Callback to process content can't be null"); 
+		}
+		else {
+			IFProEntity		actual = list;
+			ContinueMode	rc = ContinueMode.STOP;
+			
+			while (actual != null) {
+				if (actual.getEntityType() == EntityType.list) {
+					if (((IFProList)actual).getChild() != null && (rc = callback.processEntity(((IFProList)actual).getChild())) != ContinueMode.CONTINUE) {
+						return rc;
+					}
+					else {
+						actual = ((IFProList)actual).getTail();
+					}
+				}
+				else {
+					return callback.processTail(actual);
+				}
+			}
+			return rc;
+		}
+	}
 	
 	private static int simpleParser(final char[] source, final int from, final int to, final char[] template, final int templateFrom, final int templateTo, final int[][] locations, final boolean needRestore) {
 		int[]		lastTail = null;

@@ -8,6 +8,8 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
  * @since 0.0.1
  */
 public class StringEntity implements IFProEntity {
+	public static final long	EMPTY_STRING_ID = 0;
+	
 	private long		id;
 	private IFProEntity	parent = null;
 

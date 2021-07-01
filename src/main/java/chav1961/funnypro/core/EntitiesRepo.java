@@ -40,7 +40,7 @@ import chav1961.purelib.streams.chartarget.WriterCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
 
-class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
+public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	private static final int						SERIALIZATION_MAGIC = 0x12123000;
 	private static final IFProOperator[]			EMPTY_OPERATOR_LIST = new IFProOperator[0];
 	private static final Comparator<IFProOperator>	OP_COMPARATOR_MINMAX = new Comparator<IFProOperator>(){

@@ -152,13 +152,13 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		}
 		else {
 			@SuppressWarnings("unchecked")
-			final ExternalEntityDescriptor<?>	desc = new ExternalEntityDescriptorImpl(template,vars,resolver,global);
+			final ExternalEntityDescriptor<?>	desc = new ExternalEntityDescriptorImpl<>(template,vars,resolver,global);
 			
 			switch (template.getEntityType()) {
-				case operator	:
+				case operatordef	:
 					operators.add(desc);
 					break;
-				case predicate	:
+				case predicate		:
 					predicates.add(desc);
 					break;
 				default:
