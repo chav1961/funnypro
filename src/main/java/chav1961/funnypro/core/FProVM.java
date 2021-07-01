@@ -355,7 +355,6 @@ public class FProVM implements IFProVM, IFProModule {
 		}
 	}
 	
-	
 	protected ResolvableAndGlobal getStandardResolver() {
 		for (PluginItem item : repo.pluginsRepo().seek(StandardResolver.PLUGIN_NAME,StandardResolver.PLUGIN_PRODUCER,StandardResolver.PLUGIN_VERSION)) {
 			return new ResolvableAndGlobal(item.getDescriptor().getPluginEntity().getResolver(),item.getGlobal());

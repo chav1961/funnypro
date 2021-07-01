@@ -13,8 +13,11 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  * <p>This interface supports entities repo functionality</p>
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
+ * @lastUpdate 0.0.2
  */
 public interface IFProEntitiesRepo extends IFProStreamSerializable, AutoCloseable {
+	String	PROP_DONT_LOAD_ALL_PLUGINS = "fpro.entitiesrepo.allplugins.dontload";
+	
 	/**
 	 * <p>This interface describes content of the string and term trees in the FProVM database</p>
 	 * @author Alexander Chernomyrdin aka chav1961

@@ -87,6 +87,10 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			
 			this.stringRepo = new AndOrTree<SerializableString>(1,16); 
 			this.termRepo = new AndOrTree<SerializableString>(2,16);
+
+			for (int index = 0; index < this.opTypes.length; index++) {
+				this.opTypes[index] = this.termRepo.placeName(OperatorType.values()[index].toString(),null);
+			}
 			
 			this.anonymousId = this.termRepo.placeName("_",null);
 			this.opId = this.termRepo.placeName("op",null);
@@ -96,11 +100,6 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			this.frRepo = new FactRuleRepo(log,props);
 			this.epRepo = new ExternalPluginsRepo(log, props);
 			this.epRepo.prepare(this);
-			
-			
-			for (int index = 0; index < this.opTypes.length; index++) {
-				this.opTypes[index] = this.termRepo.placeName(OperatorType.values()[index].toString(),null);
-			}
 		}
 	}
 	

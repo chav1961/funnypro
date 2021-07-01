@@ -31,7 +31,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	
 	private final LoggerFacade						log;
 	private final Properties						props;
-	private final Map<IFProExternalEntity,List<PluginItem>>	plugins = new HashMap<>();
+	private final Map<IFProExternalEntity<?,?>,List<PluginItem>>	plugins = new HashMap<>();
 	private final List<ExternalEntityDescriptor<?>>	operators = new ArrayList<>();
 	private final List<ExternalEntityDescriptor<?>>	predicates = new ArrayList<>();
 
@@ -124,7 +124,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	public Iterable<PluginItem> seek(final String pluginName, final String pluginProducer, final int[] pluginVersion) {
 		final List<PluginItem>	collection = new ArrayList<PluginItem>();
 		
-		for (Entry<IFProExternalEntity, List<PluginItem>> item : plugins.entrySet()) {
+		for (Entry<IFProExternalEntity<?,?>, List<PluginItem>> item : plugins.entrySet()) {
 			if (equals(item.getKey().getPluginName(),pluginName) && equals(item.getKey().getPluginProducer(),pluginProducer)  && equals(item.getKey().getPluginVersion(),pluginVersion)) {
 				for (PluginItem element : item.getValue()) {
 					collection.add(element);
@@ -151,7 +151,6 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new IllegalArgumentException("resolver can't be null"); 
 		}
 		else {
-			@SuppressWarnings("unchecked")
 			final ExternalEntityDescriptor<?>	desc = new ExternalEntityDescriptorImpl<>(template,vars,resolver,global);
 			
 			switch (template.getEntityType()) {
