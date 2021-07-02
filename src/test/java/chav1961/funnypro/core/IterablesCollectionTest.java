@@ -23,12 +23,13 @@ import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRepo;
 import chav1961.purelib.basic.PureLibSettings;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 
 public class IterablesCollectionTest {
 	@Test
 	public void nameAndArityTest() throws NullPointerException, IOException {
-		final Properties			props = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProRepo			frr = entities.predicateRepo(); 
@@ -119,7 +120,7 @@ public class IterablesCollectionTest {
 
 	@Test
 	public void callTest() throws NullPointerException, IOException {
-		final Properties			props = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProRepo			frr = entities.predicateRepo(); 
@@ -190,7 +191,7 @@ public class IterablesCollectionTest {
 
 	@Test
 	public void bagofTest() throws NullPointerException, IOException {
-		final Properties			props = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProRepo			frr = entities.predicateRepo(); 
@@ -256,7 +257,7 @@ public class IterablesCollectionTest {
 
 	@Test
 	public void listTest() throws NullPointerException, IOException {
-		final Properties			props = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProList			start = new ListEntity(new IntegerEntity(100), new ListEntity(new RealEntity(100), null));

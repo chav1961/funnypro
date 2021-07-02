@@ -16,6 +16,7 @@ import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.ExternalEntity
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.AndChainStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
 import chav1961.purelib.basic.PureLibSettings;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 
 public class GlobalStackTest {
@@ -85,14 +86,14 @@ public class GlobalStackTest {
 	
 	@Test
 	public void basicTest() throws Exception {
-		final Properties	parm = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		final IFProEntity	entity1 = new AnonymousEntity(), entity2 = new IntegerEntity(100);	
 		
-		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,parm);
-			final GlobalStack	stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,parm,repo)) {
+		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props);
+			final GlobalStack	stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo)) {
 		
 			Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,stack.getDebug());
-			Assert.assertEquals(parm,stack.getParameters());
+			Assert.assertEquals(props,stack.getParameters());
 			Assert.assertEquals(repo,stack.getRepo());
 			
 			Assert.assertTrue(stack.isEmpty());
@@ -136,7 +137,7 @@ public class GlobalStackTest {
 			stack.clear();
 			Assert.assertTrue(stack.isEmpty()); 
 
-			try{new GlobalStack(null,parm,repo);
+			try{new GlobalStack(null,props,repo);
 				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
 			} catch (NullPointerException exc) {
 			}
@@ -144,7 +145,7 @@ public class GlobalStackTest {
 				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
 			} catch (NullPointerException exc) {
 			}
-			try{new GlobalStack(PureLibSettings.CURRENT_LOGGER,parm,null);
+			try{new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,null);
 				Assert.fail("Mandatory exception was not detected (null 3-rd argument)");
 			} catch (NullPointerException exc) {
 			}

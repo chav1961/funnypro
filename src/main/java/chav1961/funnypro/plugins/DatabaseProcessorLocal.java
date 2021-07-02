@@ -1,5 +1,7 @@
 package chav1961.funnypro.plugins;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 
 import chav1961.funnypro.core.FProUtil.Change;
@@ -12,4 +14,6 @@ class DatabaseProcessorLocal {
 	IFProCallback			callback;
 	IFProGlobalStack		stack;
 	List<IFProVariable>		vars;
+	Statement				stmt;
+	ResultSet				rs;
 }

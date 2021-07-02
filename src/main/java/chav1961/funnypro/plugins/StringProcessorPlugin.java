@@ -34,6 +34,7 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
@@ -73,7 +74,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	}
 	
 	@Override
-	public StringProcessorGlobal onLoad(final LoggerFacade debug, final Properties parameters, final IFProEntitiesRepo repo) throws SyntaxException {
+	public StringProcessorGlobal onLoad(final LoggerFacade debug, final SubstitutableProperties parameters, final IFProEntitiesRepo repo) throws SyntaxException {
 		try(final LoggerFacade 				actualLog = debug.transaction("StringProcesorPlugin:onLoad")) {
 			final StringProcessorGlobal		global = new StringProcessorGlobal(); 
 			final IFProParserAndPrinter 	pap = new ParserAndPrinter(debug,parameters,repo);
@@ -133,10 +134,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	
 	@Override
 	public StringProcessorLocal beforeCall(final StringProcessorGlobal global, final IFProGlobalStack gs, final List<IFProVariable> vars, final IFProCallback callback) throws SyntaxException {
-		if (global.collection.size() == 0) {		// Cache to reduce memory requirements
-			global.collection.add(new StringProcessorLocal());
-		}
-		final StringProcessorLocal	result = global.collection.remove(0);	// Prepare local memory for the given call
+		final StringProcessorLocal	result = global.collection.allocate();
 		
 		result.callback = callback;
 		result.stack = gs;
@@ -276,7 +274,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	
 	@Override
 	public void afterCall(final StringProcessorGlobal global, final StringProcessorLocal local) throws SyntaxException {
-		global.collection.add(local);
+		global.collection.free(local);
 	} 
 
 	private static ResolveRC firstResolveSplit(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity mark, final IFProEntity first, final IFProEntity second, final IFProEntity third) {

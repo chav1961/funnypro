@@ -16,13 +16,14 @@ import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.purelib.basic.PureLibSettings;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.growablearrays.InOutGrowableByteArray;
 
 public class FactRuleRepoTest {
 	@Test
 	public void basicTest() {
-		final Properties	props = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		final FactRuleRepo	frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props);
 		
 		Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,frr.getDebug());
@@ -42,7 +43,7 @@ public class FactRuleRepoTest {
 
 	@Test
 	public void assertAndRetractTest() {
-		final Properties		props = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		final FactRuleRepo		frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props);
 		final PredicateEntity	pe1 = new PredicateEntity(100, new IntegerEntity(100)), pe2 = new PredicateEntity(100, new IntegerEntity(200)), pe3 = new PredicateEntity(100, new IntegerEntity(300));
 		final PredicateEntity	peCall = new PredicateEntity(100, new AnonymousEntity());
@@ -209,7 +210,7 @@ public class FactRuleRepoTest {
 
 	@Test
 	public void serializationTest() throws IOException {
-		final Properties		props = Utils.mkProps();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		final FactRuleRepo		frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props);
 		final PredicateEntity	pe1 = new PredicateEntity(100, new IntegerEntity(100)), pe2 = new PredicateEntity(100, new IntegerEntity(200)), pe3 = new PredicateEntity(100, new IntegerEntity(300));
 		final PredicateEntity	peCall = new PredicateEntity(100, new AnonymousEntity());

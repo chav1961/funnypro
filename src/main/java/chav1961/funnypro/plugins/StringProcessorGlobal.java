@@ -1,14 +1,11 @@
 package chav1961.funnypro.plugins;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import chav1961.funnypro.core.ParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
+import chav1961.purelib.basic.ReusableInstances;
 
 class StringProcessorGlobal {
-	final List<StringProcessorLocal>	collection = new ArrayList<>();
+	final ReusableInstances<StringProcessorLocal>	collection = new ReusableInstances<>(()->new StringProcessorLocal(), (i)->{i.callback = null; i.stack = null; i.vars = null; return i;});
 	IFProEntitiesRepo		repo;
 	IFProParserAndPrinter	pap;
 }

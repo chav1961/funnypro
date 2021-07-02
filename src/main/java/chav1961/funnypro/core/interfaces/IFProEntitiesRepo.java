@@ -16,7 +16,6 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  * @lastUpdate 0.0.2
  */
 public interface IFProEntitiesRepo extends IFProStreamSerializable, AutoCloseable {
-	String	PROP_DONT_LOAD_ALL_PLUGINS = "fpro.entitiesrepo.allplugins.dontload";
 	
 	/**
 	 * <p>This interface describes content of the string and term trees in the FProVM database</p>

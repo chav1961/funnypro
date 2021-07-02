@@ -20,6 +20,7 @@ import javax.script.SimpleBindings;
 import chav1961.funnypro.core.FProVM;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProVM;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.SystemErrLoggerFacade;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -67,7 +68,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	
 	FunnyProEngine(final ScriptEngineFactory factory) throws ContentException, IOException {
 		this.factory = factory;
-		this.vm = new FProVM(logger,new Properties());
+		this.vm = new FProVM(logger,new SubstitutableProperties());
 		this.vm.turnOn(null);
 	}
 

@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginItem;
 import chav1961.purelib.basic.PureLibSettings;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 
@@ -17,7 +18,7 @@ public class ExternalPluginsRepoTest {
 
 	@Test
 	public void basicAndSPITest() throws SyntaxException, IOException {
-		final Properties	props = Utils.mkProps();
+		final SubstitutableProperties	props = new SubstitutableProperties();
 		
 		try(final EntitiesRepo			entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props);
 			final ExternalPluginsRepo	repo = new ExternalPluginsRepo(PureLibSettings.CURRENT_LOGGER,props)) {

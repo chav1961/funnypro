@@ -16,15 +16,17 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  * <p>This interface describes IFPro VM</p>
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
+ * @lastUpdate 0.0.2
  */
 public interface IFProVM extends AutoCloseable {
 	public static final String		VM_FRB_SOURCE = "frbSource";
 	public static final String		VM_FRB_READONLY = "frbReadOnly";
+	public static final String		PROP_DONT_LOAD_ALL_PLUGINS = "fpro.dontload.allplugins";
 	
 	/**
 	 * <p>This is a callback interface for the resolutions</p>
-	 * @author chav1961
-	 *
+	 * @author Alexander Chernomyrdin aka chav1961
+	 * @since 0.0.1
 	 */
 	@FunctionalInterface
 	public interface IFProCallback {

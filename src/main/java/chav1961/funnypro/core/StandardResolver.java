@@ -49,6 +49,7 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.LongIdMap;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -228,7 +229,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	@Override public int[] getVersion() {return null;}
 
 	@Override
-	public GlobalDescriptor onLoad(final LoggerFacade log, final Properties parameters, final IFProEntitiesRepo repo) throws SyntaxException  {
+	public GlobalDescriptor onLoad(final LoggerFacade log, final SubstitutableProperties parameters, final IFProEntitiesRepo repo) throws SyntaxException  {
 		final GlobalDescriptor					desc = new GlobalDescriptor();
 		final Set<Long>							ids = new HashSet<>();
 		final Map<Long,QuickIds>				registered = new HashMap<>();
@@ -334,7 +335,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		else {
 			final LocalDescriptor	desc = new LocalDescriptor();
 			
-			desc.pap = global.pap; //new ParserAndPrinter(global.log,global.parameters,global.repo);
+			desc.pap = global.pap;
 			desc.callback = callback;
 			desc.stack = gs;
 			desc.vars = vars;

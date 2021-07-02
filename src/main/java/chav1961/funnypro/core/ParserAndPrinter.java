@@ -33,6 +33,7 @@ import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.BitCharSet;
 import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -47,11 +48,11 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private static final ExtendedBitCharSet	VALID_LOWER_LETTERS = new ExtendedBitCharSet(); 
 	private static final BitCharSet			PUNCTUATIONS = new BitCharSet(); 
 
-	private final long				colonId, tailId, goalId, emptyStringId = 0;
-	private final LoggerFacade		log;
-	private final Properties		props;
-	private final IFProEntitiesRepo	repo;
-	private final long				tempLong[] = new long[2], entityId[] = new long[1];
+	private final long						colonId, tailId, goalId, emptyStringId = 0;
+	private final LoggerFacade				log;
+	private final SubstitutableProperties	props;
+	private final IFProEntitiesRepo			repo;
+	private final long						tempLong[] = new long[2], entityId[] = new long[1];
 
 	private enum NameClassification {
 		anonymous, term
@@ -87,7 +88,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 
 	private final int[]		forIntResult = new int[2];
 	
-	public ParserAndPrinter(final LoggerFacade log, final Properties prop, final IFProEntitiesRepo repo) throws SyntaxException, NullPointerException {
+	public ParserAndPrinter(final LoggerFacade log, final SubstitutableProperties prop, final IFProEntitiesRepo repo) throws SyntaxException, NullPointerException {
 		if (log == null) {
 			throw new NullPointerException("Log can't be null"); 
 		}

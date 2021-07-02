@@ -27,6 +27,7 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -43,16 +44,16 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  */
 
 public class FProVM implements IFProVM, IFProModule {
-	private static final int			SERIALIZATION_MAGIC = 0x12120000;
-	private static final int			SERIALIZATION_VERSION = 0x00010001;
+	private static final int				SERIALIZATION_MAGIC = 0x12120000;
+	private static final int				SERIALIZATION_VERSION = 0x00010001;
 
-	private final LoggerFacade			log;
-	private final Properties			props;
-	private boolean						turnedOn = false;
-	private IFProEntitiesRepo			repo = null;
-	private long						question, goal;
+	private final LoggerFacade				log;
+	private final SubstitutableProperties	props;
+	private boolean							turnedOn = false;
+	private IFProEntitiesRepo				repo = null;
+	private long							question, goal;
 	
-	public FProVM(final LoggerFacade log, final Properties prop) {
+	public FProVM(final LoggerFacade log, final SubstitutableProperties prop) {
 		if (log == null) {
 			throw new IllegalArgumentException("Log can't be null"); 
 		}
@@ -60,12 +61,13 @@ public class FProVM implements IFProVM, IFProModule {
 			throw new IllegalArgumentException("Properties can't be null"); 
 		}
 		else {
-			this.log = log;				this.props = prop;
+			this.log = log;
+			this.props = prop;
 		}
 	}
 
 	@Override public LoggerFacade getDebug() {return log;}
-	@Override public Properties getParameters() {return props;}	
+	@Override public SubstitutableProperties getParameters() {return props;}	
 	
 	@Override
 	public void close() throws IOException {

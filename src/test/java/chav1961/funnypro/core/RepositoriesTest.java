@@ -38,6 +38,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -53,7 +54,8 @@ public class RepositoriesTest {
 	@Test
 	public void factRuleRepoTest() throws IOException {
 		final LoggerFacade		log = new DefaultLoggerFacade();
-		final FactRuleRepo		frr = new FactRuleRepo(log,new Properties());
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		final FactRuleRepo		frr = new FactRuleRepo(log,props);
 		final IFProEntity		temp = new PredicateEntity(12345,new StringEntity(67890),new IntegerEntity(13579));
 		
 		int	count = 0;
@@ -92,7 +94,7 @@ public class RepositoriesTest {
 		}
 		Assert.assertEquals(count,3);
 		
-		final FactRuleRepo			newFrr = new FactRuleRepo(log,new Properties());
+		final FactRuleRepo			newFrr = new FactRuleRepo(log,props);
 		
 /*		try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 			final DataOutputStream		dos = new DataOutputStream(baos)) {
@@ -133,8 +135,9 @@ public class RepositoriesTest {
 	@Test
 	public void entitiesRepoTest() throws Exception {
 		final LoggerFacade		log = new DefaultLoggerFacade();
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		
-		try(final EntitiesRepo	repo = new EntitiesRepo(log,new Properties())) {
+		try(final EntitiesRepo	repo = new EntitiesRepo(log,props)) {
 			final long				stringId = repo.stringRepo().placeName("test string",null);
 			final long				termId = repo.termRepo().placeName("predicate",null);
 			final long				operatorId = repo.termRepo().placeName("=:=",null);
@@ -169,7 +172,7 @@ public class RepositoriesTest {
 			}
 			Assert.assertEquals(count,2);
 			
-			try(final EntitiesRepo		newRepo = new EntitiesRepo(log,new Properties())) {
+			try(final EntitiesRepo		newRepo = new EntitiesRepo(log,props)) {
 				try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 					final DataOutputStream		dos = new DataOutputStream(baos)) {
 					
@@ -220,9 +223,10 @@ public class RepositoriesTest {
 	@Test
 	public void externalPluginsRepoTest() throws Exception {
 		final LoggerFacade		log = new DefaultLoggerFacade();
-		final EntitiesRepo		repo = new EntitiesRepo(log,new Properties());
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		final EntitiesRepo		repo = new EntitiesRepo(log,props);
 		
-		try(final IFProExternalPluginsRepo	xrepo = new ExternalPluginsRepo(log, new Properties())) {
+		try(final IFProExternalPluginsRepo	xrepo = new ExternalPluginsRepo(log, props)) {
 			xrepo.prepare(repo);
 			
 			int	count = 0;			
@@ -253,8 +257,9 @@ public class RepositoriesTest {
 	@Test
 	public void parsersTest() throws IOException, ContentException, PrintingException {
 		final LoggerFacade			log = new DefaultLoggerFacade();
-		final EntitiesRepo			repo = new EntitiesRepo(log,new Properties());
-		final ParserAndPrinter		pap = new ParserAndPrinter(log,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		final EntitiesRepo			repo = new EntitiesRepo(log,props);
+		final ParserAndPrinter		pap = new ParserAndPrinter(log,props,repo);
 		final List<IFProEntity>		data = new ArrayList<IFProEntity>(); 
 		
 		try(final InputStream		is = new FileInputStream("./src/test/resources/chav1961/funnypro/core/parser.fpro");

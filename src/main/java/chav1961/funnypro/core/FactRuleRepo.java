@@ -19,18 +19,19 @@ import chav1961.funnypro.core.interfaces.IFProQuickList;
 import chav1961.funnypro.core.interfaces.IFProRepo;
 import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
 import chav1961.purelib.basic.ReusableInstances;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	private static final int					SERIALIZATION_MAGIC = 0x12122080;
 	
 	private final LoggerFacade					log;
-	private final Properties					props;
+	private final SubstitutableProperties		props;
 	@SuppressWarnings("unchecked")
 	private IFProQuickList<ChainDescriptor>[]	predicates = new QuickList[IFProPredicate.MAX_ARITY];
 	private ReusableInstances<Change[]>			tempChanges = new ReusableInstances<>(()->{return new Change[1];}); 
 
-	public FactRuleRepo(final LoggerFacade log, final Properties prop) throws NullPointerException {
+	public FactRuleRepo(final LoggerFacade log, final SubstitutableProperties prop) throws NullPointerException {
 		if (log == null) {
 			throw new NullPointerException("Logger can't be null"); 
 		}

@@ -22,6 +22,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
@@ -30,12 +31,12 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	public static final String						PLUGIN_PACKAGES = "pluginPackages";
 	
 	private final LoggerFacade						log;
-	private final Properties						props;
+	private final SubstitutableProperties			props;
 	private final Map<IFProExternalEntity<?,?>,List<PluginItem>>	plugins = new HashMap<>();
 	private final List<ExternalEntityDescriptor<?>>	operators = new ArrayList<>();
 	private final List<ExternalEntityDescriptor<?>>	predicates = new ArrayList<>();
 
-	public ExternalPluginsRepo(final LoggerFacade log, final Properties prop) throws IOException, NullPointerException {
+	public ExternalPluginsRepo(final LoggerFacade log, final SubstitutableProperties prop) throws IOException, NullPointerException {
 		if (log == null) {
 			throw new NullPointerException("Logger can't be null"); 
 		}
@@ -59,7 +60,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	}
 
 	@Override public LoggerFacade getDebug() {return log;}
-	@Override public Properties getParameters() {return props;}		
+	@Override public SubstitutableProperties getParameters() {return props;}		
 
 	@Override 
 	public void close() throws RuntimeException {

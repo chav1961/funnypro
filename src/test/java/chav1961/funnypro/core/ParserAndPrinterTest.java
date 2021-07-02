@@ -27,6 +27,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.PureLibSettings;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -40,7 +41,7 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void basicAndExceptionsTest() throws Exception {
-		final Properties	props = Utils.mkProps(); 
+		final SubstitutableProperties		props = new SubstitutableProperties();
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -92,8 +93,10 @@ public class ParserAndPrinterTest {
 	
 	@Test
 	public void simpleParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
 			final IFProEntity		integer = buildEntity(pap,"122 .");
 			Assert.assertEquals(integer.getEntityType(),EntityType.integer);
@@ -194,8 +197,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void listParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
 			final IFProEntity		emptyList = buildEntity(pap,"[] .");
 			Assert.assertEquals(emptyList.getEntityType(),EntityType.list);
@@ -247,8 +252,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void bracketsParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
 			Assert.assertNull(buildEntity(pap,"()."));
 			
@@ -285,8 +292,10 @@ public class ParserAndPrinterTest {
 	
 	@Test
 	public void predicateParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			
 			final IFProEntity		arity0 = buildEntity(pap,"predicate.");
 			Assert.assertEquals(arity0.getEntityType(),EntityType.predicate);
@@ -328,8 +337,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void unaryPriorityParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			
 			final long				id200x = repo.termRepo().placeName(":200",null);
 			final long				id200y = repo.termRepo().placeName("::200",null);
@@ -422,8 +433,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void binaryPriorityParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			
 			final long				xfx = repo.termRepo().placeName("::xfx::",null);
 			final long				xfy = repo.termRepo().placeName("::xfy::",null);
@@ -489,8 +502,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void variableParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
 			final IFProEntity		variable = buildEntity(pap,"Variable.");
 			Assert.assertEquals(variable.getEntityType(),EntityType.variable);
@@ -526,8 +541,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void operatorDefParserTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
 			IFProOperator		op = (IFProOperator)buildEntity(pap,":-op(100,xfx,assa).");
 			Assert.assertEquals(EntityType.operatordef,op.getRight().getEntityType());
@@ -587,8 +604,10 @@ public class ParserAndPrinterTest {
 	
 	@Test
 	public void putEntityTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder		sb = new StringBuilder();
 			final CharacterTarget	ct = new StringBuilderCharTarget(sb);
 			final char[]			content = new char[1024];
@@ -715,8 +734,10 @@ public class ParserAndPrinterTest {
 
 	@Test
 	public void complexTest() throws Exception {
-		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,new Properties())) {
-			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,new Properties(),repo);
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
+			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
 			final IFProEntity		entity = buildEntity(pap,FULL_EXPRESSION+".");
 			final StringBuilder		sb = new StringBuilder();

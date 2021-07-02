@@ -18,6 +18,7 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -36,7 +37,9 @@ public class VMTest {
 	@Test
 	public void lifeCycleTest() throws Exception {
 		final LoggerFacade		log = new DefaultLoggerFacade();
-		try(final IFProVM		vm = new PseudoFProVM(log,new Properties())) {
+		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		try(final IFProVM		vm = new PseudoFProVM(log,props)) {
 			
 			Assert.assertFalse(vm.isTurnedOn());
 			try{vm.newFRB(null);
@@ -117,7 +120,7 @@ public class VMTest {
 
 class PseudoFProVM extends FProVM {
 
-	public PseudoFProVM(LoggerFacade log, Properties prop) {
+	public PseudoFProVM(LoggerFacade log, SubstitutableProperties prop) {
 		super(log, prop);
 	}
 
@@ -133,7 +136,7 @@ class PseudoFProVM extends FProVM {
 			@Override public void endResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {}			
 			@Override public void afterCall(GlobalDescriptor global, LocalDescriptor local) {}
 			@Override public void onRemove(GlobalDescriptor global) {}
-			@Override public GlobalDescriptor onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws SyntaxException {return null;}
+			@Override public GlobalDescriptor onLoad(LoggerFacade debug, SubstitutableProperties parameters, IFProEntitiesRepo repo) throws SyntaxException {return null;}
 		},
 		null);
 	}

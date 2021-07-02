@@ -5,6 +5,7 @@ import java.util.Properties;
 
 import chav1961.funnypro.core.StandardResolver;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
@@ -79,7 +80,7 @@ public interface IResolvable<Global,Local> {
 	 * @return global object to use with longer calls
 	 * @throws SyntaxException any plugin loading problem
 	 */
-	Global onLoad(LoggerFacade debug, Properties parameters, IFProEntitiesRepo repo) throws SyntaxException;
+	Global onLoad(LoggerFacade debug, SubstitutableProperties parameters, IFProEntitiesRepo repo) throws SyntaxException;
 	
 	/**
 	 * <p>This method will be called before removing</p>

@@ -30,6 +30,7 @@ import chav1961.funnypro.core.interfaces.IFProRepo;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.purelib.basic.AndOrTree;
 import chav1961.purelib.basic.LongIdMap;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -59,7 +60,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	
 	
 	private final LoggerFacade					log;
-	private final Properties					props;
+	private final SubstitutableProperties		props;
 	private final AndOrTree<SerializableString>	stringRepo; 
 	private final AndOrTree<SerializableString>	termRepo;
 	
@@ -75,7 +76,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	private Set<OperatorDefRepo>				operatorsSet = new HashSet<>(); 
 	private int[]								operatorPriorities = new int[0];
 
-	public EntitiesRepo(final LoggerFacade log, final Properties prop) throws IOException, NullPointerException {
+	public EntitiesRepo(final LoggerFacade log, final SubstitutableProperties prop) throws IOException, NullPointerException {
 		if (log == null) {
 			throw new NullPointerException("Log can't be null"); 
 		}
@@ -116,7 +117,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 	}
 	
 	@Override public LoggerFacade getDebug() {return log;}
-	@Override public Properties getParameters() {return props;}		
+	@Override public SubstitutableProperties getParameters() {return props;}		
 	
 	@Override
 	public void serialize(final DataOutput target) throws IOException, NullPointerException {

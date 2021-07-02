@@ -21,6 +21,7 @@ import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.PureLibSettings;
+import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -43,7 +44,7 @@ public class StringProcessorPluginTest {
 
 	@Test
 	public void lifeCycleTest() throws ContentException, NullPointerException, IOException {
-		final Properties			props = Utils.mkProps();
+		final SubstitutableProperties	props = new SubstitutableProperties();
 		final StandardResolver		sr = new StandardResolver();
 		final StringProcessorPlugin	spp = new StringProcessorPlugin();
 		final IFProEntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props);
