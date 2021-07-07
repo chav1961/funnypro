@@ -43,6 +43,7 @@ import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.purelib.enumerations.ContinueMode;
 
 public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlobal,DatabaseProcessorLocal>, FProPluginList {
@@ -187,18 +188,36 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 	@Override
 	public ResolveRC firstResolve(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProEntity entity) throws SyntaxException {
 		if (entity.getEntityType() == EntityType.predicate) {
-			if (entity.getEntityId() == callId) {
+			if (entity.getEntityId() == callId && (((IFProPredicate)entity).getArity() == 1 || ((IFProPredicate)entity).getArity() == 2) && ((IFProPredicate)entity).getParameters()[0].getEntityType() == EntityType.predicate) {
+				final StringBuilder	sql = new StringBuilder();
+				
+				if (buildSelectString(global,local,(IFProPredicate)((IFProPredicate)entity).getParameters()[0],sql) && (((IFProPredicate)entity).getArity() == 1 || buildWhereString(global,local,((IFProPredicate)entity).getParameters()[1],sql))) {
+					
+				}
+				
+				
+				
 				final String selectString, whereString;
 				
 				switch (((IFProPredicate)entity).getArity()) {
 					case 1 	:
-						selectString = buildSelectString(global,local,((IFProPredicate)entity).getParameters()[0]);
-						whereString = null;
-						break;
+						if (((IFProPredicate)entity).getParameters()[0].getEntityType() == EntityType.predicate) {
+							selectString = buildSelectString(global,local,(IFProPredicate)((IFProPredicate)entity).getParameters()[0]);
+							whereString = null;
+							break;
+						}
+						else {
+							return ResolveRC.False;
+						}
 					case 2 	:
-						selectString = buildSelectString(global,local,((IFProPredicate)entity).getParameters()[0]);
-						whereString = buildWhereString(global,local,((IFProPredicate)entity).getParameters()[1]);
-						break;
+						if (((IFProPredicate)entity).getParameters()[0].getEntityType() == EntityType.predicate) {
+							selectString = buildSelectString(global,local,(IFProPredicate)((IFProPredicate)entity).getParameters()[0]);
+							whereString = buildWhereString(global,local,((IFProPredicate)entity).getParameters()[1]);
+							break;
+						}
+						else {
+							return ResolveRC.False;
+						}
 					default :
 						return ResolveRC.False;
 				}
@@ -278,19 +297,64 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 		global.collection.free(local);
 	} 
 
-	private static String buildWhereString(DatabaseProcessorGlobal global, DatabaseProcessorLocal local, IFProEntity ifProEntity) {
-		// TODO Auto-generated method stub
-		return null;
+	// parse predicate TableName(FieldName(Something),...)
+	private static boolean buildSelectString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProPredicate entity, final StringBuilder sql) {
+		final SyntaxTreeInterface<?>	sti = global.repo.termRepo();
+		String 	prefix = "select ";
+		
+		for (IFProEntity item : entity.getParameters()) {
+			if (item.getEntityType() == EntityType.predicate && ((IFProPredicate)item).getArity() == 1) {
+				sql.append(prefix).append(sti.getName(item.getEntityId()));
+				prefix = ",";
+			}
+			else {
+				return false;
+			}
+		}
+		sql.append(" from ").append(sti.getName(entity.getEntityId()));
+		
+		return true;
 	}
 
-	private static String buildSelectString(DatabaseProcessorGlobal global, DatabaseProcessorLocal local, IFProEntity ifProEntity) {
+	// parse "expression" (field = Val, field in [List...], field in Val : Val, field ~ Val, field is null, field is not null; ...)
+	private boolean buildWhereString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProEntity node, final StringBuilder sql) {
 		// TODO Auto-generated method stub
-		return null;
+		switch (node.getEntityType()) {
+			case integer		:
+				break;
+			case list			:
+				break;
+			case real			:
+				break;
+			case string			:
+				break;
+			case operator		:
+				switch (global.classify((IFProOperator)node)) {
+					case OpAnd		:
+						break;
+					case OpBetween	:
+						break;
+					case OpCompare	:
+						break;
+					case OpIn		:
+						break;
+					case OpIs		:
+						break;
+					case OpLike		:
+						break;
+					case OpNot		:
+						break;
+					case OpOr		:
+						break;
+					case OpUnknown	:
+						break;
+					default : throw new UnsupportedOperationException("Opertor type ["+global.classify((IFProOperator)node)+"] is not supported yet");
+				}
+				break;
+			case predicate : case operatordef : case variable : case externalplugin	: case any : case anonymous : 
+				return false;
+			default	:
+				return false;
+		}
 	}
-
-	private static String buildSelectStmt(String selectString, String whereString) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

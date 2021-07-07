@@ -539,6 +539,11 @@ public class FProUtil {
 		}
 	}
 	
+	/**
+	 * <p>Does entity have any variable inside</p>
+	 * @param source entity to test
+	 * @return true if has, false otherwise
+	 */
 	public static boolean hasAnyVariable(final IFProEntity source) {
 		if (source != null) {
 			switch (source.getEntityType()) {
@@ -591,6 +596,11 @@ public class FProUtil {
 		}
 	}
 
+	/**
+	 * <p>Does entity have any variable inside</p>
+	 * @param source
+	 * @return
+	 */
 	public static boolean hasAnyVariableOrAnonymous(final IFProEntity source) {
 		if (source != null) {
 			switch (source.getEntityType()) {
@@ -1364,10 +1374,5 @@ repeat:					while(start < to) {
 		public IFProEntity 			container;
 		public IFProEntity 			oldValue;
 		public int 					location;
-	}
-
-	public static short[] id2Shorts(long id) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
