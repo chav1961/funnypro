@@ -20,6 +20,7 @@ import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.SubstitutableProperties;
@@ -44,16 +45,21 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new NullPointerException("Properties can't be null"); 
 		}
 		else {
-			this.log = log;				this.props = prop;
+			this.log = log;
+			this.props = prop;
+			
+			final boolean	standardResolverOnly = prop.getProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, boolean.class, "false"); 
 			
 			for (FProPluginList 				desc : ServiceLoader.load(FProPluginList.class)) {
-				for (PluginDescriptor			item : desc.getPluginDescriptors()) {
-					final IFProExternalEntity	key = item.getPluginEntity();
-					
-					if (!plugins.containsKey(key)) {
-						plugins.put(key,new ArrayList<PluginItem>());
+				if (!standardResolverOnly || (desc instanceof StandardResolver)) {
+					for (PluginDescriptor			item : desc.getPluginDescriptors()) {
+						final IFProExternalEntity	key = item.getPluginEntity();
+						
+						if (!plugins.containsKey(key)) {
+							plugins.put(key,new ArrayList<PluginItem>());
+						}
+						plugins.get(key).add(new PluginItemImpl(item,null));
 					}
-					plugins.get(key).add(new PluginItemImpl(item,null));
 				}
 			}
 		}

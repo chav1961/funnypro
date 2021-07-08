@@ -25,6 +25,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.SubstitutableProperties;
@@ -42,6 +43,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void basicAndExceptionsTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -94,6 +97,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void simpleParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -199,6 +204,8 @@ public class ParserAndPrinterTest {
 	public void listParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
@@ -253,6 +260,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void bracketsParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -293,6 +302,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void predicateParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -338,6 +349,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void unaryPriorityParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -435,6 +448,8 @@ public class ParserAndPrinterTest {
 	public void binaryPriorityParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			
@@ -504,6 +519,8 @@ public class ParserAndPrinterTest {
 	public void variableParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 
@@ -542,6 +559,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void operatorDefParserTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -605,6 +624,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void putEntityTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -735,6 +756,8 @@ public class ParserAndPrinterTest {
 	@Test
 	public void complexTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final ParserAndPrinter	pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);

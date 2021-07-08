@@ -17,6 +17,7 @@ import chav1961.funnypro.core.StandardResolverTest;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginDescriptor;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
@@ -45,6 +46,9 @@ public class StringProcessorPluginTest {
 	@Test
 	public void lifeCycleTest() throws ContentException, NullPointerException, IOException {
 		final SubstitutableProperties	props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		final StandardResolver		sr = new StandardResolver();
 		final StringProcessorPlugin	spp = new StringProcessorPlugin();
 		final IFProEntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props);

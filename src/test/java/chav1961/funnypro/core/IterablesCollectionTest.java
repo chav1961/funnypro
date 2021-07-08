@@ -22,6 +22,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRepo;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
@@ -30,6 +31,8 @@ public class IterablesCollectionTest {
 	@Test
 	public void nameAndArityTest() throws NullPointerException, IOException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProRepo			frr = entities.predicateRepo(); 
@@ -122,6 +125,8 @@ public class IterablesCollectionTest {
 	public void callTest() throws NullPointerException, IOException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProRepo			frr = entities.predicateRepo(); 
 			final PredicateEntity	pe1 = new PredicateEntity(100, new IntegerEntity(100)), pe2 = new PredicateEntity(100, new IntegerEntity(200)), pe3 = new PredicateEntity(100, new IntegerEntity(300));
@@ -193,6 +198,8 @@ public class IterablesCollectionTest {
 	public void bagofTest() throws NullPointerException, IOException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProRepo			frr = entities.predicateRepo(); 
 			final PredicateEntity	pe1 = new PredicateEntity(100, new IntegerEntity(100)), pe2 = new PredicateEntity(100, new IntegerEntity(200)), pe3 = new PredicateEntity(100, new IntegerEntity(300));
@@ -258,6 +265,8 @@ public class IterablesCollectionTest {
 	@Test
 	public void listTest() throws NullPointerException, IOException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		entities = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props)) {
 			final IFProList			start = new ListEntity(new IntegerEntity(100), new ListEntity(new RealEntity(100), null));

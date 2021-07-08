@@ -23,8 +23,10 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.purelib.basic.OrdinalSyntaxTree;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.growablearrays.InOutGrowableByteArray;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.FProUtil.ContentType;
@@ -294,48 +296,51 @@ public class FProUtilTest {
 
 	@Test
 	public void otherStaticTest() {
+		final SyntaxTreeInterface<?>	st = new OrdinalSyntaxTree<>();
+		
 		IFProEntity		left;
+		
 		
 		left = new AnonymousEntity();
 		Assert.assertEquals(left,FProUtil.duplicate(left));
 		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Anon, ContentType.Atomic});
-		FProUtil.removeEntity(left);
+		FProUtil.removeEntity(st,left);
 
 		left = new IntegerEntity(100);
 		Assert.assertEquals(left,FProUtil.duplicate(left));
 		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Integer, ContentType.Number, ContentType.NonVar, ContentType.Atomic});
-		FProUtil.removeEntity(left);
+		FProUtil.removeEntity(st,left);
 
 		left = new RealEntity(123.456);
 		Assert.assertEquals(left,FProUtil.duplicate(left));
 		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Float, ContentType.Number, ContentType.NonVar, ContentType.Atomic});
-		FProUtil.removeEntity(left);
+		FProUtil.removeEntity(st,left);
 
 		left = new StringEntity(123);
 		Assert.assertEquals(left,FProUtil.duplicate(left));
 		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Atom, ContentType.NonVar, ContentType.Atomic});
-		FProUtil.removeEntity(left);
+		FProUtil.removeEntity(st,left);
 
 		left = new OperatorEntity(100,OperatorType.xfy,123).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200));
 		Assert.assertEquals(left,FProUtil.duplicate(left));
 		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Compound, ContentType.NonVar});
-		FProUtil.removeEntity(left);
+		FProUtil.removeEntity(st,left);
 
 		left = new PredicateEntity(100,new IntegerEntity(100),new IntegerEntity(200));
 		Assert.assertEquals(left,FProUtil.duplicate(left));
 		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		checkType(left,new ContentType[] {ContentType.Atom, ContentType.Atomic, ContentType.NonVar});
-		FProUtil.removeEntity(left);
+		FProUtil.removeEntity(st,left);
 
 		left = new ListEntity(new IntegerEntity(100),new IntegerEntity(200));
 		Assert.assertTrue(FProUtil.isIdentical(left,FProUtil.duplicate(left)));
 		Assert.assertEquals(left,FProUtil.duplicate(left));
-		FProUtil.removeEntity(left);
+		FProUtil.removeEntity(st,left);
 		
 		try{FProUtil.isEntityA(left,null);
 			Assert.fail("Mandatory exception was not detected (null 2-nd argument)");

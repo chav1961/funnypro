@@ -15,36 +15,45 @@ import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
+import chav1961.purelib.basic.OrdinalSyntaxTree;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.growablearrays.InOutGrowableByteArray;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 
 public class FactRuleRepoTest {
 	@Test
 	public void basicTest() {
-		final SubstitutableProperties		props = new SubstitutableProperties();
-		final FactRuleRepo	frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props);
+		final SubstitutableProperties	props = new SubstitutableProperties();
+		final SyntaxTreeInterface<?>	sti = new OrdinalSyntaxTree<>();
+		
+		final FactRuleRepo	frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props, sti);
 		
 		Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,frr.getDebug());
 		Assert.assertEquals(props,frr.getParameters());
 		Assert.assertFalse(frr.canUseInMultiThread());
 		Assert.assertFalse(frr.canUseForMultiThreadOnResolution());
 		
-		try {new FactRuleRepo(null, props);
+		try {new FactRuleRepo(null, props, sti);
 			Assert.fail("Mandatory exception was not detected (null 1-st argument)");
 		} catch (NullPointerException exc) {
 		}
-		try {new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, null);
+		try {new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, null, sti);
 			Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
+		} catch (NullPointerException exc) {
+		}
+		try {new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props, null);
+			Assert.fail("Mandatory exception was not detected (null 3-rd argument)");
 		} catch (NullPointerException exc) {
 		}
 	}
 
 	@Test
 	public void assertAndRetractTest() {
-		final SubstitutableProperties		props = new SubstitutableProperties();
-		final FactRuleRepo		frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props);
+		final SubstitutableProperties	props = new SubstitutableProperties();
+		final SyntaxTreeInterface<?>	sti = new OrdinalSyntaxTree<>();
+		final FactRuleRepo		frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props, sti);
 		final PredicateEntity	pe1 = new PredicateEntity(100, new IntegerEntity(100)), pe2 = new PredicateEntity(100, new IntegerEntity(200)), pe3 = new PredicateEntity(100, new IntegerEntity(300));
 		final PredicateEntity	peCall = new PredicateEntity(100, new AnonymousEntity());
 		final OperatorEntity	oe1 = (OperatorEntity) new OperatorEntity(999,OperatorType.xfx,200).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200));
@@ -210,8 +219,9 @@ public class FactRuleRepoTest {
 
 	@Test
 	public void serializationTest() throws IOException {
-		final SubstitutableProperties		props = new SubstitutableProperties();
-		final FactRuleRepo		frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props);
+		final SubstitutableProperties	props = new SubstitutableProperties();
+		final SyntaxTreeInterface<?>	sti = new OrdinalSyntaxTree<>();
+		final FactRuleRepo		frr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props, sti);
 		final PredicateEntity	pe1 = new PredicateEntity(100, new IntegerEntity(100)), pe2 = new PredicateEntity(100, new IntegerEntity(200)), pe3 = new PredicateEntity(100, new IntegerEntity(300));
 		final PredicateEntity	peCall = new PredicateEntity(100, new AnonymousEntity());
 		final OperatorEntity	oe1 = (OperatorEntity) new OperatorEntity(999,OperatorType.xfx,200).setLeft(new IntegerEntity(100)).setRight(new IntegerEntity(200));
@@ -225,7 +235,7 @@ public class FactRuleRepoTest {
 		frr.assertA(oe1);
 		frr.assertZ(oe2);
 		
-		final FactRuleRepo		newFrr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props);
+		final FactRuleRepo		newFrr = new FactRuleRepo(PureLibSettings.CURRENT_LOGGER, props, sti);
 		
 		try(final InOutGrowableByteArray	iogba = new InOutGrowableByteArray(false)) {
 			frr.serialize(iogba);

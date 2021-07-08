@@ -21,26 +21,32 @@ import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
 import chav1961.purelib.basic.ReusableInstances;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 
 class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	private static final int					SERIALIZATION_MAGIC = 0x12122080;
 	
 	private final LoggerFacade					log;
 	private final SubstitutableProperties		props;
+	private final SyntaxTreeInterface<?>		repo;
 	@SuppressWarnings("unchecked")
 	private IFProQuickList<ChainDescriptor>[]	predicates = new QuickList[IFProPredicate.MAX_ARITY];
 	private ReusableInstances<Change[]>			tempChanges = new ReusableInstances<>(()->{return new Change[1];}); 
 
-	public FactRuleRepo(final LoggerFacade log, final SubstitutableProperties prop) throws NullPointerException {
+	public FactRuleRepo(final LoggerFacade log, final SubstitutableProperties prop, final SyntaxTreeInterface<?> repo) throws NullPointerException {
 		if (log == null) {
 			throw new NullPointerException("Logger can't be null"); 
 		}
 		else if (prop == null) {
 			throw new NullPointerException("Properties can't be null"); 
 		}
+		else if (repo == null) {
+			throw new NullPointerException("String repo can't be null"); 
+		}
 		else {
 			this.log = log;			
 			this.props = prop;
+			this.repo = repo;
 		}
 	}
 	
@@ -316,7 +322,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 				
 				while (start != null) {
 					temp = start.getParent();
-					FProUtil.removeEntity(start);
+					FProUtil.removeEntity(repo, start);
 					start = temp;
 				}
 				
@@ -336,7 +342,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 					if (FProUtil.unify(start,template,changes)) {
 						FProUtil.unbind(changes[0]);
 						temp = start.getParent();
-						FProUtil.removeEntity(start);
+						FProUtil.removeEntity(repo, start);
 						if ((key.start = temp) == null) {
 							key.end = null;
 						}
@@ -347,7 +353,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 							if (FProUtil.unify(start.getParent(),template,changes)) {
 								FProUtil.unbind(changes[0]);
 								temp = start.getParent().getParent();
-								FProUtil.removeEntity(start.getParent());
+								FProUtil.removeEntity(repo, start.getParent());
 								if (temp == null) {
 									key.end = start;
 								}

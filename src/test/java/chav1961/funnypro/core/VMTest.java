@@ -36,8 +36,10 @@ public class VMTest {
 	
 	@Test
 	public void lifeCycleTest() throws Exception {
+		final SubstitutableProperties	props = new SubstitutableProperties();
 		final LoggerFacade		log = new DefaultLoggerFacade();
-		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final IFProVM		vm = new PseudoFProVM(log,props)) {
 			
@@ -124,8 +126,7 @@ class PseudoFProVM extends FProVM {
 		super(log, prop);
 	}
 
-	@Override
-	protected ResolvableAndGlobal getStandardResolver() {
+	protected ResolvableAndGlobal<GlobalDescriptor> getStandardResolver() {
 		return new ResolvableAndGlobal(
 			new IResolvable<GlobalDescriptor,LocalDescriptor>() {
 			@Override public ResolveRC nextResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.False;}

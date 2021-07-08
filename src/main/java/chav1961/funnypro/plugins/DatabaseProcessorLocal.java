@@ -1,6 +1,7 @@
 package chav1961.funnypro.plugins;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.List;
 
@@ -16,4 +17,5 @@ class DatabaseProcessorLocal {
 	List<IFProVariable>		vars;
 	Statement				stmt;
 	ResultSet				rs;
+	ResultSetMetaData		rsmd;
 }

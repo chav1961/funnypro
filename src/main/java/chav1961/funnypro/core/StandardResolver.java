@@ -55,6 +55,7 @@ import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.purelib.streams.charsource.SyntaxTreeCharacterSource;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -66,6 +67,7 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  * 
  * @author Alexander Chernomyrdin aka chav1961
  * @since 0.0.1
+ * @lastUpdate 0.0.2
  */
 
 public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescriptor>, FProPluginList {
@@ -74,72 +76,72 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	public static final int[]					PLUGIN_VERSION	= new int[]{0};
 	public static final String					PLUGIN_DESCRIPTION	= "Standard resolver for the fpro";
 
-	static final StandardOperators[]			OPS = { new StandardOperators(1200,OperatorType.xfx,":-",RegisteredEntities.Op1200xfxGoal),
-														new StandardOperators(1200,OperatorType.fx,":-",RegisteredEntities.Op1200fxGoal),
-														new StandardOperators(1200,OperatorType.fx,"?-",RegisteredEntities.Op1200fxQuestion),
-														new StandardOperators(1100,OperatorType.xfy,";",RegisteredEntities.Op1100xfyOr),
-														new StandardOperators(1100,OperatorType.xfx,"|",RegisteredEntities.Op1100xfxSeparator),
-							 							new StandardOperators(1050,OperatorType.xfy,"->",RegisteredEntities.Op1050xfyArrow),
-														new StandardOperators(1000,OperatorType.xfy,",",RegisteredEntities.Op1000xfyAnd),
-									 					new StandardOperators(900,OperatorType.fy,"not",RegisteredEntities.Op900fyNot),
-														new StandardOperators(900,OperatorType.fy,"\\+",RegisteredEntities.Op900fyNotPlus),
-														new StandardOperators(700,OperatorType.xfx,"=",RegisteredEntities.Op700xfxUnify),
-														new StandardOperators(700,OperatorType.xfx,"\\=",RegisteredEntities.Op700xfxNotUnify),
-														new StandardOperators(700,OperatorType.xfx,"==",RegisteredEntities.Op700xfxEqual),
-														new StandardOperators(700,OperatorType.xfx,"\\==",RegisteredEntities.Op700xfxNotEqual),
-														new StandardOperators(700,OperatorType.xfx,"=..",RegisteredEntities.Op700xfx2List),
-														new StandardOperators(700,OperatorType.xfx,"is",RegisteredEntities.Op700xfxIs),
-														new StandardOperators(700,OperatorType.xfx,"=:=",RegisteredEntities.Op700xfxEqColon),
-														new StandardOperators(700,OperatorType.xfx,"=\\=",RegisteredEntities.Op700xfxNotEqual2),
-														new StandardOperators(700,OperatorType.xfx,"<",RegisteredEntities.Op700xfxLess),
-														new StandardOperators(700,OperatorType.xfx,"=<",RegisteredEntities.Op700xfxLessEqual),
-														new StandardOperators(700,OperatorType.xfx,">",RegisteredEntities.Op700xfxGreater),
-														new StandardOperators(700,OperatorType.xfx,">=",RegisteredEntities.Op700xfxGreaterEqual),
-														new StandardOperators(700,OperatorType.xfx,"@<",RegisteredEntities.Op700xfxDogLess),
-														new StandardOperators(700,OperatorType.xfx,"@<=",RegisteredEntities.Op700xfxDogLessEqual),
-														new StandardOperators(700,OperatorType.xfx,"@>",RegisteredEntities.Op700xfxDogGreater),
-														new StandardOperators(700,OperatorType.xfx,"@>=",RegisteredEntities.Op700xfxDogGreaterEqual),
-														new StandardOperators(500,OperatorType.yfx,"+",RegisteredEntities.Op500yfxPlus),
-														new StandardOperators(500,OperatorType.yfx,"-",RegisteredEntities.Op500yfxMinus),
-														new StandardOperators(400,OperatorType.yfx,"*",RegisteredEntities.Op400yfxMultiply),
-														new StandardOperators(400,OperatorType.yfx,"/",RegisteredEntities.Op400yfxDivide),
-														new StandardOperators(400,OperatorType.yfx,"//",RegisteredEntities.Op400yfxIntDivide),
-														new StandardOperators(400,OperatorType.yfx,"mod",RegisteredEntities.Op400yfxMod),
-														new StandardOperators(200,OperatorType.xfx,"**",RegisteredEntities.Op200xfxExponent),
-														new StandardOperators(200,OperatorType.xfy,"^",RegisteredEntities.Op200xfyAngle),
-														new StandardOperators(200,OperatorType.fy,"-",RegisteredEntities.Op200fyMinus),
+	static final RegisteredOperators[]			OPS = { new RegisteredOperators<RegisteredEntities>(1200,OperatorType.xfx,":-",RegisteredEntities.Op1200xfxGoal),
+														new RegisteredOperators<RegisteredEntities>(1200,OperatorType.fx,":-",RegisteredEntities.Op1200fxGoal),
+														new RegisteredOperators<RegisteredEntities>(1200,OperatorType.fx,"?-",RegisteredEntities.Op1200fxQuestion),
+														new RegisteredOperators<RegisteredEntities>(1100,OperatorType.xfy,";",RegisteredEntities.Op1100xfyOr),
+														new RegisteredOperators<RegisteredEntities>(1100,OperatorType.xfx,"|",RegisteredEntities.Op1100xfxSeparator),
+							 							new RegisteredOperators<RegisteredEntities>(1050,OperatorType.xfy,"->",RegisteredEntities.Op1050xfyArrow),
+														new RegisteredOperators<RegisteredEntities>(1000,OperatorType.xfy,",",RegisteredEntities.Op1000xfyAnd),
+									 					new RegisteredOperators<RegisteredEntities>(900,OperatorType.fy,"not",RegisteredEntities.Op900fyNot),
+														new RegisteredOperators<RegisteredEntities>(900,OperatorType.fy,"\\+",RegisteredEntities.Op900fyNotPlus),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"=",RegisteredEntities.Op700xfxUnify),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"\\=",RegisteredEntities.Op700xfxNotUnify),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"==",RegisteredEntities.Op700xfxEqual),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"\\==",RegisteredEntities.Op700xfxNotEqual),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"=..",RegisteredEntities.Op700xfx2List),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"is",RegisteredEntities.Op700xfxIs),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"=:=",RegisteredEntities.Op700xfxEqColon),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"=\\=",RegisteredEntities.Op700xfxNotEqual2),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"<",RegisteredEntities.Op700xfxLess),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"=<",RegisteredEntities.Op700xfxLessEqual),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,">",RegisteredEntities.Op700xfxGreater),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,">=",RegisteredEntities.Op700xfxGreaterEqual),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"@<",RegisteredEntities.Op700xfxDogLess),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"@<=",RegisteredEntities.Op700xfxDogLessEqual),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"@>",RegisteredEntities.Op700xfxDogGreater),
+														new RegisteredOperators<RegisteredEntities>(700,OperatorType.xfx,"@>=",RegisteredEntities.Op700xfxDogGreaterEqual),
+														new RegisteredOperators<RegisteredEntities>(500,OperatorType.yfx,"+",RegisteredEntities.Op500yfxPlus),
+														new RegisteredOperators<RegisteredEntities>(500,OperatorType.yfx,"-",RegisteredEntities.Op500yfxMinus),
+														new RegisteredOperators<RegisteredEntities>(400,OperatorType.yfx,"*",RegisteredEntities.Op400yfxMultiply),
+														new RegisteredOperators<RegisteredEntities>(400,OperatorType.yfx,"/",RegisteredEntities.Op400yfxDivide),
+														new RegisteredOperators<RegisteredEntities>(400,OperatorType.yfx,"//",RegisteredEntities.Op400yfxIntDivide),
+														new RegisteredOperators<RegisteredEntities>(400,OperatorType.yfx,"mod",RegisteredEntities.Op400yfxMod),
+														new RegisteredOperators<RegisteredEntities>(200,OperatorType.xfx,"**",RegisteredEntities.Op200xfxExponent),
+														new RegisteredOperators<RegisteredEntities>(200,OperatorType.xfy,"^",RegisteredEntities.Op200xfyAngle),
+														new RegisteredOperators<RegisteredEntities>(200,OperatorType.fy,"-",RegisteredEntities.Op200fyMinus),
 													};
 	
-	static final StandardPredicates[]			PREDS = { new StandardPredicates("trace",RegisteredEntities.PredTrace),
-														new StandardPredicates("notrace",RegisteredEntities.PredNoTrace),
-														new StandardPredicates("spy",RegisteredEntities.PredSpy),
-														new StandardPredicates("!",RegisteredEntities.PredCut),
-														new StandardPredicates("fail",RegisteredEntities.PredFail),
-														new StandardPredicates("true",RegisteredEntities.PredTrue),
-														new StandardPredicates("repeat",RegisteredEntities.PredRepeat),
-														new StandardPredicates("asserta(Var)",RegisteredEntities.PredAssertA),
-														new StandardPredicates("assertz(Var)",RegisteredEntities.PredAssertZ),
-														new StandardPredicates("assert(Var)",RegisteredEntities.PredAssertZ),
-														new StandardPredicates("retract(Var)",RegisteredEntities.PredRetract),
-														new StandardPredicates("call(Var)",RegisteredEntities.PredCall),
-														new StandardPredicates("var(Var)",RegisteredEntities.PredVar),
-														new StandardPredicates("nonvar(Var)",RegisteredEntities.PredNonVar),
-														new StandardPredicates("atom(Var)",RegisteredEntities.PredAtom),
-														new StandardPredicates("integer(Var)",RegisteredEntities.PredInteger),
-														new StandardPredicates("float(Var)",RegisteredEntities.PredFloat),
-														new StandardPredicates("number(Var)",RegisteredEntities.PredNumber),
-														new StandardPredicates("atomic(Var)",RegisteredEntities.PredAtomic),
-														new StandardPredicates("compound(Var)",RegisteredEntities.PredCompound),
-														new StandardPredicates("functor(Var1,Var2,Var3)",RegisteredEntities.PredFunctor),
-														new StandardPredicates("arg(Var1,Var2,Var3)",RegisteredEntities.PredArg),
-														new StandardPredicates("name(Var1,Var2)",RegisteredEntities.PredName),
-														new StandardPredicates("bagof(Var1,Var2,Var3)",RegisteredEntities.PredBagOf),
-														new StandardPredicates("setof(Var1,Var2,Var3)",RegisteredEntities.PredSetOf),
-														new StandardPredicates("findall(Var1,Var2,Var3)",RegisteredEntities.PredFindAll),
-														new StandardPredicates("memberOf(Var1,Var2)",RegisteredEntities.PredMemberOf),
+	static final RegisteredPredicates[]			PREDS = { new RegisteredPredicates<RegisteredEntities>("trace",RegisteredEntities.PredTrace),
+														new RegisteredPredicates<RegisteredEntities>("notrace",RegisteredEntities.PredNoTrace),
+														new RegisteredPredicates<RegisteredEntities>("spy",RegisteredEntities.PredSpy),
+														new RegisteredPredicates<RegisteredEntities>("!",RegisteredEntities.PredCut),
+														new RegisteredPredicates<RegisteredEntities>("fail",RegisteredEntities.PredFail),
+														new RegisteredPredicates<RegisteredEntities>("true",RegisteredEntities.PredTrue),
+														new RegisteredPredicates<RegisteredEntities>("repeat",RegisteredEntities.PredRepeat),
+														new RegisteredPredicates<RegisteredEntities>("asserta(Var)",RegisteredEntities.PredAssertA),
+														new RegisteredPredicates<RegisteredEntities>("assertz(Var)",RegisteredEntities.PredAssertZ),
+														new RegisteredPredicates<RegisteredEntities>("assert(Var)",RegisteredEntities.PredAssertZ),
+														new RegisteredPredicates<RegisteredEntities>("retract(Var)",RegisteredEntities.PredRetract),
+														new RegisteredPredicates<RegisteredEntities>("call(Var)",RegisteredEntities.PredCall),
+														new RegisteredPredicates<RegisteredEntities>("var(Var)",RegisteredEntities.PredVar),
+														new RegisteredPredicates<RegisteredEntities>("nonvar(Var)",RegisteredEntities.PredNonVar),
+														new RegisteredPredicates<RegisteredEntities>("atom(Var)",RegisteredEntities.PredAtom),
+														new RegisteredPredicates<RegisteredEntities>("integer(Var)",RegisteredEntities.PredInteger),
+														new RegisteredPredicates<RegisteredEntities>("float(Var)",RegisteredEntities.PredFloat),
+														new RegisteredPredicates<RegisteredEntities>("number(Var)",RegisteredEntities.PredNumber),
+														new RegisteredPredicates<RegisteredEntities>("atomic(Var)",RegisteredEntities.PredAtomic),
+														new RegisteredPredicates<RegisteredEntities>("compound(Var)",RegisteredEntities.PredCompound),
+														new RegisteredPredicates<RegisteredEntities>("functor(Var1,Var2,Var3)",RegisteredEntities.PredFunctor),
+														new RegisteredPredicates<RegisteredEntities>("arg(Var1,Var2,Var3)",RegisteredEntities.PredArg),
+														new RegisteredPredicates<RegisteredEntities>("name(Var1,Var2)",RegisteredEntities.PredName),
+														new RegisteredPredicates<RegisteredEntities>("bagof(Var1,Var2,Var3)",RegisteredEntities.PredBagOf),
+														new RegisteredPredicates<RegisteredEntities>("setof(Var1,Var2,Var3)",RegisteredEntities.PredSetOf),
+														new RegisteredPredicates<RegisteredEntities>("findall(Var1,Var2,Var3)",RegisteredEntities.PredFindAll),
+														new RegisteredPredicates<RegisteredEntities>("memberOf(Var1,Var2)",RegisteredEntities.PredMemberOf),
 													};
 
-	private static enum RegisteredEntities {
+	public static enum RegisteredEntities {
 		Op1200xfxGoal,
 		Op1200fxGoal,
 		Op1200fxQuestion,
@@ -230,15 +232,16 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 
 	@Override
 	public GlobalDescriptor onLoad(final LoggerFacade log, final SubstitutableProperties parameters, final IFProEntitiesRepo repo) throws SyntaxException  {
-		final GlobalDescriptor					desc = new GlobalDescriptor();
-		final Set<Long>							ids = new HashSet<>();
-		final Map<Long,QuickIds>				registered = new HashMap<>();
+		final GlobalDescriptor							desc = new GlobalDescriptor();
+		final Set<Long>									ids = new HashSet<>();
+		final Map<Long,QuickIds<RegisteredEntities>>	registered = new HashMap<>();
 		
-		desc.log = log;							desc.parameters = parameters;		
+		desc.log = log;			
+		desc.parameters = parameters;		
 		
 		try(LoggerFacade 	actualLog = log.transaction("StandardResolver:onLoad")) {
 			
-			for (StandardOperators item : OPS) {
+			for (RegisteredOperators<RegisteredEntities> item : OPS) {
 				actualLog.message(Severity.info,"Register operator %1$s, %2$s...", item.text, item.type);
 				final long			itemId = repo.termRepo().placeName(item.text,null);
 				IFProOperator[]		op;
@@ -247,10 +250,10 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					final IFProOperator			def = new OperatorDefEntity(item.priority,item.type,itemId); 
 					
 					repo.putOperatorDef(def);	ids.add(itemId);
-					fillQuickIds(registered,new QuickIds(def,item.action));
+					FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(def,item.action));
 				}
 				else {
-					fillQuickIds(registered,new QuickIds(op[0],item.action));					
+					FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(op[0],item.action));					
 				}
 				if (repo.classify(itemId) != Classification.operator) {
 					actualLog.message(Severity.info,"Operator registration failed for %1$s, %2$s: item classified as %3%s", item.text, item.type, repo.classify(itemId));
@@ -260,13 +263,13 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			}
 			
 			try{final IFProParserAndPrinter 	pap = new ParserAndPrinter(log,parameters,repo);
-				for (StandardPredicates item : PREDS) {
+				for (RegisteredPredicates<RegisteredEntities> item : PREDS) {
 					actualLog.message(Severity.info,"Register predicate %1$s...", item.text);
 					try{pap.parseEntities(item.text.toCharArray(),0,new FProParserCallback(){
 													@Override
 													public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 														ids.add(entity.getEntityId());
-														fillQuickIds(registered,new QuickIds(entity,item.action));
+														FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(entity,item.action));
 														return true;
 													}
 												}
@@ -284,7 +287,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			}
 			actualLog.rollback();
 		}
-		for (Entry<Long, QuickIds> item : registered.entrySet()) {
+		for (Entry<Long, QuickIds<RegisteredEntities>> item : registered.entrySet()) {
 			desc.registered.put(item.getKey(),item.getValue());
 			desc.registeredIds.add(item.getKey());
 		}
@@ -307,7 +310,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			}
 			else {
 				for (long item : data.registeredIds) {
-					QuickIds	start = data.registered.get(item);
+					QuickIds<?>	start = data.registered.get(item);
 					
 					while (start != null) {
 						data.repo.termRepo().removeName(start.id);
@@ -446,7 +449,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			printResolution("first", global, local, entity);
 		}
 		
-		switch (detect(global.registered,entity)) {
+		switch (FProUtil.detect(global.registered,entity,RegisteredEntities.Others)) {
 			case Op1200xfxGoal		:
 				return (firstResolveInternal(global,local,((IFProOperator)entity).getRight()));
 			case Op1200fxGoal		:
@@ -544,7 +547,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				else {
 					return ResolveRC.False;
 				}
-				return FProUtil.unifyTemporaries(entity, left, right, created, local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
+				return FProUtil.unifyTemporaries(entity, left, right, created, global.repo.stringRepo(), local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxLess		:
 				return compare(global,calculate(global,((IFProOperator)entity).getLeft()),calculate(global,((IFProOperator)entity).getRight())) < 0 ?  ResolveRC.True : ResolveRC.False;
 			case Op700xfxLessEqual	:
@@ -625,15 +628,15 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					created = left = new PredicateEntity(((IFProPredicate)entity).getParameters()[0].getEntityId());
 					right = ((IFProPredicate)entity).getParameters()[1];
 					
-					if (FProUtil.unifyTemporaries(entity, left, right, created, local.stack, forChange)) {
+					if (FProUtil.unifyTemporaries(entity, left, right, created, global.repo.stringRepo(), local.stack, forChange)) {
 						created1 = left1 = new IntegerEntity(((IFProPredicate)((IFProPredicate)entity).getParameters()[0]).getArity());
 						right1 = ((IFProPredicate)entity).getParameters()[2];
 						
-						if (FProUtil.unifyTemporaries(entity, left1, right1, created1, local.stack, forChange)) {
+						if (FProUtil.unifyTemporaries(entity, left1, right1, created1, global.repo.stringRepo(), local.stack, forChange)) {
 							return ResolveRC.True;
 						}
 					}
-					FProUtil.releaseTemporaries(entity,local.stack);
+					FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 					return ResolveRC.False;
 				}
 				else if (containsVars(((IFProPredicate)entity).getParameters()[0]) && ((IFProPredicate)entity).getParameters()[1].getEntityType() == EntityType.predicate && ((IFProPredicate)entity).getParameters()[2].getEntityType() == EntityType.integer) {
@@ -645,7 +648,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					left = ((IFProPredicate)entity).getParameters()[0];
 					right = created = new PredicateEntity(((IFProPredicate)entity).getParameters()[1].getEntityId(),content);
 					
-					return FProUtil.unifyTemporaries(entity, left, right, created, local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
+					return FProUtil.unifyTemporaries(entity, left, right, created, global.repo.stringRepo(), local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
 				}
 				else {
 					return ResolveRC.False;
@@ -658,7 +661,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					
 					created = left = FProUtil.duplicate(((IFProPredicate)((IFProPredicate)entity).getParameters()[0]).getParameters()[(int)((IFProPredicate)entity).getParameters()[1].getEntityId()-1]);
 					right = ((IFProPredicate)entity).getParameters()[2];
-					return FProUtil.unifyTemporaries(entity, left, right, created, local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
+					return FProUtil.unifyTemporaries(entity, left, right, created, global.repo.stringRepo(), local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
 				}
 				else {
 					return ResolveRC.False;
@@ -676,7 +679,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 						left = created = new StringEntity(newId);
 						right = ((IFProPredicate)entity).getParameters()[1];
 						
-						return FProUtil.unifyTemporaries(entity,left,right,created,local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
+						return FProUtil.unifyTemporaries(entity, left, right, created, global.repo.stringRepo(), local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
 					} catch (ContentException | IOException e) {
 						return ResolveRC.False;
 					}
@@ -690,7 +693,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 							left = ((IFProPredicate)entity).getParameters()[0];
 							right = created = result[0];
 							
-							return FProUtil.unifyTemporaries(entity,left,right,created,local.stack,forChange) ? ResolveRC.True : ResolveRC.False;
+							return FProUtil.unifyTemporaries(entity, left, right, created, global.repo.stringRepo(), local.stack, forChange) ? ResolveRC.True : ResolveRC.False;
 						} catch (ContentException | IOException e) {
 							return ResolveRC.False;
 						}
@@ -751,7 +754,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		if (global.trace) {
 			printResolution("next", global, local, entity);
 		}
-		switch (detect(global.registered,entity)) {
+		switch (FProUtil.detect(global.registered,entity,RegisteredEntities.Others)) {
 			case Op1200xfxGoal		:
 				ResolveRC	rc = nextResolveInternal(global,local,((IFProOperator)entity).getRight());
 				
@@ -909,7 +912,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		if (global.trace) {
 			printResolution("end", global, local, entity);
 		}
-		switch (detect(global.registered,entity)) {
+		switch (FProUtil.detect(global.registered,entity,RegisteredEntities.Others)) {
 			case Op1200xfxGoal		:
 				break;
 			case Op1200fxGoal		:
@@ -938,14 +941,14 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			case Op900fyNot			:
 			case Op700xfxUnify		:
 			case Op700xfxNotUnify	:
-				FProUtil.releaseTemporaries(entity, local.stack);
+				FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 //				if (local.stack.getTopType() == StackTopType.bounds 
 //					&& ((BoundStackTop)local.stack.peek()).getMark() == entity) {
 //					FProUtil.unbind(((BoundStackTop<Change>)local.stack.pop()).getChangeChain());
 //				}
 				break;
 			case Op700xfx2List		:
-				FProUtil.releaseTemporaries(entity,local.stack);
+				FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 				break;
 			case Op700xfxLess		:
 			case Op700xfxLessEqual	:
@@ -960,14 +963,14 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			case Op700xfxEqual		:
 			case Op700xfxNotEqual	:
 			case Op700xfxIs			:
-				FProUtil.releaseTemporaries(entity,local.stack);
+				FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 //				if (local.stack.getTopType() == StackTopType.bounds
 //					&& ((BoundStackTop)local.stack.peek()).getMark() == entity) {
 //					FProUtil.unbind(((BoundStackTop<Change>)local.stack.pop()).getChangeChain());
 //				}
 				break;
 			case Op400yfxDivide		:
-				endIterate(entity,local.stack);
+				endIterate(entity, global.repo.stringRepo(), local.stack);
 				break;
 			case PredTrace			:
 			case PredNoTrace		:
@@ -984,7 +987,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			case PredRetract		:
 				break;
 			case PredCall			:
-				endIterate(entity,local.stack);
+				endIterate(entity, global.repo.stringRepo(), local.stack);
 			case PredVar			:
 			case PredNonVar			:
 			case PredAtom			:
@@ -995,21 +998,21 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			case PredCompound		:
 				break;
 			case PredFunctor		:	// Missing break is a RIGHT!
-				FProUtil.releaseTemporaries(entity,local.stack);
+				FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 			case PredArg			:
 			case PredName			:
-				FProUtil.releaseTemporaries(entity,local.stack);
+				FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 				break;
 			case PredBagOf			:
 			case PredSetOf			:
 			case PredFindAll		:
 				if (local.stack.getTopType() == StackTopType.bounds
-					&& ((BoundStackTop)local.stack.peek()).getMark() == entity) {
+					&& ((BoundStackTop<Change>)local.stack.peek()).getMark() == entity) {
 					FProUtil.unbind(((BoundStackTop<Change>)local.stack.pop()).getChangeChain());
 				}
 				break;
 			case PredMemberOf		:
-				endIterate(entity,local.stack);
+				endIterate(entity, global.repo.stringRepo(), local.stack);
 				break;
 			default :
 				if (local.stack.getTopType() == StackTopType.external) {
@@ -1019,7 +1022,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					est.getDescriptor().getResolver().afterCall(est.getDescriptor().getGlobal(),est.getLocalData());
 					return;
 				}
-				endIterate(entity,local.stack);
+				endIterate(entity, global.repo.stringRepo(), local.stack);
 		}
 	}	
 
@@ -1038,50 +1041,6 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	@Override
 	public String toString() {
 		return "StandardResolver [getPluginDescriptors()=" + Arrays.toString(getPluginDescriptors()) + ", getName()=" + getName() + ", getVersion()=" + Arrays.toString(getVersion())+ "]";
-	}
-
-	private static RegisteredEntities detect(final LongIdMap<QuickIds> repo, final IFProEntity entity) {
-		if (entity == null) {
-			return RegisteredEntities.Others; 
-		}
-		else {
-			QuickIds	start = repo.get(entity.getEntityId());
-			
-			if (start != null) {
-				switch (entity.getEntityType()) {
-					case operator	:
-						final int			priority = ((IFProOperator)entity).getPriority();
-						final OperatorType	operType = ((IFProOperator)entity).getOperatorType(); 
-						
-						while (start != null) {
-							if (((IFProOperator)start.def).getPriority() == priority &&  ((IFProOperator)start.def).getOperatorType() == operType) {
-								return start.action;
-							}
-							else {
-								start = start.next;
-							}
-						}
-						break;
-					case predicate	:
-						final int	arity = ((IFProPredicate)entity).getArity();
-						
-						while (start != null) {
-							if (((IFProPredicate)start.def).getArity() == arity) {
-								return start.action;
-							}
-							else {
-								start = start.next;
-							}
-						}
-						break;
-					default :
-				}
-				return RegisteredEntities.Others; 
-			}
-			else {
-				return RegisteredEntities.Others; 
-			}
-		}
 	}
 
 	private boolean containsVars(final IFProEntity entity) {
@@ -1121,7 +1080,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				case real		:
 					return value;
 				case operator	:
-					switch (detect(global.registered,value)) {
+					switch (FProUtil.detect(global.registered,value,RegisteredEntities.Others)) {
 						case Op500yfxPlus		:
 							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0]+forReal[1]);
@@ -1353,7 +1312,6 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		return result;
 	}
 	
-	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ResolveRC iterate(final GlobalDescriptor global, final LocalDescriptor local, final IFProEntity mark, final IFProEntity entity, final Iterable<IFProEntity> iterable) throws SyntaxException {
 		local.stack.push(GlobalStack.getIteratorStackTop(mark,iterable,IFProEntity.class));
@@ -1371,24 +1329,24 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 						return ResolveRC.True;
 					}
 					else if (rcRule == ResolveRC.False) {
-						FProUtil.releaseTemporaries(entity, local.stack);
+						FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 						continue;
 					}
 					else if (rcRule == ResolveRC.FalseWithoutBacktracking) {
-						FProUtil.releaseTemporaries(entity, local.stack);
+						FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 						for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator())) {
 						}
 						break;
 					}
 					else if (rcRule == ResolveRC.TrueWithoutBacktracking) {
-						FProUtil.releaseTemporaries(entity, local.stack);
+						FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 						for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)local.stack.peek()).getIterator())) {
 						}
 						return ResolveRC.True;
 //						break;
 					}
 					else {
-						FProUtil.releaseTemporaries(entity, local.stack);
+						FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 						break;
 					}
 				}
@@ -1432,23 +1390,23 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 									return ResolveRC.True;
 								}
 								else if (rcRule == ResolveRC.False) {
-									FProUtil.releaseTemporaries(current, stack);
+									FProUtil.releaseTemporaries(current, global.repo.stringRepo(), stack);
 									continue;
 								}
 								else if (rcRule == ResolveRC.FalseWithoutBacktracking) {
-									FProUtil.releaseTemporaries(current, stack);
+									FProUtil.releaseTemporaries(current, global.repo.stringRepo(), stack);
 									for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)item).getIterator())) {
 									}
 									break;
 								}
 								else if (rcRule == ResolveRC.TrueWithoutBacktracking) {
-									FProUtil.releaseTemporaries(current, stack);
+									FProUtil.releaseTemporaries(current, global.repo.stringRepo(), stack);
 									for (IFProEntity tmp : (((IteratorStackTop<IFProEntity>)item).getIterator())) {
 									}
 									return ResolveRC.True;
 								}
 								else {
-									FProUtil.releaseTemporaries(current, stack);
+									FProUtil.releaseTemporaries(current, global.repo.stringRepo(), stack);
 									break;
 								}
 							}
@@ -1462,7 +1420,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				case orChain	:
 					break;
 				case temporary	:
-					FProUtil.removeEntity(((TemporaryStackTop)item).getEntity());
+					FProUtil.removeEntity(global.repo.stringRepo(), ((TemporaryStackTop)item).getEntity());
 					stack.pop();
 					break;
 				default	:
@@ -1473,8 +1431,8 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static void endIterate(final IFProEntity entity, final IFProGlobalStack stack) {
-		FProUtil.releaseTemporaries(entity, stack);
+	private static void endIterate(final IFProEntity entity, final SyntaxTreeInterface<?> repo, final IFProGlobalStack stack) {
+		FProUtil.releaseTemporaries(entity, repo, stack);
 //		if (stack.getTopType() == StackTopType.temporary) {
 //			stack.pop();
 //		}
@@ -1551,16 +1509,6 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		}
 	}
 
-	private static void fillQuickIds(final Map<Long,QuickIds> repo, final QuickIds data) {
-		if (!repo.containsKey(data.id)) {
-			repo.put(data.id,data);
-		}
-		else {
-			data.next = repo.get(data.id);
-			repo.put(data.id,data);
-		}
-	}	
-
 	private static boolean executeCallback(IFProCallback callback, List<IFProVariable> vars, final String[] names, final IFProEntitiesRepo repo, final IFProParserAndPrinter pap) throws SyntaxException {
 		final IFProEntity[]		resolved = new IFProEntity[names.length];
 		final String[]			printedValues = new String[names.length];
@@ -1581,50 +1529,5 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		} catch (PrintingException e) {
 			throw new SyntaxException(0,0,e.getLocalizedMessage(),e);
 		}
-	}
-	
-	static class StandardOperators {
-		public final int				priority;
-		public final OperatorType		type;
-		public final String				text;
-		public final RegisteredEntities	action;
-		
-		public StandardOperators(final int priority, final OperatorType type, final String text, final RegisteredEntities action) {
-			this.priority = priority;	this.type  = type;
-			this.text = text;			this.action = action;
-		}
-
-		@Override public String toString() {return "StandardOperators [priority=" + priority + ", type=" + type + ", text=" + text + ", action = " + action + "]";}
-	}
-
-	static class StandardPredicates {
-		public final String				text;		
-		public final RegisteredEntities	action;
-		
-		public StandardPredicates(String text, RegisteredEntities action) {
-			this.text = text;
-			this.action = action;
-		}
-
-		@Override public String toString() {return "StandardPredicates [text=" + text + ", action=" + action + "]";}
-	}
-	
-	static class QuickIds implements Comparable<QuickIds>{
-		public long 				id;
-		public IFProEntity			def;
-		public RegisteredEntities 	action;
-		public QuickIds				next = null;
-		
-		public QuickIds(final IFProEntity def, final RegisteredEntities action) {
-			this.id = def.getEntityId();
-			this.def = def;			this.action = action;
-		}
-
-		@Override
-		public int compareTo(final QuickIds o) {
-			return o.id < id ? 1 : (o.id > id ? -1 : 0);
-		}
-
-		@Override public String toString() {return "QuickIds [id=" + id + ", def=" + def + ", action=" + action + "]";}
 	}
 }

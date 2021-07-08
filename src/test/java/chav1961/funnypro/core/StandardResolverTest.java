@@ -25,6 +25,7 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
@@ -45,6 +46,8 @@ public class StandardResolverTest {
 	@Test
 	public void lifeCycleTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -154,6 +157,8 @@ public class StandardResolverTest {
 	@Test
 	public void simpleTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -307,6 +312,8 @@ public class StandardResolverTest {
 	public void staticCalculationTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final StandardResolver	sr = new StandardResolver();
 			final GlobalDescriptor	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -378,6 +385,8 @@ public class StandardResolverTest {
 	public void staticComparisonTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final StandardResolver	sr = new StandardResolver();
 			final GlobalDescriptor	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -427,6 +436,8 @@ public class StandardResolverTest {
 	@Test
 	public void staticList2PredicateTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final StandardResolver	sr = new StandardResolver();
@@ -442,6 +453,8 @@ public class StandardResolverTest {
 	@Test
 	public void nonBackTrackingTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -535,6 +548,8 @@ public class StandardResolverTest {
 	@Test
 	public void temporaryUnificationTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -689,6 +704,8 @@ public class StandardResolverTest {
 	@Test
 	public void assertionTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -731,6 +748,8 @@ public class StandardResolverTest {
 	@Test
 	public void iterationTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -891,6 +910,8 @@ public class StandardResolverTest {
 	public void andOrNotTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -935,6 +956,8 @@ public class StandardResolverTest {
 	public void ruledEntityTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -972,6 +995,8 @@ public class StandardResolverTest {
 	public void cutOperatorTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -1008,6 +1033,8 @@ public class StandardResolverTest {
 	@Test
 	public void externalCallTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
@@ -1153,7 +1180,7 @@ public class StandardResolverTest {
 										
 										target.put("Call:\n");
 										for (int index = 0; index < names.length; index++) {
-											target.put(names[index]).put('=').put(printedValues[index]).put('\n');
+											target.put(names[index]).put('=').put(printedValues[index].trim()).put('\n');
 										}
 										return true;
 									} catch (PrintingException e) {

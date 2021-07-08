@@ -25,7 +25,6 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IFProModule;
-import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
@@ -357,11 +356,8 @@ public class FProVM implements IFProVM, IFProModule {
 		}
 	}
 	
-	protected ResolvableAndGlobal getStandardResolver() {
-		for (PluginItem item : repo.pluginsRepo().seek(StandardResolver.PLUGIN_NAME,StandardResolver.PLUGIN_PRODUCER,StandardResolver.PLUGIN_VERSION)) {
-			return new ResolvableAndGlobal(item.getDescriptor().getPluginEntity().getResolver(),item.getGlobal());
-		}
-		throw new IllegalStateException("No standard resolver was registered in the system. Use inference with explicit call");
+	protected ResolvableAndGlobal<GlobalDescriptor> getStandardResolver() {
+		return FProUtil.getStandardResolver(repo);
 	}
 
 	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException {
@@ -386,16 +382,5 @@ public class FProVM implements IFProVM, IFProModule {
 		} catch (Exception e) {
 			throw new ContentException(e.getMessage(),e);
 		}
-	}
-	
-	static class ResolvableAndGlobal {
-		public IResolvable	resolver;
-		public Object		global;
-		
-		public ResolvableAndGlobal(final IResolvable resolver, final Object global) {
-			this.resolver = resolver;
-			this.global = global;
-		}
-		
 	}
 }

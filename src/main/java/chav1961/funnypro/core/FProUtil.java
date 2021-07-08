@@ -5,7 +5,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
+import chav1961.funnypro.core.StandardResolver.RegisteredEntities;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
@@ -14,8 +16,10 @@ import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.RealEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.entities.VariableEntity;
+import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
+import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginItem;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.GlobalStackTop;
 import chav1961.funnypro.core.interfaces.IFProList;
@@ -24,8 +28,10 @@ import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.purelib.enumerations.ContinueMode;
 import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterTarget;
@@ -487,32 +493,35 @@ public class FProUtil {
 	 * <p>Remove entity and all it's children</p>
 	 * @param source entity to remove
 	 */
-	public static void removeEntity(final IFProEntity source) {
+	public static void removeEntity(final SyntaxTreeInterface<?> repo, final IFProEntity source) {
 		if (source != null) {
 			source.setParent(null);
+			
 			switch (source.getEntityType()) {
 				case string			:
+					repo.removeName(source.getEntityId());
+					break;
 				case integer		:
 				case real			:
 				case anonymous		:
 					break;
 				case list			:
 					if (((IFProList)source).getChild() != null) {
-						removeEntity(((IFProList)source).getChild());
+						removeEntity(repo,((IFProList)source).getChild());
 						((IFProList)source).setChild(null);
 					}
 					if (((IFProList)source).getTail() != null) {
-						removeEntity(((IFProList)source).getTail());
+						removeEntity(repo,((IFProList)source).getTail());
 						((IFProList)source).setTail(null);
 					}
 					break;
 				case operator		:
 					if (((IFProOperator)source).getLeft() != null) {
-						removeEntity(((IFProOperator)source).getLeft());
+						removeEntity(repo,((IFProOperator)source).getLeft());
 						((IFProOperator)source).setLeft(null);
 					}
 					if (((IFProOperator)source).getRight() != null) {
-						removeEntity(((IFProOperator)source).getRight());
+						removeEntity(repo,((IFProOperator)source).getRight());
 						((IFProOperator)source).setRight(null);
 					}
 					break;
@@ -520,7 +529,7 @@ public class FProUtil {
 					final IFProEntity[]		parm = ((IFProPredicate)source).getParameters();
 					
 					for (int index = 0; index < parm.length; index++){
-						removeEntity(parm[index]);
+						removeEntity(repo,parm[index]);
 						parm[index] = null;
 					}
 					break;
@@ -668,9 +677,9 @@ public class FProUtil {
 		return result;
 	}
 
-	public static boolean unifyTemporaries(final IFProEntity mark, final IFProEntity left, final IFProEntity right, final IFProEntity created, final IFProGlobalStack stack, final Change[] list) {
+	public static boolean unifyTemporaries(final IFProEntity mark, final IFProEntity left, final IFProEntity right, final IFProEntity created, final SyntaxTreeInterface<?>  repo, final IFProGlobalStack stack, final Change[] list) {
 		if (!unify(mark,left,right,stack,list)) {
-			removeEntity(created);
+			removeEntity(repo, created);
 			return false;
 		}
 		else {
@@ -680,7 +689,7 @@ public class FProUtil {
 	}
 	
 	@SuppressWarnings({ "unchecked" })
-	public static void releaseTemporaries(final IFProEntity mark, final IFProGlobalStack stack) {
+	public static void releaseTemporaries(final IFProEntity mark, final SyntaxTreeInterface<?> repo, final IFProGlobalStack stack) {
 		while (!stack.isEmpty() && stack.peek().getEntityAssicated() == mark) {
 			final GlobalStackTop item = stack.peek();
 			
@@ -698,7 +707,7 @@ public class FProUtil {
 				case orChain	:
 					break;
 				case temporary	:
-					removeEntity(((GlobalStack.TemporaryStackTop)item).getEntity());
+					removeEntity(repo, ((GlobalStack.TemporaryStackTop)item).getEntity());
 					stack.pop();
 					break;
 				default	:
@@ -894,6 +903,70 @@ public class FProUtil {
 			}
 			return rc;
 		}
+	}
+	
+	public static <T extends Enum<?>> void fillQuickIds(final Map<Long,QuickIds<T>> repo, final QuickIds<T> data) {
+		if (!repo.containsKey(data.id)) {
+			repo.put(data.id,data);
+		}
+		else {
+			data.next = repo.get(data.id);
+			repo.put(data.id,data);
+		}
+	}	
+	
+	public static <T extends Enum<?>> T detect(final LongIdMap<QuickIds<T>> repo, final IFProEntity entity, final T defaultValue) {
+		if (repo == null) {
+			throw new NullPointerException("Repository can't be null"); 
+		}
+		else if (entity == null) {
+			return defaultValue; 
+		}
+		else {
+			QuickIds<T>	start = repo.get(entity.getEntityId());
+			
+			if (start != null) {
+				switch (entity.getEntityType()) {
+					case operator	:
+						final int			priority = ((IFProOperator)entity).getPriority();
+						final OperatorType	operType = ((IFProOperator)entity).getOperatorType(); 
+						
+						while (start != null) {
+							if (((IFProOperator)start.def).getPriority() == priority &&  ((IFProOperator)start.def).getOperatorType() == operType) {
+								return start.action;
+							}
+							else {
+								start = start.next;
+							}
+						}
+						break;
+					case predicate	:
+						final int	arity = ((IFProPredicate)entity).getArity();
+						
+						while (start != null) {
+							if (((IFProPredicate)start.def).getArity() == arity) {
+								return start.action;
+							}
+							else {
+								start = start.next;
+							}
+						}
+						break;
+					default :
+				}
+				return defaultValue; 
+			}
+			else {
+				return defaultValue; 
+			}
+		}
+	}
+
+	public static ResolvableAndGlobal<GlobalDescriptor> getStandardResolver(final IFProEntitiesRepo repo) {
+		for (PluginItem item : repo.pluginsRepo().seek(StandardResolver.PLUGIN_NAME,StandardResolver.PLUGIN_PRODUCER,StandardResolver.PLUGIN_VERSION)) {
+			return new ResolvableAndGlobal(item.getDescriptor().getPluginEntity().getResolver(),item.getGlobal());
+		}
+		throw new IllegalStateException("No standard resolver was registered in the system. Use inference with explicit call");
 	}
 	
 	private static int simpleParser(final char[] source, final int from, final int to, final char[] template, final int templateFrom, final int templateTo, final int[][] locations, final boolean needRestore) {

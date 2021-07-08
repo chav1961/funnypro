@@ -98,7 +98,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			this.goalId = this.termRepo.placeName(":-",null);
 			this.questionId = this.termRepo.placeName("?-",null);
 			
-			this.frRepo = new FactRuleRepo(log,props);
+			this.frRepo = new FactRuleRepo(log, props, stringRepo());
 			this.epRepo = new ExternalPluginsRepo(log, props);
 			this.epRepo.prepare(this);
 		}

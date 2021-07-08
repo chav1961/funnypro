@@ -12,6 +12,7 @@ import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.ExternalEntityDescriptor;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.AndChainStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
@@ -88,6 +89,8 @@ public class GlobalStackTest {
 	public void basicTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		final IFProEntity	entity1 = new AnonymousEntity(), entity2 = new IntegerEntity(100);	
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props);
 			final GlobalStack	stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo)) {

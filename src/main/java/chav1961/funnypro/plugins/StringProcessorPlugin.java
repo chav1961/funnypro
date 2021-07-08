@@ -265,7 +265,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	@Override
 	public void endResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws SyntaxException {
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.temporary && ((TemporaryStackTop)local.stack.peek()).getEntityAssicated() == entity) {
-			FProUtil.releaseTemporaries(entity,local.stack);
+			FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 		}
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
 			FProUtil.unbind(((BoundStackTop<FProUtil.Change>)local.stack.pop()).getChangeChain());
@@ -342,7 +342,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 		else if (FProUtil.isEntityA(first, ContentType.Var)) {
 			final IFProEntity		next = FProUtil.duplicate(second);
 			
-			return FProUtil.unifyTemporaries(mark, first, ((IFProList)second).getChild(), next, local.stack, change) ? ResolveRC.True : ResolveRC.False;
+			return FProUtil.unifyTemporaries(mark, first, ((IFProList)second).getChild(), next, global.repo.stringRepo(), local.stack, change) ? ResolveRC.True : ResolveRC.False;
 		}
 		else {
 			try{
@@ -371,11 +371,11 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 			
 			final IFProEntity		newSecond = FProUtil.duplicate(((IFProList)lastSecond).getTail());
 			
-			FProUtil.removeEntity(lastSecond);
+			FProUtil.removeEntity(global.repo.stringRepo(), lastSecond);
 			
 			if (newSecond != null) {
 				if (newSecond.getEntityType() == EntityType.list) {
-					return FProUtil.unifyTemporaries(mark, ((IFProPredicate)mark).getParameters()[0], ((IFProList)newSecond).getChild(), newSecond, local.stack, change) ? ResolveRC.True : ResolveRC.False;
+					return FProUtil.unifyTemporaries(mark, ((IFProPredicate)mark).getParameters()[0], ((IFProList)newSecond).getChild(), newSecond, global.repo.stringRepo(), local.stack, change) ? ResolveRC.True : ResolveRC.False;
 				}
 				else {
 					if (FProUtil.unify(((IFProPredicate)mark).getParameters()[0], newSecond, change)) {

@@ -4,14 +4,14 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import chav1961.funnypro.core.StandardResolver.QuickIds;
+import chav1961.funnypro.core.StandardResolver.RegisteredEntities;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 public class GlobalDescriptor {
-	public LongIdMap<QuickIds>		registered = new LongIdMap<>(QuickIds.class);
+	public LongIdMap<QuickIds<RegisteredEntities>>	registered = new LongIdMap(QuickIds.class);
 	public Set<Long>				registeredIds = new HashSet<>();
 	public IFProEntitiesRepo		repo;
 	public LoggerFacade				log;

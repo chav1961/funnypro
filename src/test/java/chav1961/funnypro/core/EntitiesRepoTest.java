@@ -16,6 +16,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProRepo;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
@@ -29,6 +30,8 @@ public class EntitiesRepoTest {
 	@Test
 	public void basicTest() throws RuntimeException, IOException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,repo.getDebug());
@@ -67,6 +70,8 @@ public class EntitiesRepoTest {
 	@Test
 	public void operatorsTest() throws RuntimeException, IOException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final long			op1Id = repo.termRepo().placeName("<<<>>>",null), op2Id = repo.termRepo().placeName(">>><<<",null);
@@ -153,6 +158,8 @@ public class EntitiesRepoTest {
 	public void serializationTest() throws RuntimeException, IOException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final long			op1Id = repo.termRepo().placeName("<<<>>>",null), op2Id = repo.termRepo().placeName(">>><<<",null);
 			final IFProOperator	op1 = new OperatorDefEntity(100,OperatorType.xfx,op1Id), op2 = new OperatorDefEntity(200,OperatorType.xfx,op2Id);
@@ -202,6 +209,8 @@ public class EntitiesRepoTest {
 	@Test
 	public void consultAndSaveTest() throws RuntimeException, IOException, SyntaxException, PrintingException {
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			repo.consult(new StringCharSource(Utils.fromResource(this.getClass().getResource("consult.fpro"),"UTF-8")));

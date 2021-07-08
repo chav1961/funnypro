@@ -19,7 +19,6 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import chav1961.funnypro.core.StandardResolver.StandardOperators;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.OperatorDefEntity;
@@ -32,17 +31,20 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginItem;
 import chav1961.funnypro.core.interfaces.IFProOperator;
+import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.OrdinalSyntaxTree;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
+import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 import chav1961.purelib.streams.charsource.ReaderCharSource;
 import chav1961.purelib.streams.chartarget.WriterCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
@@ -54,8 +56,9 @@ public class RepositoriesTest {
 	@Test
 	public void factRuleRepoTest() throws IOException {
 		final LoggerFacade		log = new DefaultLoggerFacade();
-		final SubstitutableProperties		props = new SubstitutableProperties();
-		final FactRuleRepo		frr = new FactRuleRepo(log,props);
+		final SubstitutableProperties	props = new SubstitutableProperties();
+		final SyntaxTreeInterface<?>	sti = new OrdinalSyntaxTree<>(); 
+		final FactRuleRepo		frr = new FactRuleRepo(log, props, sti);
 		final IFProEntity		temp = new PredicateEntity(12345,new StringEntity(67890),new IntegerEntity(13579));
 		
 		int	count = 0;
@@ -94,7 +97,7 @@ public class RepositoriesTest {
 		}
 		Assert.assertEquals(count,3);
 		
-		final FactRuleRepo			newFrr = new FactRuleRepo(log,props);
+		final FactRuleRepo			newFrr = new FactRuleRepo(log, props, sti);
 		
 /*		try(final ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 			final DataOutputStream		dos = new DataOutputStream(baos)) {
@@ -136,6 +139,8 @@ public class RepositoriesTest {
 	public void entitiesRepoTest() throws Exception {
 		final LoggerFacade		log = new DefaultLoggerFacade();
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo	repo = new EntitiesRepo(log,props)) {
 			final long				stringId = repo.stringRepo().placeName("test string",null);
@@ -222,8 +227,11 @@ public class RepositoriesTest {
 
 	@Test
 	public void externalPluginsRepoTest() throws Exception {
-		final LoggerFacade		log = new DefaultLoggerFacade();
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		final LoggerFacade		log = new DefaultLoggerFacade();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		final EntitiesRepo		repo = new EntitiesRepo(log,props);
 		
 		try(final IFProExternalPluginsRepo	xrepo = new ExternalPluginsRepo(log, props)) {
@@ -233,7 +241,7 @@ public class RepositoriesTest {
 			for (PluginItem item : xrepo.allPlugins()) {
 				count++;
 			}
-			Assert.assertEquals(count,2);
+			Assert.assertEquals(count,1);
 			
 			count = 0;			
 			for (PluginItem item : xrepo.seek(StandardResolver.PLUGIN_NAME,StandardResolver.PLUGIN_PRODUCER,StandardResolver.PLUGIN_VERSION)) {
@@ -245,7 +253,7 @@ public class RepositoriesTest {
 			}
 			Assert.assertEquals(count,1);
 	
-			for (StandardOperators item : StandardResolver.OPS) {
+			for (RegisteredOperators item : StandardResolver.OPS) {
 				final long	id = repo.termRepo().seekName(item.text);
 				Assert.assertTrue(id != -1);
 				Assert.assertEquals(repo.classify(id),Classification.operator);
@@ -258,6 +266,9 @@ public class RepositoriesTest {
 	public void parsersTest() throws IOException, ContentException, PrintingException {
 		final LoggerFacade			log = new DefaultLoggerFacade();
 		final SubstitutableProperties		props = new SubstitutableProperties();
+		
+		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
+		
 		final EntitiesRepo			repo = new EntitiesRepo(log,props);
 		final ParserAndPrinter		pap = new ParserAndPrinter(log,props,repo);
 		final List<IFProEntity>		data = new ArrayList<IFProEntity>(); 
