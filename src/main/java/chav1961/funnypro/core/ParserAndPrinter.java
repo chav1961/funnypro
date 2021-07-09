@@ -870,7 +870,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			}
 			if (from < maxLength) {
 				from++;
-				result[0] = getRepo().termRepo().placeName(source,startName,from-startName-1,null);
+				result[0] = getRepo().termRepo().placeName(source,startName,from-1,null);
 				return from;
 			}
 			else {

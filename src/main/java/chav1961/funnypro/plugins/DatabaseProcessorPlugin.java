@@ -76,7 +76,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 		Op600xfxRange(DatabaseProcessorGlobal.OperatorType.OpBetween), 
 		Op700xfxSimilar(DatabaseProcessorGlobal.OperatorType.OpLike),
 		Op700xfxIn(DatabaseProcessorGlobal.OperatorType.OpIn),
-		PredAssert, PredAssert2,
+		PredAssert, PredAssert2, PredAssert3,
 		PredRetract, PredRetract2,
 		PredCall, PredCall2,
 		Others;
@@ -102,8 +102,9 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 													};
 	static final RegisteredPredicates[]		PREDS = {	new RegisteredPredicates<RegisteredEntities>("assertDb(Table)",RegisteredEntities.PredAssert),
 														new RegisteredPredicates<RegisteredEntities>("assertDb(Table,Content)",RegisteredEntities.PredAssert2),
+														new RegisteredPredicates<RegisteredEntities>("assertDb(Table,Content,Cond)",RegisteredEntities.PredAssert3),
 														new RegisteredPredicates<RegisteredEntities>("retractDb(Table)",RegisteredEntities.PredRetract),
-														new RegisteredPredicates<RegisteredEntities>("retractDb(Table,Cond)",RegisteredEntities.PredRetract),
+														new RegisteredPredicates<RegisteredEntities>("retractDb(Table,Cond)",RegisteredEntities.PredRetract2),
 														new RegisteredPredicates<RegisteredEntities>("callDb(Table)",RegisteredEntities.PredCall),
 														new RegisteredPredicates<RegisteredEntities>("callDb(Table,Cond)",RegisteredEntities.PredCall2)
 													};
@@ -222,13 +223,71 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 		
 		switch (FProUtil.detect(global.registered,entity,RegisteredEntities.Others)) {
 			case PredAssert		:
-				break;
+				final IFProEntity	assertParam1 = ((IFProPredicate)entity).getParameters()[0];
+				
+				try{
+					if (assertParam1.getEntityType() == EntityType.predicate && !FProUtil.hasAnyVariableOrAnonymous(assertParam1) &&
+						buildInsertString(global, local, (IFProPredicate)assertParam1, 1, sql) && 
+						buildValuesString(global, local, (IFProPredicate)assertParam1, sql.append(" values "))) {
+						try (final Statement	stmt = global.conn.createStatement()){
+							
+							stmt.executeUpdate(sql.toString());
+							return stmt.getUpdateCount() > 0 ? ResolveRC.True : ResolveRC.False;
+						}
+					}
+					else {
+						return ResolveRC.False;
+					}
+				} catch (SQLException | ContentException | IOException e) {
+					e.printStackTrace();
+					return ResolveRC.False;
+				}
 			case PredAssert2	:
-				break;
+				final IFProEntity	assertParam21 = ((IFProPredicate)entity).getParameters()[0];
+				final IFProEntity	assertParam22 = ((IFProPredicate)entity).getParameters()[1];
+				
+				if (assertParam21.getEntityType() == EntityType.predicate && !FProUtil.hasAnyVariableOrAnonymous(assertParam21) &&
+					assertParam22.getEntityType() == EntityType.predicate && !FProUtil.hasAnyVariableOrAnonymous(assertParam22) &&
+					((IFProPredicate)assertParam21).getArity() == ((IFProPredicate)assertParam22).getArity() && 
+					buildInsertString(global, local, (IFProPredicate)assertParam21, 0, sql) && buildSelectString(global, local, (IFProPredicate)assertParam22, 0, sql.append(" "))) {
+					try (final Statement	stmt = global.conn.createStatement()){
+						
+						stmt.executeUpdate(sql.toString());
+						return stmt.getUpdateCount() > 0 ? ResolveRC.True : ResolveRC.False;
+					} catch (SQLException e) {
+						return ResolveRC.False;
+					}
+				}
+				else {
+					return ResolveRC.False;
+				}
+			case PredAssert3	:
+				final IFProEntity	assertParam31 = ((IFProPredicate)entity).getParameters()[0];
+				final IFProEntity	assertParam32 = ((IFProPredicate)entity).getParameters()[1];
+				final IFProEntity	assertParam33 = ((IFProPredicate)entity).getParameters()[3];
+				
+				try{
+					if (assertParam31.getEntityType() == EntityType.predicate && !FProUtil.hasAnyVariableOrAnonymous(assertParam31) &&
+						assertParam32.getEntityType() == EntityType.predicate && !FProUtil.hasAnyVariableOrAnonymous(assertParam32) &&
+						((IFProPredicate)assertParam31).getArity() == ((IFProPredicate)assertParam32).getArity() && 
+						buildInsertString(global, local, (IFProPredicate)assertParam31, 0, sql) && buildSelectString(global, local, (IFProPredicate)assertParam32, 0, sql) && 
+						buildWhereString(global, local, assertParam33, sql.append(" where "))) {
+						try (final Statement	stmt = global.conn.createStatement()){
+							
+							stmt.executeUpdate(sql.toString());
+							return stmt.getUpdateCount() > 0 ? ResolveRC.True : ResolveRC.False;
+						}
+					}
+					else {
+						return ResolveRC.False;
+					}
+				} catch (SQLException | ContentException | IOException e) {
+					return ResolveRC.False;
+				}
 			case PredCall		:
 				final IFProEntity	callParam = ((IFProPredicate)entity).getParameters()[0];
 				
-				if (callParam.getEntityType() == EntityType.predicate && buildSelectString(global, local, (IFProPredicate)callParam, sql)) {
+				if (callParam.getEntityType() == EntityType.predicate && buildSelectString(global, local, (IFProPredicate)callParam, 1, sql)) {
 					try{
 						local.stmt = global.conn.createStatement();
 						local.rs = local.stmt.executeQuery(sql.toString());
@@ -260,7 +319,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 				final IFProEntity	callParam22 = ((IFProPredicate)entity).getParameters()[1];
 				
 				try{
-					if (callParam21.getEntityType() == EntityType.predicate && buildSelectString(global, local, (IFProPredicate)callParam21, sql) && buildWhereString(global, local, callParam22, sql.append(" where "))) {
+					if (callParam21.getEntityType() == EntityType.predicate && buildSelectString(global, local, (IFProPredicate)callParam21, 1, sql) && buildWhereString(global, local, callParam22, sql.append(" where "))) {
 						local.stmt = global.conn.createStatement();
 						local.rs = local.stmt.executeQuery(sql.toString());
 						
@@ -293,7 +352,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 					try{
 						try(final Statement	stmt = global.conn.createStatement()) {
 							stmt.executeUpdate(sql.toString());
-							return stmt.getLargeUpdateCount() > 0 ? ResolveRC.True : ResolveRC.False;
+							return stmt.getUpdateCount() > 0 ? ResolveRC.True : ResolveRC.False;
 						}
 					} catch (SQLException e) {
 						return ResolveRC.False;
@@ -310,7 +369,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 					if (retractParam21.getEntityType() == EntityType.predicate && buildDeleteString(global, local, (IFProPredicate)retractParam21, sql) && buildWhereString(global, local, retractParam22, sql.append(" where "))) {
 						try(final Statement	stmt = global.conn.createStatement()) {
 							stmt.executeUpdate(sql.toString());
-							return stmt.getLargeUpdateCount() > 0 ? ResolveRC.True : ResolveRC.False;
+							return stmt.getUpdateCount() > 0 ? ResolveRC.True : ResolveRC.False;
 						}
 					}
 					else {
@@ -324,7 +383,6 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 			default:
 				throw new UnsupportedOperationException("Entity type ["+FProUtil.detect(global.registered,entity,RegisteredEntities.Others)+"] is not supported yet");
 		}
-		return ResolveRC.False;
 	}
 	
 	@Override
@@ -332,10 +390,8 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 		IFProEntity	record = null;
 		
 		switch (FProUtil.detect(global.registered,entity,RegisteredEntities.Others)) {
-			case PredAssert		:
-				break;
-			case PredAssert2	:
-				break;
+			case PredAssert : case PredAssert2 : case PredAssert3 :
+				return ResolveRC.False;
 			case PredCall : case PredCall2	:
 				if (local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
 					FProUtil.unbind((Change)((BoundStackTop)local.stack.pop()).getChangeChain());
@@ -363,20 +419,17 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 				}
 			case PredRetract : case PredRetract2 :
 				return ResolveRC.False;
-			case Others			:
+			case Others	:
 				return ResolveRC.False;
 			default:
 				throw new UnsupportedOperationException("Entity type ["+FProUtil.detect(global.registered,entity,RegisteredEntities.Others)+"] is not supported yet");
 		}
-		return ResolveRC.False;
 	}
 	
 	@Override
 	public void endResolve(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProEntity entity) throws SyntaxException {
 		switch (FProUtil.detect(global.registered,entity,RegisteredEntities.Others)) {
-			case PredAssert		:
-				break;
-			case PredAssert2	:
+			case PredAssert : case PredAssert2 : case PredAssert3 :
 				break;
 			case PredCall : case PredCall2 :
 				if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
@@ -388,7 +441,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 				break;
 			case PredRetract : case PredRetract2 :
 				break;
-			case Others			:
+			case Others	:
 				break;
 			default:
 				throw new UnsupportedOperationException("Entity type ["+FProUtil.detect(global.registered,entity,RegisteredEntities.Others)+"] is not supported yet");
@@ -409,12 +462,12 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 	} 
 
 	// parse predicate TableName(FieldName(Something),...)
-	private static boolean buildSelectString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProPredicate entity, final StringBuilder sql) {
+	private static boolean buildSelectString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProPredicate entity, final int arityAwaited, final StringBuilder sql) {
 		final SyntaxTreeInterface<?>	sti = global.repo.termRepo();
 		String 	prefix = "select ";
 		
 		for (IFProEntity item : entity.getParameters()) {
-			if (item.getEntityType() == EntityType.predicate && ((IFProPredicate)item).getArity() == 1) {
+			if (item.getEntityType() == EntityType.predicate && ((IFProPredicate)item).getArity() == arityAwaited) {
 				sql.append(prefix).append(sti.getName(item.getEntityId()));
 				prefix = ",";
 			}
@@ -447,7 +500,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 	}
 
 	// parse "expression" (field = Val, field in [List...], field in Val .. Val, field ~ Val, field is null, field is not null; ...)
-	private boolean buildWhereString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProEntity node, final StringBuilder sql) throws ContentException, IOException {
+	private static boolean buildWhereString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProEntity node, final StringBuilder sql) throws ContentException, IOException {
 		// TODO Auto-generated method stub
 		if (FProUtil.hasAnyVariableOrAnonymous(node)) {
 			return false;
@@ -534,8 +587,48 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 		}
 	}
 	
+	private static boolean buildInsertString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProPredicate entity, final int arityAwaited, final StringBuilder sql) {
+		final SyntaxTreeInterface<?>	sti = global.repo.termRepo();
+		char prefix = '(';
+		
+		sql.append("insert into ").append(sti.getName(entity.getEntityId()));
+		for (IFProEntity item : entity.getParameters()) {
+			if (item.getEntityType() == EntityType.predicate && ((IFProPredicate)item).getArity() == arityAwaited) {
+				sql.append(prefix).append(sti.getName(item.getEntityId()));
+				prefix = ',';
+			}
+			else {
+				return false;
+			}
+		}
+		sql.append(')');
+		
+		return true;
+	}
+
+	private static boolean buildValuesString(final DatabaseProcessorGlobal global, final DatabaseProcessorLocal local, final IFProPredicate entity, final StringBuilder sql) throws ContentException, IOException {
+		final SyntaxTreeInterface<?>	sti = global.repo.termRepo();
+		char 	prefix = '(';
+		
+		for (IFProEntity item : entity.getParameters()) {
+			if (item.getEntityType() == EntityType.predicate && ((IFProPredicate)item).getArity() == 1) {
+				sql.append(prefix);
+				if (!buildWhereString(global, local, ((IFProPredicate)item).getParameters()[0],sql)) {
+					return false;
+				}
+				else {
+					prefix = ',';
+				}
+			}
+			else {
+				return false;
+			}
+		}
+		sql.append(')');
+		return true;
+	}
 	
-	private DatabaseProcessorGlobal.OperatorType classify(final DatabaseProcessorGlobal global, final IFProOperator node) {
+	private static DatabaseProcessorGlobal.OperatorType classify(final DatabaseProcessorGlobal global, final IFProOperator node) {
 		final RegisteredEntities	re = FProUtil.detect(global.registered, node, RegisteredEntities.Others); 
 		
 		if (re == RegisteredEntities.Others) {
