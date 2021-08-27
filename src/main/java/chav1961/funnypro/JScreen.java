@@ -270,32 +270,8 @@ class JScreen extends JFrame implements LocaleChangeListener {
 	}
 	
 	@OnAction("action:/about")
-	private void showAboutScreen() {
-		try{final JEditorPane 	pane = new JEditorPane("text/html",null);
-			final Icon			icon = new ImageIcon(this.getClass().getResource("avatar.jpg"));
-			
-			try(final Reader	rdr = localizer.getContent(ABOUT_CONTENT,new MimeType("text","x-wiki.creole"),new MimeType("text","html"))) {
-				pane.read(rdr,null);
-			}
-			pane.setEditable(false);
-			pane.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
-			pane.setPreferredSize(new Dimension(300,300));
-			pane.addHyperlinkListener(new HyperlinkListener() {
-								@Override
-								public void hyperlinkUpdate(final HyperlinkEvent e) {
-									if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-										try{Desktop.getDesktop().browse(e.getURL().toURI());
-										} catch (URISyntaxException | IOException exc) {
-											exc.printStackTrace();
-										}
-									}
-								}
-			});
-			
-			JOptionPane.showMessageDialog(this,pane,localizer.getValue(ABOUT_TITLE),JOptionPane.PLAIN_MESSAGE,icon);
-		} catch (LocalizationException | MimeParseException | IOException e) {
-			ss.message(Severity.error,e.getLocalizedMessage());
-		}
+	private void showAboutScreen() throws URISyntaxException {
+		SwingUtils.showAboutScreen(this, localizer, ABOUT_CONTENT, ABOUT_TITLE, this.getClass().getResource("avatar.jpg").toURI(), new Dimension(300,300));
 	}
 
 	protected void processSentence(final String sentence) {
