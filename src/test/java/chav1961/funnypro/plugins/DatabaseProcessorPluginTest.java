@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,12 +43,13 @@ public class DatabaseProcessorPluginTest {
 
 	@Category(DatabaseTestCategory.class)
 	@Test
+	@Ignore
 	public void lifeCycleTest() throws ContentException, NullPointerException, IOException, SQLException {
 		final SubstitutableProperties	props = new SubstitutableProperties();
 		
-		props.setProperty(DatabaseProcessorPlugin.PROP_CONN_STRING, "jdbc:edb://localhost:5444/edb?connectTimeout=0");
-		props.setProperty(DatabaseProcessorPlugin.PROP_CONN_USER, "enterprisedb");
-		props.setProperty(DatabaseProcessorPlugin.PROP_CONN_PASSWD, "sasa21");
+		props.setProperty(DatabaseProcessorPlugin.PROP_CONN_STRING, PureLibSettings.instance().getProperty("purelib.test.connection.uri"));
+		props.setProperty(DatabaseProcessorPlugin.PROP_CONN_USER, PureLibSettings.instance().getProperty("purelib.test.connection.user"));
+		props.setProperty(DatabaseProcessorPlugin.PROP_CONN_PASSWD, PureLibSettings.instance().getProperty("purelib.test.connection.password"));
 		
 		final StandardResolver			sr = new StandardResolver();
 		final DatabaseProcessorPlugin	dbpp = new DatabaseProcessorPlugin();
