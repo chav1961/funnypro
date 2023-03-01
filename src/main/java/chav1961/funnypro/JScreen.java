@@ -83,12 +83,14 @@ class JScreen extends JFrame implements LocaleChangeListener {
 											@Override public String getFilterName() {return "Funny Prolog Fact/rule base";}
 											@Override public String[] getFileMask() {return fileMask;}
 											@Override public boolean accept(FileSystemInterface item) throws IOException {return item.isDirectory() || item.getName().endsWith(".frb");}
+											@Override public boolean accept(File item) throws IOException {return item.isDirectory() || item.getName().endsWith(".frb");}
 										};
 	private static final FilterCallback	FPR_FILTER = new FilterCallback() {
 											final String[]	fileMask = new String[]{"*.fpr"};
 											@Override public String getFilterName() {return "Funny Prolog source files";}
 											@Override public String[] getFileMask() {return fileMask;}
 											@Override public boolean accept(FileSystemInterface item) throws IOException {return item.isDirectory() || item.getName().endsWith(".frb");}
+											@Override public boolean accept(File item) throws IOException {return item.isDirectory() || item.getName().endsWith(".frb");}
 										};
 	
 	private final Localizer			parent, localizer;
