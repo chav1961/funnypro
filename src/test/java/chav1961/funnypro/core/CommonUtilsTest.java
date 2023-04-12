@@ -40,8 +40,8 @@ public class CommonUtilsTest {
 		final SyntaxTreeInterface<IFProEntity>	sti = new OrdinalSyntaxTree<>(), newSti = new OrdinalSyntaxTree<>(); 
 		
 		try(final InOutGrowableByteArray	iogba = new InOutGrowableByteArray(false)) {
-			sti.placeName("name1",null);
-			sti.placeName("name2",null);
+			sti.placeName((CharSequence)"name1",null);
+			sti.placeName((CharSequence)"name2",null);
 
 			CommonUtil.writeTree(iogba,sti);
 			
@@ -57,16 +57,16 @@ public class CommonUtilsTest {
 			iogba.flush();
 			iogba.reset();
 
-			CommonUtil.readTree(iogba,newSti,IntegerEntity.class);
-			Assert.assertTrue(newSti.seekName("name1") >= 0);
-			Assert.assertTrue(newSti.seekName("name2") >= 0);
-			Assert.assertFalse(newSti.seekName("unknown") >= 0);
+			CommonUtil.readTree(iogba,newSti,()->null);
+			Assert.assertTrue(newSti.seekName((CharSequence)"name1") >= 0);
+			Assert.assertTrue(newSti.seekName((CharSequence)"name2") >= 0);
+			Assert.assertFalse(newSti.seekName((CharSequence)"unknown") >= 0);
 			
-			try{CommonUtil.readTree(null,newSti,IntegerEntity.class);
+			try{CommonUtil.readTree(null,newSti,()->null);
 				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
 			} catch (NullPointerException exc) {
 			}
-			try{CommonUtil.readTree(iogba,null,IntegerEntity.class);
+			try{CommonUtil.readTree(iogba,null,()->null);
 				Assert.fail("Mandatory exception was not detected (null 2-nd argument)");
 			} catch (NullPointerException exc) {
 			}

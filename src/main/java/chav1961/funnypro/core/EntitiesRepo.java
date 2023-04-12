@@ -168,8 +168,8 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			throw new IllegalArgumentException("Illegal content of the source. Magic !"); 
 		}
 		else {
-			CommonUtil.readTree(source,stringRepo,SerializableString.class);
-			CommonUtil.readTree(source,termRepo,SerializableString.class);
+			CommonUtil.readTree(source,stringRepo,()->null);
+			CommonUtil.readTree(source,termRepo,()->null);
 			frRepo.deserialize(source);
 	
 			source.readInt();

@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Supplier;
 
 import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
@@ -56,22 +57,11 @@ class CommonUtil {
 			}
 			else {
 				final char[]	buffer = new char[total];
-				int				displ = 0, len;
 				
 				for (int index = 0, maxIndex = buffer.length; index < maxIndex; index++) {
 					buffer[index] = source.readChar();
 				}
-//				while ((len = source.read(buffer,displ,total-displ)) > 0) {
-//					if ((displ += len) >= total-1) {
-//						break;
-//					}
-//				}
-//				if (len <= 0) {
-//					throw new EOFException("End of file when reading string content");
-//				}
-//				else {
-					return new String(buffer);
-//				}
+				return new String(buffer);
 			}
 		}
 	}
@@ -96,13 +86,13 @@ class CommonUtil {
 				@Override
 				public boolean process(char[] name, int len, long id, Object cargo) {
 					try{target.writeLong(id);
-						writeString(target,tree.getName(id));
+						writeString(target, tree.getName(id));
 						if (tree.getCargo(id) != null && (tree.getCargo(id) instanceof IFProStreamSerializable)) {
-							target.writeInt(10);
+							target.writeByte(1);
 							((IFProStreamSerializable)tree.getCargo(id)).serialize(target);
 						}
 						else {
-							target.writeInt(0);
+							target.writeByte(0);
 						}
 						return true;
 					} catch (Exception e) {
@@ -121,14 +111,14 @@ class CommonUtil {
 	 * @throws IOException 
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void readTree(final DataInput source, final SyntaxTreeInterface tree, final Class<?> content) throws IOException, NullPointerException {
+	public static void readTree(final DataInput source, final SyntaxTreeInterface tree, final Supplier<IFProStreamSerializable> getter) throws IOException, NullPointerException {
 		if (source == null) {
 			throw new NullPointerException("Source stream can't be null");
 		}
 		else if (tree == null) {
 			throw new NullPointerException("Tree to deserialize to can't be null");
 		}
-		else if (content == null) {
+		else if (getter == null) {
 			throw new NullPointerException("Content class to deserialize to can't be null");
 		}
 		else if (source.readInt() != SERIALIZATION_TREE_MAGIC) {
@@ -140,16 +130,13 @@ class CommonUtil {
 			for (long count = 0; count < amount; count++) {
 				final long		id = source.readLong();
 				final String	name = readString(source);
-				final int		hasCargo = source.readInt();
+				final int		hasCargo = source.readByte();
 				
 				if (hasCargo == 1) {
-					try{final IFProStreamSerializable	inst = (IFProStreamSerializable) content.getConstructor().newInstance();
+					final IFProStreamSerializable	inst = getter.get();
 					
-						inst.deserialize(source);
-						tree.placeName((CharSequence)name, id, inst);
-					} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-						throw new IOException("Instantiation failed when deserialise tree content: "+e.getClass().getName()+" ("+e.getMessage()+")");
-					}
+					inst.deserialize(source);
+					tree.placeName((CharSequence)name, id, inst);
 				}
 				else {
 					tree.placeName((CharSequence)name, id, null);
