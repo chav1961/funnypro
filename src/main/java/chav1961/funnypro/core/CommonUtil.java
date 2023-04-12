@@ -18,7 +18,6 @@ class CommonUtil {
 	 * @param value string to serialize
 	 * @throws IOException
 	 */
-	
 	public static void writeString(final DataOutput target, final String value) throws IOException, NullPointerException {
 		if (target == null) {
 			throw new NullPointerException("Target can't be null");
@@ -147,13 +146,13 @@ class CommonUtil {
 					try{final IFProStreamSerializable	inst = (IFProStreamSerializable) content.getConstructor().newInstance();
 					
 						inst.deserialize(source);
-						tree.placeName(name.toCharArray(),0,name.length(),id,inst);
+						tree.placeName((CharSequence)name, id, inst);
 					} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 						throw new IOException("Instantiation failed when deserialise tree content: "+e.getClass().getName()+" ("+e.getMessage()+")");
 					}
 				}
 				else {
-					tree.placeName(name.toCharArray(),0,name.length(),id,null);
+					tree.placeName((CharSequence)name, id, null);
 				}
 			}
 			if (source.readLong() != SERIALIZATION_TREE_MAGIC) {

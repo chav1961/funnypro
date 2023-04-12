@@ -126,7 +126,7 @@ class PseudoFProVM extends FProVM {
 		super(log, prop);
 	}
 
-	protected ResolvableAndGlobal<GlobalDescriptor> getStandardResolver() {
+	protected ResolvableAndGlobal<GlobalDescriptor,LocalDescriptor> getStandardResolver() {
 		return new ResolvableAndGlobal(
 			new IResolvable<GlobalDescriptor,LocalDescriptor>() {
 			@Override public ResolveRC nextResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.False;}

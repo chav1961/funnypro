@@ -143,7 +143,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 			
 			for (RegisteredOperators<RegisteredEntities> item : OPS) {
 				actualLog.message(Severity.info,"Register operator %1$s, %2$s...", item.text, item.type);
-				final long			itemId = repo.termRepo().placeName(item.text,null);
+				final long			itemId = repo.termRepo().placeName((CharSequence)item.text,null);
 				IFProOperator[]		op;
 			
 				if ((op = repo.getOperatorDef(itemId,item.priority,item.priority,item.type.getSort())).length == 0) {
@@ -176,8 +176,7 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 											}
 					);
 				} catch (SyntaxException | IOException exc) {
-//						exc.printStackTrace();
-					actualLog.message(Severity.info,"Predicate registration failed for %1$s: %2$s", item.text, exc.getMessage());
+					actualLog.message(Severity.info,exc,"Predicate registration failed for %1$s: %2$s", item.text, exc.getMessage());
 					throw new IllegalArgumentException("Attempt to register predicate ["+item+"] failed: "+exc.getMessage(),exc); 
 				}
 				actualLog.message(Severity.info,"Predicate %1$s was registeded successfully", item.text);
@@ -193,7 +192,6 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 			actualLog.rollback();
 			return global;
 		} catch (SQLException exc) {
-			exc.printStackTrace();
 			throw new IllegalArgumentException("Attempt to register plugin failed: "+exc.getMessage(),exc); 
 		}
 	}
@@ -630,9 +628,9 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 	
 	private static DatabaseProcessorGlobal.OperatorType classify(final DatabaseProcessorGlobal global, final IFProOperator node) {
 		final RegisteredEntities	re = FProUtil.detect(global.registered, node, RegisteredEntities.Others); 
-		
+
 		if (re == RegisteredEntities.Others) {
-			final ResolvableAndGlobal<GlobalDescriptor>	rag = FProUtil.getStandardResolver(global.repo);
+			final ResolvableAndGlobal<GlobalDescriptor,?>	rag = FProUtil.getStandardResolver(global.repo);
 			
 			switch (FProUtil.detect(rag.global.registered, node, StandardResolver.RegisteredEntities.Others)) {
 				case Op1100xfyOr 			: return DatabaseProcessorGlobal.OperatorType.OpOr;

@@ -9,14 +9,11 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
-import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginItem;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
@@ -24,7 +21,6 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
@@ -104,8 +100,8 @@ public class FProVM implements IFProVM, IFProModule {
 				}
 			}
 
-			question = repo.termRepo().placeName("?-",null);
-			goal = repo.termRepo().placeName(":-",null);
+			question = repo.termRepo().placeName((CharSequence)"?-", null);
+			goal = repo.termRepo().placeName((CharSequence)":-", null);
 			turnedOn = true;
 		}
 	}
@@ -124,7 +120,7 @@ public class FProVM implements IFProVM, IFProModule {
 				final DataOutputStream	dos = new DataOutputStream(target); 
 				
 				dos.writeInt(SERIALIZATION_MAGIC);		// Write magic
-				dos.writeInt(SERIALIZATION_VERSION);	// Write magic
+				dos.writeInt(SERIALIZATION_VERSION);	// Write version
 				repo.serialize(dos);					// Write content
 				dos.writeInt(SERIALIZATION_MAGIC);		// Write tail
 				dos.flush();
@@ -155,7 +151,7 @@ public class FProVM implements IFProVM, IFProModule {
 				final DataOutputStream	dos = new DataOutputStream(target); 
 				
 				dos.writeInt(SERIALIZATION_MAGIC);		// Write magic
-				dos.writeInt(SERIALIZATION_VERSION);	// Write magic
+				dos.writeInt(SERIALIZATION_VERSION);	// Write version
 				temp.serialize(dos);					// Write content
 				dos.writeInt(SERIALIZATION_MAGIC);		// Write tail
 				dos.flush();
@@ -356,7 +352,7 @@ public class FProVM implements IFProVM, IFProModule {
 		}
 	}
 	
-	protected ResolvableAndGlobal<GlobalDescriptor> getStandardResolver() {
+	protected ResolvableAndGlobal<GlobalDescriptor,LocalDescriptor> getStandardResolver() {
 		return FProUtil.getStandardResolver(repo);
 	}
 
@@ -364,20 +360,22 @@ public class FProVM implements IFProVM, IFProModule {
 		return inference(entity,vars,repo,getStandardResolver(),callback);
 	}	
 	
-	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final ResolvableAndGlobal rag, final IFProCallback callback) throws ContentException {
+	private <G,L> boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final ResolvableAndGlobal<G,L> rag, final IFProCallback callback) throws ContentException {
 		try(final GlobalStack	stack = new GlobalStack(getDebug(),getParameters(),repo)) {
-			final Object 		data = rag.resolver.beforeCall(rag.global,stack,vars,callback);
+			final G		global = rag.global;
+			final L		local = rag.resolver.beforeCall(global, stack, vars, callback);
 			
-			try{if (rag.resolver.firstResolve(rag.global,data,entity) == ResolveRC.True) {
-					while (rag.resolver.nextResolve(rag.global,data,entity) == ResolveRC.True) {}
-					rag.resolver.endResolve(rag.global,data,entity);
+			try{if (rag.resolver.firstResolve(global, local, entity) == ResolveRC.True) {
+					while (rag.resolver.nextResolve(global, local, entity) == ResolveRC.True) {
+					}
+					rag.resolver.endResolve(global, local, entity);
 					return true;
 				}
 				else {
 					return false;
 				}
 			} finally {
-				rag.resolver.afterCall(rag.global,data);
+				rag.resolver.afterCall(global, local);
 			}
 		} catch (Exception e) {
 			throw new ContentException(e.getMessage(),e);

@@ -57,7 +57,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 						if (!plugins.containsKey(key)) {
 							plugins.put(key,new ArrayList<PluginItem>());
 						}
-						plugins.get(key).add(new PluginItemImpl(item,null));
+						plugins.get(key).add(new PluginItemImpl(item, null));
 					}
 				}
 			}
@@ -74,7 +74,8 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 				final Object	global = item.getGlobal();
 				
 				if (global != null) {
-					try{item.getDescriptor().getPluginEntity().getResolver().onRemove(global);
+					try{
+						item.getDescriptor().getPluginEntity().getResolver().onRemove(global);
 					} catch (SyntaxException e) {
 						e.printStackTrace();
 					}
@@ -203,7 +204,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	}
 
 	@Override
-	public void purgeResolver(final IResolvable resolver) {
+	public <G,L> void purgeResolver(final IResolvable<G,L> resolver) {
 		if (resolver == null) {
 			throw new IllegalArgumentException("resolver can't be null"); 
 		}

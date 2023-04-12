@@ -90,13 +90,13 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			this.termRepo = new AndOrTree<SerializableString>(2,16);
 
 			for (int index = 0; index < this.opTypes.length; index++) {
-				this.opTypes[index] = this.termRepo.placeName(OperatorType.values()[index].toString(),null);
+				this.opTypes[index] = this.termRepo.placeName((CharSequence)OperatorType.values()[index].toString(),null);
 			}
 			
-			this.anonymousId = this.termRepo.placeName("_",null);
-			this.opId = this.termRepo.placeName("op",null);
-			this.goalId = this.termRepo.placeName(":-",null);
-			this.questionId = this.termRepo.placeName("?-",null);
+			this.anonymousId = this.termRepo.placeName((CharSequence)"_",null);
+			this.opId = this.termRepo.placeName((CharSequence)"op",null);
+			this.goalId = this.termRepo.placeName((CharSequence)":-",null);
+			this.questionId = this.termRepo.placeName((CharSequence)"?-",null);
 			
 			this.frRepo = new FactRuleRepo(log, props, stringRepo());
 			this.epRepo = new ExternalPluginsRepo(log, props);

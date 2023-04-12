@@ -22,16 +22,28 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 	 * <p>This enumeration describes operator types</p>
 	 */
 	public enum OperatorType {
-		xf(OperatorSort.prefix), fx(OperatorSort.postfix), yf(OperatorSort.prefix), fy(OperatorSort.postfix), xfy(OperatorSort.infix), yfx(OperatorSort.infix), xfx(OperatorSort.infix);
+		xf(OperatorSort.prefix, 1), 
+		fx(OperatorSort.postfix, 1), 
+		yf(OperatorSort.prefix, 1), 
+		fy(OperatorSort.postfix, 1), 
+		xfy(OperatorSort.infix, 2), 
+		yfx(OperatorSort.infix, 2), 
+		xfx(OperatorSort.infix, 2);
 		
 		private final OperatorSort	sort;
+		private final int			argCount;
 		
-		OperatorType(final OperatorSort sort) {
+		OperatorType(final OperatorSort sort, final int argCount) {
 			this.sort = sort;
+			this.argCount = argCount;
 		}
 		
 		public OperatorSort getSort() {
 			return sort;
+		}
+		
+		public int getArgumentCount() {
+			return argCount;
 		}
 	}
 	

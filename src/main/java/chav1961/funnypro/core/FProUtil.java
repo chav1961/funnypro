@@ -962,7 +962,7 @@ public class FProUtil {
 		}
 	}
 
-	public static ResolvableAndGlobal<GlobalDescriptor> getStandardResolver(final IFProEntitiesRepo repo) {
+	public static ResolvableAndGlobal<GlobalDescriptor,LocalDescriptor> getStandardResolver(final IFProEntitiesRepo repo) {
 		for (PluginItem item : repo.pluginsRepo().seek(StandardResolver.PLUGIN_NAME,StandardResolver.PLUGIN_PRODUCER,StandardResolver.PLUGIN_VERSION)) {
 			return new ResolvableAndGlobal(item.getDescriptor().getPluginEntity().getResolver(),item.getGlobal());
 		}

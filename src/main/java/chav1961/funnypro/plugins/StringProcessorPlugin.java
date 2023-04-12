@@ -118,8 +118,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 				);
 				actualLog.message(Severity.info,"Operator "+new String(OPERATOR_CHARARRAY)+" was registeded successfully");
 			} catch (SyntaxException | IOException exc) {
-				exc.printStackTrace();
-				actualLog.message(Severity.info,"Predicate registration failed: %1$s", exc.getMessage());
+				actualLog.message(Severity.info,exc,"Predicate registration failed: %1$s", exc.getMessage());
 				throw new IllegalArgumentException("Attempt to register predicate/operator failed: "+exc.getMessage(),exc); 
 			}
 			actualLog.rollback();

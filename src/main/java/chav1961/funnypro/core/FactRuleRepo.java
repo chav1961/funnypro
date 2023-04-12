@@ -63,14 +63,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator : 
-					switch (((IFProOperator)value).getOperatorType()) {
-						case fx : case fy : case xf : case yf : 
-							assertValue(1,true,value);
-							break;
-						default :
-							assertValue(2,true,value);
-							break;
-					}
+					assertValue(((IFProOperator)value).getOperatorType().getArgumentCount(),true,value);
 					break;
 				case predicate :
 					assertValue(((IFProPredicate)value).getArity(),true,value);
@@ -89,14 +82,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					switch (((IFProOperator)value).getOperatorType()) {
-						case fx : case fy : case xf : case yf :
-							assertValue(1,false,value);
-							break;
-						default :
-							assertValue(2,false,value);
-							break;
-					}
+					assertValue(((IFProOperator)value).getOperatorType().getArgumentCount(),false,value);
 					break;
 				case predicate :
 					assertValue(((IFProPredicate)value).getArity(),false,value);
@@ -138,12 +124,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 
 			try{switch (value.getEntityType()) {
 					case operator :
-						switch (((IFProOperator)value).getOperatorType()) {
-							case fx : case fy : case xf : case yf :
-								return removeFromChain(1,value.getEntityId(),value,temp);
-							default :
-								return removeFromChain(2,value.getEntityId(),value,temp);
-						}
+						return removeFromChain(((IFProOperator)value).getOperatorType().getArgumentCount(),value.getEntityId(),value,temp);
 					case predicate :
 						return removeFromChain(((IFProPredicate)value).getArity(),value.getEntityId(),value,temp);
 					default :
@@ -168,12 +149,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					switch (((IFProOperator)value).getOperatorType()) {
-						case fx : case fy : case xf : case yf :
-							return getChain(1,value.getEntityId());
-						default :
-							return getChain(2,value.getEntityId());
-					}
+					return getChain(((IFProOperator)value).getOperatorType().getArgumentCount(),value.getEntityId());
 				case predicate :
 					return getChain(((IFProPredicate)value).getArity(),value.getEntityId());
 				default :
@@ -219,7 +195,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			
 			for (int arityIndex = 0; arityIndex < predicates.length; arityIndex++) {	// Write individual chains
 				if (predicates[arityIndex] != null) {
-					target.writeInt(predicates[arityIndex].size());			// Write amount of the predicates in this chain
+					target.writeInt(predicates[arityIndex].size());				// Write amount of the predicates in this chain
 					
 					for (Long item : predicates[arityIndex].content()) {		// Write chain contents
 						if (predicates[arityIndex].get(item).start != null) {
@@ -330,7 +306,6 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			}
 		}		
 	}
-
 	
 	private boolean removeFromChain(final int arity, final long entityId, final IFProEntity template, final Change[] changes) {
 		if (predicates[arity] != null) {
