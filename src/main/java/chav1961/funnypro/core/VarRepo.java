@@ -42,7 +42,7 @@ class VarRepo implements AutoCloseable {
 			for (int index = varRepo.length-varCount, maxIndex = varRepo.length; index < maxIndex; index++) {	// Make a ring chain for all identical variables in the entity
 				IFProVariable	start = varRepo[index].chain;
 				
-				while (start.getChain() != start) {	// The same last variable awlays has chain to self (setted inside it's constructor) 
+				while (start.getChain() != start) {	// The same last variable always has chain to self (set inside it's constructor) 
 					start = start.getChain();
 				}
 				start.setChain(varRepo[index].chain);

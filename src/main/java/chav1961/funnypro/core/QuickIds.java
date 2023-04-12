@@ -10,7 +10,8 @@ public class QuickIds<T extends Enum<?>> implements Comparable<QuickIds<T>>{
 	
 	public QuickIds(final IFProEntity def, final T action) {
 		this.id = def.getEntityId();
-		this.def = def;			this.action = action;
+		this.def = def;			
+		this.action = action;
 	}
 
 	@Override

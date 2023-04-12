@@ -101,9 +101,9 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		else {
 			this.log = log;			this.props = prop;
 			this.repo = repo;		
-			this.colonId = repo.termRepo().seekName(",");
-			this.tailId = repo.termRepo().seekName("|");
-			this.goalId = repo.termRepo().seekName(":-");
+			this.colonId = repo.termRepo().seekName((CharSequence)",");
+			this.tailId = repo.termRepo().seekName((CharSequence)"|");
+			this.goalId = repo.termRepo().seekName((CharSequence)":-");
 		}
 	}
 	

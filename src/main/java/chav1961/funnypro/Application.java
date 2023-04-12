@@ -33,8 +33,7 @@ public class Application {
 		final ArgParser			argParser = new ApplicationArgParser();
 		
 		try(final InputStream				is = Application.class.getResourceAsStream("application.xml");
-			final Localizer					localizer = PureLibSettings.PURELIB_LOCALIZER;
-			final LoggerFacade				logger = new SystemErrLoggerFacade()) {
+			final Localizer					localizer = PureLibSettings.PURELIB_LOCALIZER) {
 			
 			final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
 			
@@ -43,14 +42,14 @@ public class Application {
 			final ArgParser					parsed = argParser.parse(true,true,args);
 			
 			if (parsed.getValue("screen",boolean.class)) {
-				new JScreen(localizer,xda,(FunnyProEngine)engine,logger);
+				new JScreen(localizer, xda, (FunnyProEngine)engine, PureLibSettings.CURRENT_LOGGER).setVisible(true);
 			}
 			else {
-				try(final Reader	in = new InputStreamReader(System.in,parsed.getValue("encoding",String.class));
+				try(final Reader	in = new InputStreamReader(System.in, parsed.getValue("encoding",String.class));
 					final Writer	out = new OutputStreamWriter(System.out); 
 					final Writer	err = new OutputStreamWriter(System.err)) {
 					
-					((FunnyProEngine)engine).console(in,out,err);
+					((FunnyProEngine)engine).console(in, out, err);
 				} catch (Exception exc) {
 					exc.printStackTrace();
 				}

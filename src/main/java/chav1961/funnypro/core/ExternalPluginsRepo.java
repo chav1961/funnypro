@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.ServiceLoader;
 
 import chav1961.funnypro.core.interfaces.FProPluginList;
@@ -52,8 +51,8 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			
 			for (FProPluginList 				desc : ServiceLoader.load(FProPluginList.class)) {
 				if (!standardResolverOnly || (desc instanceof StandardResolver)) {
-					for (PluginDescriptor			item : desc.getPluginDescriptors()) {
-						final IFProExternalEntity	key = item.getPluginEntity();
+					for (PluginDescriptor				item : desc.getPluginDescriptors()) {
+						final IFProExternalEntity<?,?>	key = item.getPluginEntity();
 						
 						if (!plugins.containsKey(key)) {
 							plugins.put(key,new ArrayList<PluginItem>());

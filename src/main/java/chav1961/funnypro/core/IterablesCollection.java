@@ -24,7 +24,6 @@ class IterablesCollection {
 	private static final Iterator<IFProEntity>	NULL_ENTITY_ITERATOR = new Iterator<IFProEntity>() {
 													@Override public boolean hasNext() {return false;}
 													@Override public IFProEntity next() {return null;}
-													
 												};
 	
 	public static class IterableNameAndArity implements Iterable<IFProEntity> {
@@ -127,11 +126,17 @@ class IterablesCollection {
 					}
 				}
 				
-				@Override public IFProEntity next() {return item;}
+				@Override 
+				public IFProEntity next() {
+					return item;
+				}
 			};
 		}		
 		
-		@Override  public Iterator<IFProEntity> iterator() {return callIterator;}		
+		@Override
+		public Iterator<IFProEntity> iterator() {
+			return callIterator;
+		}		
 	}
 	
 	public static class IterableCallBagof implements Iterable<IFProEntity> {
@@ -183,11 +188,17 @@ class IterablesCollection {
 									}
 								}
 					
-								@Override public IFProEntity next() {return item;}
+								@Override 
+								public IFProEntity next() {
+									return item;
+								}
 							};
 		}		
 		
-		@Override public Iterator<IFProEntity> iterator() {return bagofIterator;}		
+		@Override 
+		public Iterator<IFProEntity> iterator() {
+			return bagofIterator;
+		}		
 	}
 
 	public static class IterableList implements Iterable<IFProEntity> {
@@ -234,11 +245,17 @@ class IterablesCollection {
 						}
 					}
 		
-					@Override public IFProEntity next() {return item;}
+					@Override 
+					public IFProEntity next() {
+						return item;
+					}
 				};
 			}
 		}
 		
-		@Override public Iterator<IFProEntity> iterator() {return iterator;}		
+		@Override 
+		public Iterator<IFProEntity> iterator() {
+			return iterator;
+		}		
 	}
 }
