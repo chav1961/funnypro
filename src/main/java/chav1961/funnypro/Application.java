@@ -14,10 +14,8 @@ import javax.script.ScriptException;
 
 import chav1961.purelib.basic.ArgParser;
 import chav1961.purelib.basic.PureLibSettings;
-import chav1961.purelib.basic.SystemErrLoggerFacade;
 import chav1961.purelib.basic.exceptions.CommandLineParametersException;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
-import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.i18n.interfaces.Localizer;
 import chav1961.purelib.model.ContentModelFactory;
 import chav1961.purelib.model.interfaces.ContentMetadataInterface;
@@ -38,7 +36,7 @@ public class Application {
 			final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
 			
 			final ScriptEngineManager 		factory = new ScriptEngineManager();
-			final ScriptEngine 				engine = factory.getEngineByName("FunnyProlog");
+			final ScriptEngine 				engine = factory.getEngineByName(FunnyProEngineFactory.LANG_NAME);
 			final ArgParser					parsed = argParser.parse(true,true,args);
 			
 			if (parsed.getValue("screen",boolean.class)) {

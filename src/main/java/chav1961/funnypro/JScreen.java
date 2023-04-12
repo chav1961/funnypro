@@ -104,7 +104,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		private final SimpleAttributeSet	sas = new SimpleAttributeSet(); 
 		
 		MessageType(final Object... styles) {
-			for (int index = 0; index < styles.length; index+=2) {
+			for (int index = 0; index < styles.length/2; index++) {
 				sas.addAttribute(styles[2*index+0], styles[2*index+1]);
 			}
 		}

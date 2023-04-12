@@ -21,9 +21,10 @@ import chav1961.purelib.basic.exceptions.ContentException;
  * @since 0.0.1
  */
 public class FunnyProEngineFactory implements ScriptEngineFactory {
+	public static final String			LANG_NAME = "FunnyProlog";
+	
 	private static final String			ENGINE_NAME = "Funny Prolog interpreter engine";
 	private static final String			ENGINE_VERSION = "1.0";
-	private static final String			LANG_NAME = "FunnyProlog";
 	private static final String			LANG_VERSION = "1.0";
 	private static final List<String>	SCRIPT_EXTENSIONS = new ArrayList<>();
 	private static final List<String>	SCRIPT_MIMES = new ArrayList<>();
