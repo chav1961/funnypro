@@ -1,7 +1,6 @@
 package chav1961.funnypro.core;
 
 import java.util.List;
-import java.util.Properties;
 
 import chav1961.funnypro.core.entities.ExternalPluginEntity;
 import chav1961.funnypro.core.interfaces.FProPluginList;
@@ -14,24 +13,23 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.SubstitutableProperties;
+import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Local extends LocalDescriptor, ProcessingType extends Enum<?>> implements IResolvable<Global,Local>, FProPluginList {
 	private final String				pluginName;
-//	private final String				pluginProducer;
-//	private final String				pluginDescription;
 	private final int[]					pluginVersion;
 	private final PluginDescriptor[]	desc;
 	
 	protected AbstractExternalPlugin(final String pluginName, final String pluginProducer, final String pluginDescription, final int[] pluginVersion) {
-		if (pluginName == null || pluginName.isEmpty()) {
+		if (Utils.checkEmptyOrNullString(pluginName)) {
 			throw new IllegalArgumentException("Plugin name can;t be null or empty"); 
 		}
-		else if (pluginProducer == null || pluginProducer.isEmpty()) {
+		else if (Utils.checkEmptyOrNullString(pluginProducer)) {
 			throw new IllegalArgumentException("Plugin producer can't be null or empty"); 
 		}
-		else if (pluginDescription == null || pluginDescription.isEmpty()) {
+		else if (Utils.checkEmptyOrNullString(pluginDescription)) {
 			throw new IllegalArgumentException("Plugin description can't be null or empty"); 
 		}
 		else if (pluginVersion == null || pluginVersion.length != 3) {
@@ -39,12 +37,10 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 		}
 		else {
 			this.pluginName = pluginName;
-//			this.pluginProducer = pluginProducer;
-//			this.pluginDescription = pluginDescription;
 			this.pluginVersion = pluginVersion;
 			this.desc = new PluginDescriptor[]{
 					new PluginDescriptor(){
-						@Override public <G,L> IFProExternalEntity<G,L> getPluginEntity() {return new ExternalPluginEntity(1,pluginName,pluginProducer,pluginVersion,AbstractExternalPlugin.this);}
+						@Override public <G,L> IFProExternalEntity<G,L> getPluginEntity() {return new ExternalPluginEntity(1, pluginName, pluginProducer, pluginVersion, AbstractExternalPlugin.this);}
 						@Override public String getPluginPredicate() {return null;}
 						@Override public String getPluginDescription() {return pluginDescription;}
 					}
@@ -79,12 +75,12 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 
 	@Override
 	public ResolveRC firstResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
-		return null;
+		return ResolveRC.FalseWithoutBacktracking;
 	}
 
 	@Override
 	public ResolveRC nextResolve(final Global global, final Local local, final IFProEntity entity) throws SyntaxException {
-		return null;
+		return ResolveRC.False;
 	}
 
 	@Override
@@ -96,6 +92,6 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 	}
 
 	protected ResolveRC unify(final IFProEntity first, final IFProEntity second, final Global global, final Local local, final IFProEntity entity) {
-		return null;
+		return ResolveRC.False;
 	}
 }

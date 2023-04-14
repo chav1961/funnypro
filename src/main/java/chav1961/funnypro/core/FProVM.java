@@ -21,8 +21,10 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallbac
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.SubstitutableProperties;
+import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -167,7 +169,7 @@ public class FProVM implements IFProVM, IFProModule {
 			throw new IllegalStateException("You can't make this operatio when VM is turned on. Turn off VM firstly!");
 		}
 		else {
-			return question(question,repo,callback);
+			return question(question, repo, callback);
 		}
 	}	
 	
@@ -177,7 +179,7 @@ public class FProVM implements IFProVM, IFProModule {
 			throw new IllegalStateException("You can't make this operatio when VM is turned on. Turn off VM firstly!");
 		}
 		else {
-			return internalGoal(question,repo,callback,this.question,"question");
+			return internalGoal(question, repo, callback, this.question, "question");
 		}
 	}
 
@@ -187,13 +189,13 @@ public class FProVM implements IFProVM, IFProModule {
 			throw new IllegalStateException("You can't make this operatio when VM is turned on. Turn off VM firstly!");
 		}
 		else {
-			return goal(goal,repo,callback);
+			return goal(goal, repo, callback);
 		}
 	}	
 	
 	@Override
 	public boolean goal(final String goal, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException, SyntaxException, IOException {
-		return internalGoal(goal,repo,callback,this.goal,"goal");
+		return internalGoal(goal, repo, callback, this.goal, "goal");
 	}
 
 	@Override
@@ -233,7 +235,7 @@ public class FProVM implements IFProVM, IFProModule {
 				final boolean[]				continuation = new boolean[]{true};
 				String						command;
 				
-				final long	quit = repo.termRepo().placeName("quit",null);
+				final long	quit = repo.termRepo().placeName((CharSequence)"quit",null);
 				
 				target.write("Funny prolog console...\n>");
 				target.flush();
@@ -288,7 +290,6 @@ public class FProVM implements IFProVM, IFProModule {
 														target.write("Predicate was asserted\n>");
 													}
 													} catch (ContentException exc) {
-	//													exc.printStackTrace();
 														errors.write(String.format("Error executing input: "+exc.getMessage()));
 														return false;
 													}
@@ -309,7 +310,7 @@ public class FProVM implements IFProVM, IFProModule {
 				e.printStackTrace();
 				throw new ContentException(e.getMessage()); 
 			} finally {
-				final long	quitName = repo.termRepo().seekName("quit"); 
+				final long	quitName = repo.termRepo().seekName((CharSequence)"quit"); 
 				if (quitName >= 0) {
 					repo.termRepo().removeName(quitName);
 				}
@@ -318,7 +319,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	private boolean internalGoal(final String source, final IFProEntitiesRepo repo, final IFProCallback callback, final long opId, final String awaited) throws ContentException, SyntaxException, IOException {
-		if (source == null || source.isEmpty()) {
+		if (Utils.checkEmptyOrNullString(source)) {
 			throw new IllegalArgumentException("Question string can't be null");
 		}
 		else if (repo == null) { 
@@ -337,8 +338,7 @@ public class FProVM implements IFProVM, IFProModule {
 												if (entity.getEntityId() == opId && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
 													try{result[0] = inference(entity,vars,repo,callback);
 													} catch (ContentException e) {
-														e.printStackTrace();
-														throw new SyntaxException(0,0,e.getMessage());
+														throw new SyntaxException(0,0,e.getMessage(),e);
 													}
 												}
 												else {
@@ -357,25 +357,26 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	private boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final IFProCallback callback) throws ContentException {
-		return inference(entity,vars,repo,getStandardResolver(),callback);
+		return inference(entity, vars, repo, getStandardResolver(), callback);
 	}	
 	
 	private <G,L> boolean inference(final IFProEntity entity, final List<IFProVariable> vars, final IFProEntitiesRepo repo, final ResolvableAndGlobal<G,L> rag, final IFProCallback callback) throws ContentException {
-		try(final GlobalStack	stack = new GlobalStack(getDebug(),getParameters(),repo)) {
-			final G		global = rag.global;
-			final L		local = rag.resolver.beforeCall(global, stack, vars, callback);
+		try(final GlobalStack		stack = new GlobalStack(getDebug(), getParameters(), repo)) {
+			final IResolvable<G,L>	res = rag.resolver; 
+			final G					global = rag.global;
+			final L					local = res.beforeCall(global, stack, vars, callback);
 			
-			try{if (rag.resolver.firstResolve(global, local, entity) == ResolveRC.True) {
-					while (rag.resolver.nextResolve(global, local, entity) == ResolveRC.True) {
+			try{if (res.firstResolve(global, local, entity) == ResolveRC.True) {
+					while (res.nextResolve(global, local, entity) == ResolveRC.True) {
 					}
-					rag.resolver.endResolve(global, local, entity);
+					res.endResolve(global, local, entity);
 					return true;
 				}
 				else {
 					return false;
 				}
 			} finally {
-				rag.resolver.afterCall(global, local);
+				res.afterCall(global, local);
 			}
 		} catch (Exception e) {
 			throw new ContentException(e.getMessage(),e);

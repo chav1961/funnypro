@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +58,7 @@ import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
+import chav1961.purelib.basic.exceptions.PreparationException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
@@ -131,68 +133,73 @@ public class DatabaseProcessorPlugin implements IResolvable<DatabaseProcessorGlo
 	}
 	
 	@Override
-	public DatabaseProcessorGlobal onLoad(final LoggerFacade debug, final SubstitutableProperties parameters, final IFProEntitiesRepo repo) throws SyntaxException {
-		try(final LoggerFacade 				actualLog = debug.transaction("DatabaseProcesorPlugin:onLoad")) {
-			final DatabaseProcessorGlobal	global = new DatabaseProcessorGlobal(DriverManager.getConnection(
-													parameters.getProperty(PROP_CONN_STRING),
-													parameters.getProperty(PROP_CONN_USER),
-													parameters.getProperty(PROP_CONN_PASSWD))); 
-			final IFProParserAndPrinter 	pap = new ParserAndPrinter(debug,parameters,repo);
-			final Set<Long>									ids = new HashSet<>();
-			final Map<Long,QuickIds<RegisteredEntities>>	registered = new HashMap<>();
-			
-			for (RegisteredOperators<RegisteredEntities> item : OPS) {
-				actualLog.message(Severity.info,"Register operator %1$s, %2$s...", item.text, item.type);
-				final long			itemId = repo.termRepo().placeName((CharSequence)item.text,null);
-				IFProOperator[]		op;
-			
-				if ((op = repo.getOperatorDef(itemId,item.priority,item.priority,item.type.getSort())).length == 0) {
-					final IFProOperator			def = new OperatorDefEntity(item.priority,item.type,itemId); 
-					
-					repo.putOperatorDef(def);	
-					ids.add(itemId);
-					FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(def,item.action));
-				}
-				else {
-					FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(op[0],item.action));					
-				}
-				if (repo.classify(itemId) != Classification.operator) {
-					actualLog.message(Severity.info,"Operator registration failed for %1$s, %2$s: item classified as %3%s", item.text, item.type, repo.classify(itemId));
-					throw new IllegalArgumentException("Attempt to register operator ["+item+"] failed: not classified!"); 
-				}
-				actualLog.message(Severity.info,"Operator %1$s, %2$s was registered successfully", item.text, item.type);
-			}
-
-			for (RegisteredPredicates<RegisteredEntities> item : PREDS) {
-				actualLog.message(Severity.info,"Register predicate %1$s...", item.text);
-				try{pap.parseEntities(item.text.toCharArray(),0,new FProParserCallback(){
-												@Override
-												public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-													ids.add(entity.getEntityId());
-													FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(entity,item.action));
-													repo.pluginsRepo().registerResolver(entity, vars, DatabaseProcessorPlugin.this, global);
-													return true;
-												}
-											}
-					);
-				} catch (SyntaxException | IOException exc) {
-					actualLog.message(Severity.info,exc,"Predicate registration failed for %1$s: %2$s", item.text, exc.getMessage());
-					throw new IllegalArgumentException("Attempt to register predicate ["+item+"] failed: "+exc.getMessage(),exc); 
-				}
-				actualLog.message(Severity.info,"Predicate %1$s was registeded successfully", item.text);
-			}
+	public DatabaseProcessorGlobal onLoad(final LoggerFacade debug, final SubstitutableProperties parameters, final IFProEntitiesRepo repo) throws SyntaxException, PreparationException {
+		if (!parameters.containsAllKeys(PROP_CONN_STRING, PROP_CONN_USER, PROP_CONN_PASSWD)) {
+			throw new PreparationException("Some of mandatory properties ["+Arrays.asList(PROP_CONN_STRING, PROP_CONN_USER, PROP_CONN_PASSWD)+"] for plugin ["+PLUGIN_NAME+"] are missing");
+		}
+		else {
+			try(final LoggerFacade 				actualLog = debug.transaction("DatabaseProcesorPlugin:onLoad")) {
+				final DatabaseProcessorGlobal	global = new DatabaseProcessorGlobal(DriverManager.getConnection(
+														parameters.getProperty(PROP_CONN_STRING),
+														parameters.getProperty(PROP_CONN_USER),
+														parameters.getProperty(PROP_CONN_PASSWD))); 
+				final IFProParserAndPrinter 	pap = new ParserAndPrinter(debug,parameters,repo);
+				final Set<Long>									ids = new HashSet<>();
+				final Map<Long,QuickIds<RegisteredEntities>>	registered = new HashMap<>();
 				
-			for (Entry<Long, QuickIds<RegisteredEntities>> item : registered.entrySet()) {
-				global.registered.put(item.getKey(),item.getValue());
-				global.registeredIds.add(item.getKey());
+				for (RegisteredOperators<RegisteredEntities> item : OPS) {
+					actualLog.message(Severity.info,"Register operator %1$s, %2$s...", item.text, item.type);
+					final long			itemId = repo.termRepo().placeName((CharSequence)item.text,null);
+					IFProOperator[]		op;
+				
+					if ((op = repo.getOperatorDef(itemId,item.priority,item.priority,item.type.getSort())).length == 0) {
+						final IFProOperator			def = new OperatorDefEntity(item.priority,item.type,itemId); 
+						
+						repo.putOperatorDef(def);	
+						ids.add(itemId);
+						FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(def,item.action));
+					}
+					else {
+						FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(op[0],item.action));					
+					}
+					if (repo.classify(itemId) != Classification.operator) {
+						actualLog.message(Severity.info,"Operator registration failed for %1$s, %2$s: item classified as %3%s", item.text, item.type, repo.classify(itemId));
+						throw new IllegalArgumentException("Attempt to register operator ["+item+"] failed: not classified!"); 
+					}
+					actualLog.message(Severity.info,"Operator %1$s, %2$s was registered successfully", item.text, item.type);
+				}
+	
+				for (RegisteredPredicates<RegisteredEntities> item : PREDS) {
+					actualLog.message(Severity.info,"Register predicate %1$s...", item.text);
+					try{pap.parseEntities(item.text.toCharArray(),0,new FProParserCallback(){
+													@Override
+													public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
+														ids.add(entity.getEntityId());
+														FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(entity,item.action));
+														repo.pluginsRepo().registerResolver(entity, vars, DatabaseProcessorPlugin.this, global);
+														return true;
+													}
+												}
+						);
+					} catch (SyntaxException | IOException exc) {
+						actualLog.message(Severity.info,exc,"Predicate registration failed for %1$s: %2$s", item.text, exc.getMessage());
+						throw new IllegalArgumentException("Attempt to register predicate ["+item+"] failed: "+exc.getMessage(),exc); 
+					}
+					actualLog.message(Severity.info,"Predicate %1$s was registeded successfully", item.text);
+				}
+					
+				for (Entry<Long, QuickIds<RegisteredEntities>> item : registered.entrySet()) {
+					global.registered.put(item.getKey(),item.getValue());
+					global.registeredIds.add(item.getKey());
+				}
+				global.repo = repo;
+				global.pap = pap;
+				
+				actualLog.rollback();
+				return global;
+			} catch (SQLException exc) {
+				throw new IllegalArgumentException("Attempt to register plugin failed: "+exc.getMessage(),exc); 
 			}
-			global.repo = repo;
-			global.pap = pap;
-			
-			actualLog.rollback();
-			return global;
-		} catch (SQLException exc) {
-			throw new IllegalArgumentException("Attempt to register plugin failed: "+exc.getMessage(),exc); 
 		}
 	}
 	

@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
@@ -23,6 +25,7 @@ import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.SubstitutableProperties;
+import chav1961.purelib.basic.exceptions.PreparationException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
@@ -90,16 +93,17 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 			throw new IllegalArgumentException("Entites repo can't be null"); 
 		}
 		else {
+			final Set<IFProExternalEntity<?, ?>>	toRemove = new HashSet<>();
 			boolean	errosDetected = false;
 			boolean	standardResolverDetected = false;
 			
 			try (final LoggerFacade	logger = getDebug().transaction("externalPlugins")) {
-				for (List<PluginItem> desc : plugins.values()) {
-					for (PluginItem item : desc) {	// Standard resolver must be always prepared first!
+				for (Entry<IFProExternalEntity<?, ?>, List<PluginItem>> desc : plugins.entrySet()) {
+					for (PluginItem item : desc.getValue()) {	// Standard resolver must be always prepared first!
 						if (StandardResolver.PLUGIN_DESCRIPTION.equals(item.getDescriptor().getPluginDescription())) {
 							try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
 								standardResolverDetected = true;
-							} catch (SyntaxException  e) {
+							} catch (SyntaxException e) {
 								logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
 								errosDetected = true;
 							}
@@ -109,16 +113,23 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 				if (!standardResolverDetected) {
 					logger.message(Severity.error,"Standard resolver is missing or inaccessible in the plugins. FPro repository can't be properly prepared without it!");
 				}
-				for (List<PluginItem> desc : plugins.values()) {
-					for (PluginItem item : desc) {
+				for (Entry<IFProExternalEntity<?, ?>, List<PluginItem>> desc : plugins.entrySet()) {
+					for (PluginItem item : desc.getValue()) {
 						if (!StandardResolver.PLUGIN_DESCRIPTION.equals(item.getDescriptor().getPluginDescription())) {
-							try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
+							try{
+								item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
+							} catch (PreparationException e) {
+								logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
+								toRemove.add(desc.getKey());
 							} catch (SyntaxException  e) {
 								logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
 								errosDetected = true;
 							}
 						}
 					}
+				}
+				for(IFProExternalEntity<?, ?> item : toRemove) {
+					plugins.remove(item);
 				}
 				if (!errosDetected) {
 					logger.rollback();

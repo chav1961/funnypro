@@ -26,6 +26,8 @@ import chav1961.purelib.model.interfaces.ContentMetadataInterface;
  * @since 0.0.1
  */
 public class Application {
+	private static final String		PARM_SCREEN = "screen";
+	private static final String		PARM_ENCODING = "encoding";
 	
 	public static void main(String[] args) throws ScriptException {
 		final ArgParser			argParser = new ApplicationArgParser();
@@ -39,11 +41,11 @@ public class Application {
 			final ScriptEngine 				engine = factory.getEngineByName(FunnyProEngineFactory.LANG_NAME);
 			final ArgParser					parsed = argParser.parse(true,true,args);
 			
-			if (parsed.getValue("screen",boolean.class)) {
+			if (parsed.getValue(PARM_SCREEN, boolean.class)) {
 				new JScreen(localizer, xda, (FunnyProEngine)engine, PureLibSettings.CURRENT_LOGGER).setVisible(true);
 			}
 			else {
-				try(final Reader	in = new InputStreamReader(System.in, parsed.getValue("encoding",String.class));
+				try(final Reader	in = new InputStreamReader(System.in, parsed.getValue(PARM_ENCODING,String.class));
 					final Writer	out = new OutputStreamWriter(System.out); 
 					final Writer	err = new OutputStreamWriter(System.err)) {
 					
@@ -60,8 +62,8 @@ public class Application {
 
 	static class ApplicationArgParser extends ArgParser {
 		public ApplicationArgParser() {
-			super(new BooleanArg("screen",false,false,"Start application with GUI")
-				 ,new StringArg("encoding",false,"Source file encoding","UTF-8"));
+			super(new BooleanArg(PARM_SCREEN, false, false, "Start application with GUI")
+				 ,new StringArg(PARM_ENCODING, false, "Source file encoding", PureLibSettings.DEFAULT_CONTENT_ENCODING));
 		}
 	}
 }
