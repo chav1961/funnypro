@@ -152,7 +152,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 				
 				while (from < source.length) {
 					try(final VarRepo	varRepo = new VarRepo(vars)) {
-						from = parse(source,from,repo.getOperatorPriorities(),IFProOperator.MAX_PRTY,varRepo,result);
+						from = parse(source, from, repo.getOperatorPriorities(), IFProOperator.MAX_PRTY, varRepo, result);
 					}
 					if (result[0] != null) {
 						if (!callback.process(result[0],vars)) {
