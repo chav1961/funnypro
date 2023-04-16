@@ -200,10 +200,10 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 
 	@OnAction("action:/consultFile")
 	private void consultContent() throws LocalizationException, IOException {
-		try(final FileSystemInterface	fsi = FileSystemFactory.createFileSystem(URI.create(FileSystemInterface.FILESYSTEM_URI_SCHEME+":file:/e:/"))) {
+		try(final FileSystemInterface	fsi = FileSystemFactory.createFileSystem(URI.create(FileSystemInterface.FILESYSTEM_URI_SCHEME+":file:/"))) {
 			int	count = 0;
+			
 			for (String item : JFileSelectionDialog.select(this,localizer,fsi,JFileSelectionDialog.OPTIONS_CAN_SELECT_FILE|JFileSelectionDialog.OPTIONS_CAN_MULTIPLE_SELECT|JFileSelectionDialog.OPTIONS_FILE_MUST_EXISTS|JFileSelectionDialog.OPTIONS_FOR_OPEN,FPR_FILTER)) {
-				
 				try(final FileSystemInterface	frb = fsi.clone().open(item)) {
 					try(final Reader			rdr = frb.charRead()) {
 						
@@ -265,7 +265,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 	
 	@OnAction("action:/about")
 	private void showAboutScreen() throws URISyntaxException {
-		SwingUtils.showAboutScreen(this, localizer, ABOUT_CONTENT, ABOUT_TITLE, getClass().getResource("avatar.jpg").toURI(), new Dimension(300,300));
+		SwingUtils.showAboutScreen(this, localizer, ABOUT_TITLE, ABOUT_CONTENT, getClass().getResource("avatar.jpg").toURI(), new Dimension(300,300));
 	}
 
 	protected void processSentence(final String sentence) {
@@ -353,7 +353,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		final String	text = localizer.containsKey(format) ? localizer.getValue(format) : format;
 		
 		if (parameters == null || parameters.length == 0) {
-			getLogger().message(info,text);
+			getLogger().message(info, text);
 		}
 		else {
 			getLogger().message(info, text, parameters);

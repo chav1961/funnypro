@@ -2,7 +2,7 @@
 <localization xmlns="http://www.i18n.purelib.chav1961.ru/">
 	<lang name="en">
 <!-- Application window localization -->
-		<key name="JScreen.caption">(c) 2017..2018, Alexander V.Chernomyrdin aka chav1961, Funny Prolog V.R=0.0.2</key>
+		<key name="JScreen.caption">(c) 2017..2023, Alexander V.Chernomyrdin aka chav1961, Funny Prolog V.R=0.0.2</key>
 		<key name="JScreen.status.initialHelp">To execute Funny Prolog sentence, highlight console sentence and press F5</key>
 		<key name="JScreen.about.title">About...</key>
 		<key name="JScreen.about.content">uri(aboutApplication.cre)</key>
@@ -43,7 +43,7 @@
 	</lang>
 	<lang name="ru">
 <!-- Локализация окна приложения -->
-		<key name="JScreen.caption">(c) 2017..2018, А. Черномырдин aka chav1961, Funny Prolog V.R=0.0.2</key>
+		<key name="JScreen.caption">(c) 2017..2023, А. Черномырдин aka chav1961, Funny Prolog V.R=0.0.2</key>
 		<key name="JScreen.status.initialHelp">Для выполнения предложения Funny Prolog выделите в консоли предложение и нажмите F5... </key>
 		<key name="JScreen.about.title">О программе</key>
 		<key name="JScreen.about.content">uri(aboutApplication.cre)</key>

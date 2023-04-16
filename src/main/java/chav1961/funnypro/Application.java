@@ -54,7 +54,11 @@ public class Application {
 					exc.printStackTrace();
 				}
 			}
-		} catch (IOException | EnvironmentException | CommandLineParametersException e) {
+		} catch (CommandLineParametersException e) {
+			System.err.println(e.getLocalizedMessage());
+			System.err.println(argParser.getUsage("funnypro"));
+			System.exit(128);
+		} catch (IOException | EnvironmentException e) {
 			System.err.println("Error starting application: "+e.getLocalizedMessage());
 			System.exit(129);
 		}
