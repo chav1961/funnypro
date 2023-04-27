@@ -18,12 +18,12 @@
 			<app:item name="menu.actions.parameters" caption="menu.actions.parameters" tooltip="menu.actions.parameters.tt" action="VMParameters"/>
 		</app:submenu>
 		<app:submenu name="menu.tools" caption="menu.tools" tooltip="menu.tools.tt">
+			<app:item name="menu.tools.settings" caption="menu.tools.settings" tooltip="menu.tools.settings.tt" action="settings"/>
+			<app:separator/>
  			<app:builtinSubmenu name="builtin.lookAndFeel" caption="menu.tools.laf" tooltip="menu.tools.laf.tt"/>
 			<app:builtinSubmenu name="builtin.languages" caption="menu.tools.languages" tooltip="menu.tools.languages.tt"/>
 		</app:submenu>
 		<app:submenu name="menu.help" caption="menu.help" tooltip="menu.help.tt">
-			<app:item name="menu.help.settings" caption="menu.help.settings" tooltip="menu.help.settings.tt" action="settings"/>
-			<app:separator/>
 			<app:item name="menu.help.about" caption="menu.help.about" tooltip="menu.help.about.tt" action="about"/>
 		</app:submenu>
 	</app:menu>

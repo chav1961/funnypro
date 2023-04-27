@@ -31,7 +31,7 @@ public interface IFProVM extends AutoCloseable {
 	@FunctionalInterface
 	public interface IFProCallback {
 		/**
-		 * <p>Called after start resolution, independently of 'onResolution' call.</p>
+		 * <p>Called immediately after start resolution, independently of 'onResolution' call.</p>
 		 */
 		default void beforeFirstCall() {}
 		
@@ -47,7 +47,7 @@ public interface IFProVM extends AutoCloseable {
 		boolean onResolution(String[] names, IFProEntity[] resolvedValues, String[] printedValues) throws SyntaxException, PrintingException;
 		
 		/**
-		 * <p>Called before end resolution, independently of 'onResolution' call.</p>
+		 * <p>Called immediately before end resolution, independently of 'onResolution' call.</p>
 		 */
 		default void afterLastCall() {}
 	}

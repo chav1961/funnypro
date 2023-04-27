@@ -16,7 +16,6 @@ import chav1961.purelib.basic.ArgParser;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.exceptions.CommandLineParametersException;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
-import chav1961.purelib.i18n.interfaces.Localizer;
 import chav1961.purelib.model.ContentModelFactory;
 import chav1961.purelib.model.interfaces.ContentMetadataInterface;
 
@@ -32,22 +31,20 @@ public class Application {
 	public static void main(String[] args) throws ScriptException {
 		final ArgParser			argParser = new ApplicationArgParser();
 		
-		try(final InputStream				is = Application.class.getResourceAsStream("application.xml");
-			final Localizer					localizer = PureLibSettings.PURELIB_LOCALIZER) {
-			
+		try(final InputStream				is = Application.class.getResourceAsStream("application.xml")) {
+			final ArgParser					parsed = argParser.parse(true, true, args);
 			final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
-			
-			final ScriptEngineManager 		factory = new ScriptEngineManager();
-			final ScriptEngine 				engine = factory.getEngineByName(FunnyProEngineFactory.LANG_NAME);
-			final ArgParser					parsed = argParser.parse(true,true,args);
+			final ScriptEngine 				engine = new ScriptEngineManager().getEngineByName(FunnyProEngineFactory.LANG_NAME);
 			
 			if (parsed.getValue(PARM_SCREEN, boolean.class)) {
-				new JScreen(localizer, xda, (FunnyProEngine)engine, PureLibSettings.CURRENT_LOGGER).setVisible(true);
+				new JScreen(PureLibSettings.PURELIB_LOCALIZER, xda, (FunnyProEngine)engine, PureLibSettings.CURRENT_LOGGER).setVisible(true);
 			}
 			else {
-				try(final Reader	in = new InputStreamReader(System.in, parsed.getValue(PARM_ENCODING,String.class));
-					final Writer	out = new OutputStreamWriter(System.out); 
-					final Writer	err = new OutputStreamWriter(System.err)) {
+				final String		encoding = parsed.getValue(PARM_ENCODING, String.class);
+				
+				try(final Reader	in = new InputStreamReader(System.in, encoding);
+					final Writer	out = new OutputStreamWriter(System.out, encoding); 
+					final Writer	err = new OutputStreamWriter(System.err, encoding)) {
 					
 					((FunnyProEngine)engine).console(in, out, err);
 				} catch (Exception exc) {

@@ -69,10 +69,7 @@ public class FProVM implements IFProVM, IFProModule {
 	@Override
 	public void close() throws IOException {
 		if (isTurnedOn()) {
-			try{turnOff(null);
-			} catch (ContentException e) {
-				throw new IOException(e.getMessage(),e);
-			}
+			turnOff(null);
 		}
 	}
 	
@@ -82,7 +79,7 @@ public class FProVM implements IFProVM, IFProModule {
 			throw new IllegalStateException("VM already is turned on");
 		}
 		else {
-			repo = new EntitiesRepo(getDebug(),getParameters());
+			repo = new EntitiesRepo(getDebug(), getParameters());
 			
 			if (source != null) {
 				final DataInputStream	dis = new DataInputStream(source);
@@ -109,7 +106,7 @@ public class FProVM implements IFProVM, IFProModule {
 	}
 
 	@Override
-	public void turnOff(OutputStream target) throws ContentException, IOException {
+	public void turnOff(OutputStream target) throws IOException {
 		if (!isTurnedOn()) {
 			throw new IllegalStateException("VM already is turned off");
 		}
@@ -130,7 +127,7 @@ public class FProVM implements IFProVM, IFProModule {
 			
 			try{repo.close();
 			} catch (Exception e) {
-				throw new ContentException(e.getMessage(),e);
+				throw new IOException(e.getMessage(),e);
 			}
 		}
 	}

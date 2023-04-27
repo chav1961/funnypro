@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Hashtable;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.script.ScriptException;
 import javax.swing.JEditorPane;
@@ -29,6 +29,7 @@ import javax.swing.text.StyleConstants;
 
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProVM;
+import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
 import chav1961.purelib.basic.exceptions.LocalizationException;
@@ -44,8 +45,6 @@ import chav1961.purelib.i18n.interfaces.Localizer;
 import chav1961.purelib.i18n.interfaces.Localizer.LocaleChangeListener;
 import chav1961.purelib.model.interfaces.ContentMetadataInterface;
 import chav1961.purelib.streams.charsource.ReaderCharSource;
-import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
-import chav1961.purelib.streams.interfaces.CharacterTarget;
 import chav1961.purelib.ui.swing.SwingUtils;
 import chav1961.purelib.ui.swing.interfaces.OnAction;
 import chav1961.purelib.ui.swing.useful.JEnableMaskManipulator;
@@ -61,13 +60,18 @@ import chav1961.purelib.ui.swing.useful.JStateString;
  */
 class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner {
 	private static final long 			serialVersionUID = 3667603693613366899L;
-	private static final String			APPLICATION_CAPTION = "JScreen.caption";
-	private static final String			INITIAL_HELP = "JScreen.status.initialHelp";
-	private static final String			ABOUT_TITLE = "JScreen.about.title";
-	private static final String			ABOUT_CONTENT = "JScreen.about.content";
-
-	private static final FilterCallback	FRB_FILTER = FilterCallback.of("Funny Prolog Fact/rule base","*.frb");
-	private static final FilterCallback	FPR_FILTER = FilterCallback.of("Funny Prolog source files","*.fpr");
+	
+	private static final String			KEY_APPLICATION_CAPTION = "JScreen.caption";
+	private static final String			KEY_INITIAL_HELP = "JScreen.status.initialHelp";
+	private static final String			KEY_ABOUT_TITLE = "JScreen.about.title";
+	private static final String			KEY_ABOUT_CONTENT = "JScreen.about.content";
+	private static final String			KEY_TOTAL_FILES_CONSULTED = "JScreen.message.consulted";
+	private static final String			KEY_FACT_RULE_BASE_PREPARED = "JScreen.message.frb.prepared";
+	private static final String			KEY_VM_STARTED = "JScreen.message.vm.started";
+	private static final String			KEY_VM_STOPPED = "JScreen.message.vm.stopped";
+	
+	private static final FilterCallback	FRB_FILTER = FilterCallback.ofWithExtension("Funny Prolog Fact/rule base", "frb", "*.frb");
+	private static final FilterCallback	FPR_FILTER = FilterCallback.ofWithExtension("Funny Prolog source files", "fpr", "*.fpr");
 	
 	private static final String			MENU_FILE_PREPARE_FRB = "menu.file.preparefrb";
 	private static final String			MENU_ACTIONS_PARAMETERS = "menu.actions.parameters";
@@ -80,10 +84,8 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 	private static final long 			FILE_PREPARE_FRB = 1L << 0;
 	private static final long 			ACTIONS_PARAMETERS = 1L << 1;
 	
-	
 	private final Localizer					parent, localizer;
 	private final FunnyProEngine			fpe;
-	private final LoggerFacade				logger;
 	private final JMenuBar					menu;
 	private final JEditorPane				log = new JEditorPane("text/html","");
 	private final JTextArea					console = new JTextArea();
@@ -116,13 +118,10 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		
 		this.parent = parent;
 		this.fpe = fpe;
-		this.logger = logger;
 		this.localizer = LocalizerFactory.getLocalizer(xda.getRoot().getLocalizerAssociated());
 		this.parent.push(this.localizer);
-		this.localizer.addLocaleChangeListener(this);
-		
 		this.ss = new JStateString(this.localizer);
-		localizer.addLocaleChangeListener(this);
+		this.localizer.addLocaleChangeListener(this);
 		
 		this.menu = SwingUtils.toJComponent(xda.byUIPath(URI.create("ui:/model/navigation.top.mainmenu")),JMenuBar.class);
 		this.emm = new JEnableMaskManipulator(MENUS, menu);
@@ -135,15 +134,12 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		split.setLeftComponent(scrollLog);
 		split.setRightComponent(scrollConsole);
 		split.setDividerSize(5);
+		split.setDividerLocation(400);
 		
 		setJMenuBar(menu);
 		getContentPane().add(split,BorderLayout.CENTER);
 		getContentPane().add(ss,BorderLayout.SOUTH);
-				
-		message(Severity.info, INITIAL_HELP);
-		pack();
 		
-		console.requestFocusInWindow();
 		SwingUtils.assignActionKey(console, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), (e)->{
 			if (console.getSelectedText() != null) {
 				processSentence(console.getSelectedText());
@@ -152,17 +148,20 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 				processSentence(console.getText());
 			}
 		}, "execute");
+		console.requestFocusInWindow();
+		
+		SwingUtils.assignExitMethod4MainWindow(this, ()->quit());
+		SwingUtils.centerMainWindow(this, 0.85f);
+		pack();
+
+		message(Severity.info, KEY_INITIAL_HELP);
 		
 		fillLocalizedStrings();
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		SwingUtils.centerMainWindow(this, 0.85f);
-		split.setDividerLocation(0.8);
-		setVisible(true);
 	}
 
 	@Override
 	public void localeChanged(final Locale oldLocale, final Locale newLocale) throws LocalizationException {
-		((LocaleChangeListener)menu).localeChanged(oldLocale, newLocale);
+		SwingUtils.refreshLocale(menu, oldLocale, newLocale);
 		ss.localeChanged(oldLocale, newLocale);
 		fillLocalizedStrings();
 	}
@@ -180,17 +179,18 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 	
 	@OnAction("action:/prepareFRB")
 	private void prepareFRB() throws LocalizationException, IOException {
-		try(final FileSystemInterface	fsi = FileSystemFactory.createFileSystem(URI.create(FileSystemInterface.FILESYSTEM_URI_SCHEME+":file:/e:/"))) {
+		try(final FileSystemInterface	fsi = FileSystemFactory.createFileSystem(URI.create(FileSystemInterface.FILESYSTEM_URI_SCHEME+":file:/"))) {
 			
-			for (String item : JFileSelectionDialog.select(this,localizer,fsi,JFileSelectionDialog.OPTIONS_CAN_SELECT_FILE|JFileSelectionDialog.OPTIONS_FOR_SAVE,FRB_FILTER)) {
-				final String	relativeURI = item.endsWith(".frb") ? item : item+".frb";
+			for (String item : JFileSelectionDialog.select(this, localizer, fsi,
+							JFileSelectionDialog.OPTIONS_CAN_SELECT_FILE|JFileSelectionDialog.OPTIONS_FOR_SAVE|JFileSelectionDialog.OPTIONS_APPEND_EXTENSION,
+							FRB_FILTER)) {
 				
-				try(final FileSystemInterface	frb = fsi.clone().open(relativeURI).push("../").mkDir().pop().create()) {
+				try(final FileSystemInterface	frb = fsi.clone().open(item).push("../").mkDir().pop().create()) {
 					try(final OutputStream		os = frb.write()) {
+						
 						fpe.newFRB(os);
-						os.flush();
 					}
-					message(Severity.info, "New fact/rule base %1$s was prepared", relativeURI);
+					message(Severity.info, KEY_FACT_RULE_BASE_PREPARED, item);
 				} catch (ContentException | IOException e) {
 					message(Severity.error, e, e.getLocalizedMessage());
 				}
@@ -203,9 +203,11 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		try(final FileSystemInterface	fsi = FileSystemFactory.createFileSystem(URI.create(FileSystemInterface.FILESYSTEM_URI_SCHEME+":file:/"))) {
 			int	count = 0;
 			
-			for (String item : JFileSelectionDialog.select(this,localizer,fsi,JFileSelectionDialog.OPTIONS_CAN_SELECT_FILE|JFileSelectionDialog.OPTIONS_CAN_MULTIPLE_SELECT|JFileSelectionDialog.OPTIONS_FILE_MUST_EXISTS|JFileSelectionDialog.OPTIONS_FOR_OPEN,FPR_FILTER)) {
-				try(final FileSystemInterface	frb = fsi.clone().open(item)) {
-					try(final Reader			rdr = frb.charRead()) {
+			for (String item : JFileSelectionDialog.select(this, localizer, fsi, 
+						JFileSelectionDialog.OPTIONS_CAN_SELECT_FILE|JFileSelectionDialog.OPTIONS_CAN_MULTIPLE_SELECT|JFileSelectionDialog.OPTIONS_FILE_MUST_EXISTS|JFileSelectionDialog.OPTIONS_FOR_OPEN|JFileSelectionDialog.OPTIONS_APPEND_EXTENSION,
+						FPR_FILTER)) {
+				try(final FileSystemInterface	fpr = fsi.clone().open(item)) {
+					try(final Reader			rdr = fpr.charRead(PureLibSettings.DEFAULT_CONTENT_ENCODING)) {
 						
 						message(Severity.trace,"Consulting %1$s...",item);
 						fpe.consult(new ReaderCharSource(rdr,false));
@@ -216,7 +218,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 				}
 			}
 			if (count > 0) {
-				message(Severity.info, "Total %1$d files were consulted", count);
+				message(Severity.info, KEY_TOTAL_FILES_CONSULTED, count);
 			}
 		}
 	}
@@ -226,7 +228,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		if (!fpe.isTurnedOn()) {
 			try{fpe.turnOn(null);
 				emm.setEnableMaskOff(FILE_PREPARE_FRB | ACTIONS_PARAMETERS);
-				message(Severity.info,"start");
+				message(Severity.info, KEY_VM_STARTED);
 			} catch (ContentException | IOException e) {
 				message(Severity.error,e,e.getLocalizedMessage());
 			}
@@ -238,7 +240,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		if (fpe.isTurnedOn()) {
 			try{fpe.turnOff(null);
 				emm.setEnableMaskOn(FILE_PREPARE_FRB | ACTIONS_PARAMETERS);
-				message(Severity.info,"stop");
+				message(Severity.info, KEY_VM_STOPPED);
 			} catch (ContentException | IOException e) {
 				message(Severity.error,e,e.getLocalizedMessage());
 			}
@@ -249,13 +251,13 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 	private void setupVM() throws LocalizationException {
 	}
 
-	@OnAction("action:/builtin.languages")
-	private void changeLang(final Map<String,String[]> query) throws LocalizationException {
+	@OnAction("action:builtin:/builtin.languages")
+	private void changeLang(final Hashtable<String,String[]> query) throws LocalizationException {
 		localizer.setCurrentLocale(Locale.forLanguageTag(query.get("lang")[0]));
 	}
 	
-	@OnAction("action:/builtin.lookAndFeel")
-	private void changeLaf(final Map<String,String[]> query) throws LocalizationException {
+	@OnAction("action:builtin:/builtin.lookAndFeel")
+	private void changeLaf(final Hashtable<String,String[]> query) throws LocalizationException {
 		try{UIManager.setLookAndFeel(query.get("laf")[0]);
 	        SwingUtilities.updateComponentTreeUI(this);
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
@@ -265,7 +267,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 	
 	@OnAction("action:/about")
 	private void showAboutScreen() throws URISyntaxException {
-		SwingUtils.showAboutScreen(this, localizer, ABOUT_TITLE, ABOUT_CONTENT, getClass().getResource("avatar.jpg").toURI(), new Dimension(300,300));
+		SwingUtils.showAboutScreen(this, localizer, KEY_ABOUT_TITLE, KEY_ABOUT_CONTENT, getClass().getResource("avatar.jpg").toURI(), new Dimension(300,300));
 	}
 
 	protected void processSentence(final String sentence) {
@@ -290,11 +292,9 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 						return true;
 					}
 					
-					@Override public void beforeFirstCall() {}
-					
 					@Override 
 					public void afterLastCall() {
-						append2Log(MessageType.INTERMEDIATE_RESULT,"Total : "+count);
+						append2Log(MessageType.INTERMEDIATE_RESULT, "Total : "+count);
 					}
 				}) ? "true" : "false";
 			}
@@ -306,7 +306,6 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 					public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws SyntaxException, PrintingException {
 						if (resolvedVariables.length > 0) {
 							final StringBuilder 	sb = new StringBuilder("\n__________");
-							final CharacterTarget	target = new StringBuilderCharTarget(sb);
 							
 							for (int index = 0; index < names.length; index++) {
 								sb.append("\n ").append(names[index]).append(" = ").append(printedValues[index]);
@@ -316,8 +315,6 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 						count++;
 						return true;
 					}
-					
-					@Override public void beforeFirstCall() {}
 					
 					@Override 
 					public void afterLastCall() {
@@ -330,7 +327,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 				result = "term asserted";
 			}
 		
-			append2Log(MessageType.TOTAL_RESULT,result);
+			append2Log(MessageType.TOTAL_RESULT, result);
 		} catch (ContentException | ScriptException | IOException e) {
 			append2Log(MessageType.PROCESSING_ERROR,e.getMessage());
 			getLogger().message(Severity.error, e, e.getLocalizedMessage());
@@ -346,7 +343,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 	}
 	
 	private void fillLocalizedStrings() throws LocalizationException {
-		setTitle(localizer.getValue(APPLICATION_CAPTION));
+		setTitle(localizer.getValue(KEY_APPLICATION_CAPTION));
 	}
 
 	private void message(final Severity info, final String format, final Object... parameters) {

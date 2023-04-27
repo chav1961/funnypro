@@ -6,6 +6,10 @@
 		<key name="JScreen.status.initialHelp">To execute Funny Prolog sentence, highlight console sentence and press F5</key>
 		<key name="JScreen.about.title">About...</key>
 		<key name="JScreen.about.content">uri(aboutApplication.cre)</key>
+		<key name="JScreen.message.consulted">Total %1$d files were consulted</key>		
+		<key name="JScreen.message.frb.prepared">New fact/rule base [%1$s] was prepared</key>
+		<key name="JScreen.message.vm.started">Prolog virtual machine started</key>
+		<key name="JScreen.message.vm.stopped">Prolog virtual machine stopped</key>
  
 <!-- Application menu localization -->
 		<key name="menu.file">File</key>
@@ -30,14 +34,14 @@
 		<key name="menu.actions.parameters.tt">Funny Prolog virtual machine parameters</key>
 		<key name="menu.tools">Tools</key>
 		<key name="menu.tools.tt">Usual tools</key>
+		<key name="menu.tools.settings">Settings</key>
+		<key name="menu.tools.settings.tt">Application settings</key>
 		<key name="menu.tools.laf">Change Look &amp; Feel</key>
 		<key name="menu.tools.laf.tt">Change Current Look &amp; Feel</key>
 		<key name="menu.tools.languages">Language</key>
 		<key name="menu.tools.languages.tt">Change current language</key>
-		<key name="menu.help">Help &amp; Settings</key>
+		<key name="menu.help">Help</key>
 		<key name="menu.help.tt">Set of helps and settings</key>
-		<key name="menu.help.settings">Settings</key>
-		<key name="menu.help.settings.tt">Application settings</key>
 		<key name="menu.help.about">About...</key>
 		<key name="menu.help.about.tt">About Funny Prolog</key>
 	</lang>
@@ -47,6 +51,10 @@
 		<key name="JScreen.status.initialHelp">Для выполнения предложения Funny Prolog выделите в консоли предложение и нажмите F5... </key>
 		<key name="JScreen.about.title">О программе</key>
 		<key name="JScreen.about.content">uri(aboutApplication.cre)</key>
+		<key name="JScreen.message.consulted">Всего %1$d файлов загружено</key>
+		<key name="JScreen.message.frb.prepared">Новая база фактов/правил [%1$s] подготовлена</key>
+		<key name="JScreen.message.vm.started">Виртуальная Prolog-машина запущена</key>
+		<key name="JScreen.message.vm.stopped">Виртуальная Prolog-машина остановлена</key>
  
 <!-- Локализация меню приложения -->
 		<key name="menu.file">Файл</key>
@@ -71,14 +79,14 @@
 		<key name="menu.actions.parameters.tt">Параметры виртуальной машины Funny Prolog</key>
 		<key name="menu.tools">Инструменты</key>
 		<key name="menu.tools.tt">Различные инструменты</key>
+		<key name="menu.tools.settings">Настройки</key>
+		<key name="menu.tools.settings.tt">Настройки приложения</key>
 		<key name="menu.tools.laf">Изменить внешний вид (Look &amp; Feel)</key>
 		<key name="menu.tools.laf.tt">Настройка внешнего виде приложения</key>
 		<key name="menu.tools.languages">Язык</key>
 		<key name="menu.tools.languages.tt">Изменить язык приложения</key>
-		<key name="menu.help">Помощь и настройки</key>
+		<key name="menu.help">Справка</key>
 		<key name="menu.help.tt">Различные настройки и помощь</key>
-		<key name="menu.help.settings">Настройки</key>
-		<key name="menu.help.settings.tt">Настройки приложения</key>
 		<key name="menu.help.about">О программе...</key>
 		<key name="menu.help.about.tt">Информация о Funny Prolog</key>
 	</lang>

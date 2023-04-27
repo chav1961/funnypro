@@ -74,9 +74,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 
 	@Override
 	public void close() throws IOException {
-		try{vm.turnOff(new OutputStream(){public void write(int data) throws IOException {}});
-		} catch (ContentException e) {
-		}
+		vm.turnOff(null);
 		vm.close();
 	}
 	
@@ -125,6 +123,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 		}
 		else {
 			vm.newFRB(target);
+			target.flush();
 		}
 	}
 
@@ -167,6 +166,4 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	public void console(final Reader source, final Writer target, final Writer errors) throws ContentException {
 		vm.console(source, target, errors);
 	}
-	
-	
 }
