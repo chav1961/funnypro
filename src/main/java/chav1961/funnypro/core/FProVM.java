@@ -308,6 +308,7 @@ public class FProVM implements IFProVM, IFProModule {
 				throw new ContentException(e.getMessage()); 
 			} finally {
 				final long	quitName = repo.termRepo().seekName((CharSequence)"quit"); 
+				
 				if (quitName >= 0) {
 					repo.termRepo().removeName(quitName);
 				}
