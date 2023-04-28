@@ -75,15 +75,13 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 		VALID_LOWER_LETTERS.addRange('\u0430','\u044F');
 		VALID_LOWER_LETTERS.add('\u0451');
 
-		PUNCTUATIONS.addRange((char)0x21,(char)0x26);
-		PUNCTUATIONS.addRange((char)0x2A,(char)0x2D);
-		PUNCTUATIONS.add((char)0x2F);
-		PUNCTUATIONS.add((char)0x3A);
-		PUNCTUATIONS.addRange((char)0x3C,(char)0x3F);
-		PUNCTUATIONS.add((char)0x5C);
-		PUNCTUATIONS.add((char)0x60);
-		PUNCTUATIONS.add((char)0x7E);
-		PUNCTUATIONS.add((char)0x2E);	// .
+		PUNCTUATIONS.addRange('!','&');
+		PUNCTUATIONS.addRange('*','/');
+		PUNCTUATIONS.add(':');
+		PUNCTUATIONS.addRange('<','?');
+		PUNCTUATIONS.add('\\');
+		PUNCTUATIONS.add('^');
+		PUNCTUATIONS.add('~');
 	}
 
 	private final int[]		forIntResult = new int[2];
@@ -962,7 +960,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 									from++;
 								}
 								forIntResult[1] = from;
-								operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1]+1,null);
+								operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1],null);
 							}
 							else {
 								throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");

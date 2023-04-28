@@ -68,7 +68,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	
 	FunnyProEngine(final ScriptEngineFactory factory) throws ContentException, IOException {
 		this.factory = factory;
-		this.vm = new FProVM(logger,new SubstitutableProperties());
+		this.vm = new FProVM(logger, new SubstitutableProperties());
 		this.vm.turnOn(null);
 	}
 

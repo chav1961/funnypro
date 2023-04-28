@@ -111,7 +111,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		}
 	}
 	
-	JScreen(final Localizer parent, final ContentMetadataInterface xda, final FunnyProEngine fpe, final LoggerFacade logger) throws IOException, EnvironmentException {
+	JScreen(final Localizer parent, final ContentMetadataInterface xda, final FunnyProEngine fpe) throws IOException, EnvironmentException {
 		final JSplitPane	split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		final JScrollPane	scrollLog = new JScrollPane(log);
 		final JScrollPane	scrollConsole = new JScrollPane(console);
@@ -148,15 +148,15 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 				processSentence(console.getText());
 			}
 		}, "execute");
-		console.requestFocusInWindow();
 		
 		SwingUtils.assignExitMethod4MainWindow(this, ()->quit());
 		SwingUtils.centerMainWindow(this, 0.85f);
 		pack();
 
-		message(Severity.info, KEY_INITIAL_HELP);
+		getLogger().message(Severity.info, KEY_INITIAL_HELP);
 		
 		fillLocalizedStrings();
+		console.requestFocusInWindow();
 	}
 
 	@Override
@@ -190,9 +190,9 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 						
 						fpe.newFRB(os);
 					}
-					message(Severity.info, KEY_FACT_RULE_BASE_PREPARED, item);
+					getLogger().message(Severity.info, KEY_FACT_RULE_BASE_PREPARED, item);
 				} catch (ContentException | IOException e) {
-					message(Severity.error, e, e.getLocalizedMessage());
+					getLogger().message(Severity.error, e, e.getLocalizedMessage());
 				}
 			}
 		}
@@ -209,16 +209,16 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 				try(final FileSystemInterface	fpr = fsi.clone().open(item)) {
 					try(final Reader			rdr = fpr.charRead(PureLibSettings.DEFAULT_CONTENT_ENCODING)) {
 						
-						message(Severity.trace,"Consulting %1$s...",item);
+						getLogger().message(Severity.trace,"Consulting %1$s...",item);
 						fpe.consult(new ReaderCharSource(rdr,false));
 					}
 					count++;
 				} catch (SyntaxException | IOException e) {
-					message(Severity.error, e, e.getLocalizedMessage());
+					getLogger().message(Severity.error, e, e.getLocalizedMessage());
 				}
 			}
 			if (count > 0) {
-				message(Severity.info, KEY_TOTAL_FILES_CONSULTED, count);
+				getLogger().message(Severity.info, KEY_TOTAL_FILES_CONSULTED, count);
 			}
 		}
 	}
@@ -228,9 +228,9 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		if (!fpe.isTurnedOn()) {
 			try{fpe.turnOn(null);
 				emm.setEnableMaskOff(FILE_PREPARE_FRB | ACTIONS_PARAMETERS);
-				message(Severity.info, KEY_VM_STARTED);
+				getLogger().message(Severity.info, KEY_VM_STARTED);
 			} catch (ContentException | IOException e) {
-				message(Severity.error,e,e.getLocalizedMessage());
+				getLogger().message(Severity.error,e,e.getLocalizedMessage());
 			}
 		}
 	}
@@ -240,9 +240,9 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		if (fpe.isTurnedOn()) {
 			try{fpe.turnOff(null);
 				emm.setEnableMaskOn(FILE_PREPARE_FRB | ACTIONS_PARAMETERS);
-				message(Severity.info, KEY_VM_STOPPED);
+				getLogger().message(Severity.info, KEY_VM_STOPPED);
 			} catch (ContentException | IOException e) {
-				message(Severity.error,e,e.getLocalizedMessage());
+				getLogger().message(Severity.error,e,e.getLocalizedMessage());
 			}
 		}
 	}
@@ -261,7 +261,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		try{UIManager.setLookAndFeel(query.get("laf")[0]);
 	        SwingUtilities.updateComponentTreeUI(this);
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-			message(Severity.error,e,e.getLocalizedMessage());
+			getLogger().message(Severity.error,e,e.getLocalizedMessage());
 		}
 	}
 	
@@ -277,35 +277,33 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		
 			if (sentence.startsWith(":-")) {
 				result = fpe.goal(sentence,new IFProVM.IFProCallback() {
-					int	count = 0;
+					final StringBuilder 	sb = new StringBuilder();
 					
 					@Override
 					public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws SyntaxException, PrintingException {
 						if (resolvedVariables.length > 0) {
-							final StringBuilder 	sb = new StringBuilder("\n__________");
+							sb.setLength(0);
+							sb.append("\n__________");
 							
 							for (int index = 0; index < names.length; index++) {
 								sb.append("\n ").append(names[index]).append(" = ").append(resolvedVariables[index]);
 							}
-							append2Log(MessageType.INTERMEDIATE_RESULT,sb.substring(1));
+							append2Log(MessageType.INTERMEDIATE_RESULT, sb.substring(1));
 						}
 						return true;
-					}
-					
-					@Override 
-					public void afterLastCall() {
-						append2Log(MessageType.INTERMEDIATE_RESULT, "Total : "+count);
 					}
 				}) ? "true" : "false";
 			}
 			else if (sentence.startsWith("?-")) {
 				result = fpe.question(sentence,new IFProVM.IFProCallback() {
+					final StringBuilder 	sb = new StringBuilder();
 					int	count = 0;
 					
 					@Override
 					public boolean onResolution(final String[] names, final IFProEntity[] resolvedVariables, final String[] printedValues) throws SyntaxException, PrintingException {
 						if (resolvedVariables.length > 0) {
-							final StringBuilder 	sb = new StringBuilder("\n__________");
+							sb.setLength(0);
+							sb.append("\n__________");
 							
 							for (int index = 0; index < names.length; index++) {
 								sb.append("\n ").append(names[index]).append(" = ").append(printedValues[index]);
@@ -344,27 +342,5 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 	
 	private void fillLocalizedStrings() throws LocalizationException {
 		setTitle(localizer.getValue(KEY_APPLICATION_CAPTION));
-	}
-
-	private void message(final Severity info, final String format, final Object... parameters) {
-		final String	text = localizer.containsKey(format) ? localizer.getValue(format) : format;
-		
-		if (parameters == null || parameters.length == 0) {
-			getLogger().message(info, text);
-		}
-		else {
-			getLogger().message(info, text, parameters);
-		}
-	}
-
-	private void message(final Severity info, final Throwable t, final String format, final Object... parameters) {
-		final String	text = localizer.containsKey(format) ? localizer.getValue(format) : format;
-		
-		if (parameters == null || parameters.length == 0) {
-			getLogger().message(info,t,text);
-		}
-		else {
-			getLogger().message(info, t, text, parameters);
-		}
 	}
 }

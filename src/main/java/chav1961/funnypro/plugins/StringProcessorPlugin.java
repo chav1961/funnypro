@@ -46,8 +46,8 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	public static final String		PLUGIN_DESCRIPTION = "This plugin supports a set of string predicates and operators";
 	public static final String		PLUGIN_PRODUCER = "(c) 2017, Alexander V. Chernomyrdin aka chav1961";
 	public static final int[]		PLUGIN_VERSION = {1,0};
-	public static final char[]		PREDICATE_SPLIT = "split(String,Divizor,List).".toCharArray(); 
-	public static final char[]		PREDICATE_LIST = "inList(String,List).".toCharArray(); 
+	public static final char[]		PREDICATE_SPLIT = "split(String, Divizor, List).".toCharArray(); 
+	public static final char[]		PREDICATE_LIST = "inList(String, List).".toCharArray(); 
 	public static final char[]		OPERATOR_CHARARRAY = ":-op(700,xfx,=>..).".toCharArray();
 	
 	private long	splitId, listId, charArrayId;
@@ -56,7 +56,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,StringProcessorPlugin.this);}
+					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1, PLUGIN_NAME, PLUGIN_PRODUCER, PLUGIN_VERSION, StringProcessorPlugin.this);}
 					@Override public String getPluginPredicate() {return null;}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}
@@ -82,44 +82,32 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 			global.repo = repo;
 			global.pap = pap;
 			try{
-				pap.parseEntities(PREDICATE_SPLIT,0,new FProParserCallback(){
-						@Override
-						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-							splitId = entity.getEntityId();
-							repo.pluginsRepo().registerResolver(entity,vars,StringProcessorPlugin.this,global);
-							return true;
-						}
-					}
-				);
+				pap.parseEntities(PREDICATE_SPLIT, 0, (entity, vars) -> {
+					splitId = entity.getEntityId();
+					repo.pluginsRepo().registerResolver(entity, vars, StringProcessorPlugin.this, global);
+					return true;
+				});
 				actualLog.message(Severity.info,"Predicate "+new String(PREDICATE_SPLIT)+" was registeded successfully");
 				
-				pap.parseEntities(PREDICATE_LIST,0,new FProParserCallback(){
-						@Override
-						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-							listId = entity.getEntityId();
-							repo.pluginsRepo().registerResolver(entity,vars,StringProcessorPlugin.this,global);
-							return true;
-						}
-					}
-				);
+				pap.parseEntities(PREDICATE_LIST, 0, (entity, vars) -> {
+					listId = entity.getEntityId();
+					repo.pluginsRepo().registerResolver(entity,vars,StringProcessorPlugin.this,global);
+					return true;
+				});
 				actualLog.message(Severity.info,"Predicate "+new String(PREDICATE_LIST)+" was registeded successfully");
 				
-				pap.parseEntities(OPERATOR_CHARARRAY,0,new FProParserCallback(){
-						@Override
-						public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
-							final IFProOperator	op = ((IFProOperator)((IFProOperator)entity).getRight());
-							
-							charArrayId = op.getEntityId();
-							repo.pluginsRepo().registerResolver(op,vars,StringProcessorPlugin.this,global);
-							repo.putOperatorDef(op);
-							return true;
-						}
-					}
-				);
+				pap.parseEntities(OPERATOR_CHARARRAY, 0, (final IFProEntity entity, final List<IFProVariable> vars) -> {
+					final IFProOperator	op = ((IFProOperator)((IFProOperator)entity).getRight());
+					
+					charArrayId = op.getEntityId();
+					repo.pluginsRepo().registerResolver(op, vars, StringProcessorPlugin.this, global);
+					repo.putOperatorDef(op);
+					return true;
+				});
 				actualLog.message(Severity.info,"Operator "+new String(OPERATOR_CHARARRAY)+" was registeded successfully");
 			} catch (SyntaxException | IOException exc) {
-				actualLog.message(Severity.info,exc,"Predicate registration failed: %1$s", exc.getMessage());
-				throw new IllegalArgumentException("Attempt to register predicate/operator failed: "+exc.getMessage(),exc); 
+				actualLog.message(Severity.info,exc,"Predicate registration failed: %1$s", exc.getLocalizedMessage());
+				throw new IllegalArgumentException("Attempt to register predicate/operator failed: "+exc.getLocalizedMessage(), exc); 
 			}
 			actualLog.rollback();
 			return global;
@@ -167,11 +155,11 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 			else if (temp.getRight().getEntityType() == EntityType.variable) {
 				if (temp.getLeft().getEntityType() == EntityType.string) {
 					final char[]	convert = new char[global.repo.stringRepo().getNameLength(temp.getLeft().getEntityId())];
-					IFProList		list = new ListEntity(null, null);
+					IFProList		list = null;
 					
 					global.repo.stringRepo().getName(temp.getLeft().getEntityId(),convert,0);
 					for (int index = convert.length-1; index >= 0; index--) {
-						list = new ListEntity(new IntegerEntity(convert[index]),list);
+						list = new ListEntity(new IntegerEntity(convert[index]), list);
 					}
 					if (FProUtil.unify(list,temp.getRight(),local.list)) {
 						if (local.list[0] != null) {
@@ -366,7 +354,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 			final IFProEntity			lastSecond = ((TemporaryStackTop)local.stack.pop()).getEntity();
 			final FProUtil.Change[]		change = new FProUtil.Change[1];
 			
-			FProUtil.unbind((Change)((BoundStackTop)local.stack.pop()).getChangeChain());
+			FProUtil.unbind((Change)((BoundStackTop<?>)local.stack.pop()).getChangeChain());
 			
 			final IFProEntity		newSecond = FProUtil.duplicate(((IFProList)lastSecond).getTail());
 			

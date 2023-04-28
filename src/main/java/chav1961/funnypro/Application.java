@@ -32,12 +32,12 @@ public class Application {
 		final ArgParser			argParser = new ApplicationArgParser();
 		
 		try(final InputStream				is = Application.class.getResourceAsStream("application.xml")) {
-			final ArgParser					parsed = argParser.parse(true, true, args);
 			final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
+			final ArgParser					parsed = argParser.parse(true, true, args);
 			final ScriptEngine 				engine = new ScriptEngineManager().getEngineByName(FunnyProEngineFactory.LANG_NAME);
 			
 			if (parsed.getValue(PARM_SCREEN, boolean.class)) {
-				new JScreen(PureLibSettings.PURELIB_LOCALIZER, xda, (FunnyProEngine)engine, PureLibSettings.CURRENT_LOGGER).setVisible(true);
+				new JScreen(PureLibSettings.PURELIB_LOCALIZER, xda, (FunnyProEngine)engine).setVisible(true);
 			}
 			else {
 				final String		encoding = parsed.getValue(PARM_ENCODING, String.class);
