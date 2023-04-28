@@ -18,6 +18,7 @@ import chav1961.purelib.basic.exceptions.CommandLineParametersException;
 import chav1961.purelib.basic.exceptions.EnvironmentException;
 import chav1961.purelib.model.ContentModelFactory;
 import chav1961.purelib.model.interfaces.ContentMetadataInterface;
+import chav1961.purelib.ui.swing.useful.JSimpleSplash;
 
 /**
  * <p>This class implements stand-alone console-oriented application for the Funny Prolog interpreter</p>
@@ -31,15 +32,21 @@ public class Application {
 	public static void main(String[] args) throws ScriptException {
 		final ArgParser			argParser = new ApplicationArgParser();
 		
-		try(final InputStream				is = Application.class.getResourceAsStream("application.xml")) {
-			final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
-			final ArgParser					parsed = argParser.parse(true, true, args);
-			final ScriptEngine 				engine = new ScriptEngineManager().getEngineByName(FunnyProEngineFactory.LANG_NAME);
+		try(final InputStream		is = Application.class.getResourceAsStream("application.xml")) {
+			final ArgParser			parsed = argParser.parse(true, true, args);
 			
 			if (parsed.getValue(PARM_SCREEN, boolean.class)) {
-				new JScreen(PureLibSettings.PURELIB_LOCALIZER, xda, (FunnyProEngine)engine).setVisible(true);
+				try(final JSimpleSplash		jss = new JSimpleSplash()) {
+					jss.start("Loading...");					
+
+					final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
+					final ScriptEngine 				engine = new ScriptEngineManager().getEngineByName(FunnyProEngineFactory.LANG_NAME);
+					new JScreen(PureLibSettings.PURELIB_LOCALIZER, xda, (FunnyProEngine)engine).setVisible(true);
+				}
 			}
 			else {
+				final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
+				final ScriptEngine 				engine = new ScriptEngineManager().getEngineByName(FunnyProEngineFactory.LANG_NAME);
 				final String		encoding = parsed.getValue(PARM_ENCODING, String.class);
 				
 				try(final Reader	in = new InputStreamReader(System.in, encoding);

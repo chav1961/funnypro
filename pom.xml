@@ -105,6 +105,9 @@
                            <classpathPrefix>./</classpathPrefix>
                             <mainClass>chav1961.funnypro.Application</mainClass>
                        </manifest>
+                       <manifestEntries>
+                           <SplashScreen-Image>splash.jpg</SplashScreen-Image>
+                       </manifestEntries>
                    </archive>
                </configuration>
            </plugin>
