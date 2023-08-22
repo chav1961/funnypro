@@ -33,7 +33,7 @@ public class Application {
 	public static void main(String[] args) throws ScriptException {
 		final ArgParser			argParser = new ApplicationArgParser();
 		
-		try(final InputStream		is = Application.class.getResourceAsStream("application.xml")) {
+		try(final InputStream		is = JScreen.class.getResourceAsStream("application.xml")) {
 			final ArgParser			parsed = argParser.parse(true, true, args);
 			
 			if (parsed.getValue(PARM_SCREEN, boolean.class)) {

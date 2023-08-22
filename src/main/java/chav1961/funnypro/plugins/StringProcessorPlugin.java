@@ -4,7 +4,6 @@ package chav1961.funnypro.plugins;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.FProUtil.Change;
@@ -29,7 +28,6 @@ import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
-import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
@@ -51,17 +49,17 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	public static final char[]			PREDICATE_LIST = "inList(String, List).".toCharArray(); 
 	public static final char[]			OPERATOR_CHARARRAY = ":-op(700,xfx,=>..).".toCharArray();
 	
-	private long	splitId, listId, charArrayId;
+	private PluginDescriptor	DESC = new PluginDescriptor(){
+									@SuppressWarnings("unchecked")
+									@Override public IFProExternalEntity<StringProcessorGlobal,StringProcessorLocal> getPluginEntity() {return new ExternalPluginEntity<StringProcessorGlobal,StringProcessorLocal>(1, PLUGIN_NAME, PLUGIN_PRODUCER, PLUGIN_VERSION, StringProcessorPlugin.this);}
+									@Override public String getPluginPredicate() {return null;}
+									@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
+								};
+	private long				splitId, listId, charArrayId;
 	
 	@Override
 	public PluginDescriptor[] getPluginDescriptors() {
-		return new PluginDescriptor[]{
-				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1, PLUGIN_NAME, PLUGIN_PRODUCER, PLUGIN_VERSION, StringProcessorPlugin.this);}
-					@Override public String getPluginPredicate() {return null;}
-					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
-				}
-		};
+		return new PluginDescriptor[]{DESC};
 	}
 	
 	@Override

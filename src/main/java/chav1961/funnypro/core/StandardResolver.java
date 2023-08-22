@@ -8,8 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import java.util.Properties;
 import java.util.Set;
 
 import chav1961.funnypro.core.FProUtil.Change;
@@ -32,12 +30,12 @@ import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.ExternalEntity
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginDescriptor;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.BoundStackTop;
+import chav1961.funnypro.core.interfaces.IFProGlobalStack.ExternalStackTop;
+import chav1961.funnypro.core.interfaces.IFProGlobalStack.GlobalStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.IteratorStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.OrChainStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.TemporaryStackTop;
-import chav1961.funnypro.core.interfaces.IFProGlobalStack.ExternalStackTop;
-import chav1961.funnypro.core.interfaces.IFProGlobalStack.GlobalStackTop;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
@@ -49,7 +47,7 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.DottedVersion;
-import chav1961.purelib.basic.LongIdMap;
+import chav1961.purelib.basic.ReusableInstances;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -77,6 +75,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	public static final DottedVersion	PLUGIN_VERSION = DottedVersion.ZERO;
 	public static final String			PLUGIN_DESCRIPTION	= "Standard resolver for the fpro";
 
+	@SuppressWarnings("rawtypes")
 	static final RegisteredOperators[]			OPS = { new RegisteredOperators<RegisteredEntities>(1200,OperatorType.xfx,":-",RegisteredEntities.Op1200xfxGoal),
 														new RegisteredOperators<RegisteredEntities>(1200,OperatorType.fx,":-",RegisteredEntities.Op1200fxGoal),
 														new RegisteredOperators<RegisteredEntities>(1200,OperatorType.fx,"?-",RegisteredEntities.Op1200fxQuestion),
@@ -113,6 +112,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 														new RegisteredOperators<RegisteredEntities>(200,OperatorType.fy,"-",RegisteredEntities.Op200fyMinus),
 													};
 	
+	@SuppressWarnings("rawtypes")
 	static final RegisteredPredicates[]			PREDS = { new RegisteredPredicates<RegisteredEntities>("trace",RegisteredEntities.PredTrace),
 														new RegisteredPredicates<RegisteredEntities>("notrace",RegisteredEntities.PredNoTrace),
 														new RegisteredPredicates<RegisteredEntities>("spy",RegisteredEntities.PredSpy),
@@ -216,16 +216,17 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	final long[]	forInteger = new long[2];
 	final double[]	forReal = new double[2];
 	final Change[]	forChange = new Change[1];
+	final ReusableInstances<LocalDescriptor>	ri = new ReusableInstances<LocalDescriptor>(()->new LocalDescriptor());
+	private final PluginDescriptor				DESC = new PluginDescriptor(){
+													@SuppressWarnings("unchecked")
+													@Override public IFProExternalEntity<GlobalDescriptor,LocalDescriptor> getPluginEntity() {return new ExternalPluginEntity<GlobalDescriptor,LocalDescriptor>(1, PLUGIN_NAME, PLUGIN_PRODUCER, PLUGIN_VERSION, new StandardResolver());}
+													@Override public String getPluginPredicate() {return null;}
+													@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
+												};
 	
 	@Override
 	public PluginDescriptor[] getPluginDescriptors() {
-		return new PluginDescriptor[]{
-				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1,PLUGIN_NAME,PLUGIN_PRODUCER,PLUGIN_VERSION,new StandardResolver());}
-					@Override public String getPluginPredicate() {return null;}
-					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
-				}
-		};
+		return new PluginDescriptor[]{DESC};
 	}
 	
 	@Override public String getName() {return PLUGIN_NAME;}
@@ -244,14 +245,15 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			
 			for (RegisteredOperators<RegisteredEntities> item : OPS) {
 				actualLog.message(Severity.info,"Register operator %1$s, %2$s...", item.text, item.type);
-				final long			itemId = repo.termRepo().placeName(item.text,null);
+				final long			itemId = repo.termRepo().placeName((CharSequence)item.text, null);
 				IFProOperator[]		op;
 			
 				if ((op = repo.getOperatorDef(itemId,item.priority,item.priority,item.type.getSort())).length == 0) {
-					final IFProOperator			def = new OperatorDefEntity(item.priority,item.type,itemId); 
+					final IFProOperator			def = new OperatorDefEntity(item.priority, item.type, itemId); 
 					
-					repo.putOperatorDef(def);	ids.add(itemId);
-					FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(def,item.action));
+					repo.putOperatorDef(def);	
+					ids.add(itemId);
+					FProUtil.fillQuickIds(registered, new QuickIds<RegisteredEntities>(def,item.action));
 				}
 				else {
 					FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(op[0],item.action));					
@@ -270,7 +272,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 													@Override
 													public boolean process(final IFProEntity entity, final List<IFProVariable> vars) throws SyntaxException, IOException {
 														ids.add(entity.getEntityId());
-														FProUtil.fillQuickIds(registered,new QuickIds<RegisteredEntities>(entity,item.action));
+														FProUtil.fillQuickIds(registered, new QuickIds<RegisteredEntities>(entity, item.action));
 														return true;
 													}
 												}
@@ -289,12 +291,12 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			actualLog.rollback();
 		}
 		for (Entry<Long, QuickIds<RegisteredEntities>> item : registered.entrySet()) {
-			desc.registered.put(item.getKey(),item.getValue());
+			desc.registered.put(item.getKey(), item.getValue());
 			desc.registeredIds.add(item.getKey());
 		}
 		desc.prepared = true;
 		desc.repo = repo;
-		desc.pap = new ParserAndPrinter(desc.log,desc.parameters,desc.repo);
+		desc.pap = new ParserAndPrinter(desc.log, desc.parameters, desc.repo);
 		return desc;
 	}
 
@@ -337,7 +339,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			throw new NullPointerException("Callback can't be null!");
 		}
 		else {
-			final LocalDescriptor	desc = new LocalDescriptor();
+			final LocalDescriptor	desc = ri.allocate();
 			
 			desc.pap = global.pap;
 			desc.callback = callback;
@@ -375,7 +377,8 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			throw new NullPointerException("Entity to resolve can't be null!");
 		}
 		else {
-			try{return nextResolveInternal(global, local, entity);
+			try{
+				return nextResolveInternal(global, local, entity);
 			} catch (PrintingException e) {
 				throw new SyntaxException(0, 0,e.getLocalizedMessage(),e);
 			} 
@@ -410,7 +413,8 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			local.vars = null;		
 			local.pap = null;
 			local.callback = null;
-			local.stack = null;		
+			local.stack = null;
+			ri.free(local);
 		}
 	}
 
@@ -429,6 +433,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					}
 					rc = executeCallback(local.callback,local.vars,local.varNames,global.repo,local.pap) ? ResolveRC.True : ResolveRC.UltimateFalse;
 				} while (rc != ResolveRC.UltimateFalse && (rc = nextResolveInternal(global, newLocal, entity)) == ResolveRC.True);
+				
 				endResolve(global,newLocal,entity);
 				if (rc == ResolveRC.False) {
 					return ResolveRC.True;
@@ -675,7 +680,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 					final StringBuilder	sb = new StringBuilder();
 
 					try{global.pap.putEntity(((IFProPredicate)entity).getParameters()[0],new StringBuilderCharTarget(sb));
-						final long	newId = global.repo.stringRepo().placeName(sb.toString(),null);
+						final long	newId = global.repo.stringRepo().placeName((CharSequence)sb.toString(),null);
 
 						left = created = new StringEntity(newId);
 						right = ((IFProPredicate)entity).getParameters()[1];
@@ -733,20 +738,21 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				final ExternalEntityDescriptor	eed = global.repo.pluginsRepo().getResolver(entity);
 				
 				if (eed != null) {
-					final Object	localData = eed.getResolver().beforeCall(eed.getGlobal(),local.stack,local.vars,local.callback);
+					final IResolvable 	resolver = eed.getResolver();
+					final Object		localData = resolver.beforeCall(eed.getGlobal(), local.stack, local.vars, local.callback);
 					
-					if (eed.getResolver().firstResolve(eed.getGlobal(),localData,entity) == ResolveRC.True) {
-						local.stack.push(GlobalStack.getExternalStackTop(entity,eed,localData));
+					if (resolver.firstResolve(eed.getGlobal(), localData, entity) == ResolveRC.True) {
+						local.stack.push(GlobalStack.getExternalStackTop(entity, eed, localData));
 						return ResolveRC.True;
 					}
 					else {
-						eed.getResolver().endResolve(eed.getGlobal(),localData,entity);
-						eed.getResolver().afterCall(eed.getGlobal(),localData);
+						resolver.endResolve(eed.getGlobal(), localData, entity);
+						resolver.afterCall(eed.getGlobal(), localData);
 						return ResolveRC.False;
 					}
 				}
 				else {
-					return iterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,entity,global.repo.predicateRepo().call(entity));
+					return iterate((GlobalDescriptor)global, (LocalDescriptor)local, entity, entity, global.repo.predicateRepo().call(entity));
 				}
 		}
 	}	
@@ -893,19 +899,21 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				return continueIterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,()->((IFProPredicate)entity).getParameters()[0]);
 			default :
 				if (local.stack.getTopType() == StackTopType.external) {
-					final ExternalStackTop	est = (ExternalStackTop) local.stack.pop();
+					final ExternalStackTop				est = (ExternalStackTop) local.stack.pop();
+					final IResolvable<Object, Object>	resolver = est.getDescriptor().getResolver();
 					
-					if (est.getDescriptor().getResolver().nextResolve(est.getDescriptor().getGlobal(),est.getLocalData(),entity) == ResolveRC.True) {
+					if (resolver.nextResolve(est.getDescriptor().getGlobal(), est.getLocalData(), entity) == ResolveRC.True) {
 						local.stack.push(est);
 						return ResolveRC.True;
 					}
 					else {
-						est.getDescriptor().getResolver().endResolve(est.getDescriptor().getGlobal(),est.getLocalData(),entity);
-						est.getDescriptor().getResolver().afterCall(est.getDescriptor().getGlobal(),est.getLocalData());
+						local.stack.push(est);
 						return ResolveRC.False;
 					}
 				}
-				return continueIterate((GlobalDescriptor)global,(LocalDescriptor)local,entity,()->entity);
+				else {
+					return continueIterate((GlobalDescriptor)global, (LocalDescriptor)local, entity, ()->entity);
+				}
 		}
 	}
 	
@@ -1018,9 +1026,10 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			default :
 				if (local.stack.getTopType() == StackTopType.external) {
 					final ExternalStackTop	est = (ExternalStackTop) local.stack.pop();
+					final IResolvable<Object, Object> resolver = est.getDescriptor().getResolver();
 					
-					est.getDescriptor().getResolver().endResolve(est.getDescriptor().getGlobal(),est.getLocalData(),entity);
-					est.getDescriptor().getResolver().afterCall(est.getDescriptor().getGlobal(),est.getLocalData());
+					resolver.endResolve(est.getDescriptor().getGlobal(), est.getLocalData(), entity);
+					resolver.afterCall(est.getDescriptor().getGlobal(), est.getLocalData());
 					return;
 				}
 				endIterate(entity, global.repo.stringRepo(), local.stack);
@@ -1045,7 +1054,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 
 	private boolean containsVars(final IFProEntity entity) {
-		return !FProUtil.isEntityA(entity,ContentType.NonVar);
+		return !FProUtil.isEntityA(entity, ContentType.NonVar);
 	}
 	
 	private boolean containsVars(final IFProEntity entity1, final IFProEntity entity2) {
@@ -1062,8 +1071,8 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 	
 	private IFProEntity calculate(final GlobalDescriptor global, final IFProEntity value) {
-		try{return calculate(global,value,forInteger,forReal);
-//		try{return calculate(global,global.registered,value,forInteger,forReal);
+		try{
+			return calculate(global, value, forInteger, forReal);
 		} catch (UnsupportedOperationException exc) {
 			return null;
 		}
@@ -1519,6 +1528,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		
 		for (IFProVariable var : vars) {
 			resolved[index] = var.getParent() == null ? var : var.getParent();
+			
 			try{pap.putEntity(resolved[index],ct);
 				printedValues[index++] = sb.toString();
 			} catch (PrintingException | IOException e) {
@@ -1526,7 +1536,9 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			}
 			sb.setLength(0);			
 		}
-		try{return callback.onResolution(names,resolved,printedValues);
+		
+		try{
+			return callback.onResolution(names, resolved, printedValues);
 		} catch (PrintingException e) {
 			throw new SyntaxException(0,0,e.getLocalizedMessage(),e);
 		}

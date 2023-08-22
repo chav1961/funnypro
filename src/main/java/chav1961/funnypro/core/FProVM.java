@@ -255,7 +255,9 @@ public class FProVM implements IFProVM, IFProModule {
 														}))+"\n>");
 													}
 													else if (entity.getEntityId() == question && entity.getEntityType().equals(EntityType.operator) && ((IFProOperator)entity).getOperatorType().equals(OperatorType.fx)) {
-														target.write("Answer="+String.valueOf(inference(entity,vars,repo,new IFProCallback(){
+														target.write("Answer="+String.valueOf(inference(entity, vars, repo, new IFProCallback(){
+															boolean alwaysYes = false;
+															
 															@Override public void beforeFirstCall() {}
 															
 															@Override 
@@ -266,16 +268,29 @@ public class FProVM implements IFProVM, IFProModule {
 																		pap.putEntity((IFProEntity)resolvedVariables[index],new StringBuilderCharTarget(sb));
 																		target.write(String.format("%1$s = %2$s\n",names[index],sb));
 																	}
-																	target.write("proceed? ");
-																	target.flush();
 																} catch (IOException | ContentException e) {
 																	throw new PrintingException(e);
 																}
 	
-																try{final String	buffer = brdr.readLine();
-																	return "yY+tT".indexOf(buffer == null ? "" : buffer) >= 0;
-																} catch (IOException e) {
-																	return false;
+																if (alwaysYes) {
+																	return true;
+																}
+																else {
+																	try{target.write(">proceed (y/n/a)? ");
+																		target.flush();
+																		
+																		final String	buffer = brdr.readLine();
+																	
+																		if ("aA".indexOf(buffer == null ? "" : buffer) >= 0) {
+																			alwaysYes = true;
+																			return true;
+																		}
+																		else {
+																			return "yY+tT".indexOf(buffer == null ? "" : buffer) >= 0;
+																		}
+																	} catch (IOException e) {
+																		return false;
+																	}
 																}
 															}
 															
@@ -287,6 +302,7 @@ public class FProVM implements IFProVM, IFProModule {
 														target.write("Predicate was asserted\n>");
 													}
 													} catch (ContentException exc) {
+														exc.printStackTrace();
 														errors.write(String.format("Error executing input: "+exc.getMessage()));
 														return false;
 													}
@@ -295,8 +311,8 @@ public class FProVM implements IFProVM, IFProModule {
 											}
 								);
 						} catch (SyntaxException e) {
+							e.printStackTrace();
 							errors.write(e.getMessage());
-							throw new ContentException(e.getMessage()); 
 						} finally {
 							target.flush();
 							errors.flush();

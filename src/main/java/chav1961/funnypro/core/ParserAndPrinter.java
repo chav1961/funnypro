@@ -407,8 +407,9 @@ loop:	while (from < maxLen && source[from] != '.') {
 						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
-						top[0] = new PredicateEntity(repo.termRepo().placeName("!",null));
-						actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+						top[0] = new PredicateEntity(repo.termRepo().placeName((CharSequence)"!",null));
+						actualMin = IFProOperator.MIN_PRTY+1;		
+						actualMax = maxPrty; 
 						prefixNow = false;
 					}
 					break;
@@ -424,7 +425,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						else {
 							top[0] = var;
 							vars.storeVariable(var);
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY+1;		
+							actualMax = maxPrty; 
 							prefixNow = false;
 						}
 					}
@@ -466,7 +468,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 														top[location] = op;
 													}
 													actualMax = item.getUnderlyingPriority();
-													found = true;		break;
+													found = true;		
+													break;
 												}
 											}
 										}
@@ -529,32 +532,34 @@ loop:	while (from < maxLen && source[from] != '.') {
 													from++;
 												}
 												else {
-													from = parse(source,from,priorities,1101,vars,result);
+													from = parse(source, from, priorities, 1101, vars, result);
 													
 													while (from < maxLen && source[from] <= ' ') {
 														from++;
 													}
 													if (from < maxLen && source[from] == ')') {
 														from++;
-														((IFProPredicate)top[0]).setParameters(andChain2Array(result[0],top[0],colonId));
+														((IFProPredicate)top[0]).setParameters(andChain2Array(result[0], top[0], colonId));
 													}
 													else {
 														throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Close bracket ')' missing!"); 
 													}												
 												}
 											}
-											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											actualMin = IFProOperator.MIN_PRTY+1;		
+											actualMax = maxPrty; 
 											prefixNow = false;
 										}
 										break;
 									case op		:
 										if (!prefixNow) {
-											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
+											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands without infix operators detected"); 
 										}
 										else {
 											from = parseOp(source,from,result);
 											top[0] = result[0];
-											actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+											actualMin = IFProOperator.MIN_PRTY+1;		
+											actualMax = maxPrty; 
 											prefixNow = false;
 										}
 										break;
@@ -571,7 +576,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 						found = false;
 						
 						if (repo.classify(entityId[0]) != Classification.operator) {
-							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Operator awaited!"); 
+							throw new SyntaxException(SyntaxException.toRow(source, from), SyntaxException.toCol(source, from), "Unknown operator mnemonics detected! Possibly you wish to type double quotes?"); 
 						}
 						
 						if (prefixNow) {
@@ -593,7 +598,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 										top[location] = op;
 									}
 									actualMax = item.getUnderlyingPriority();
-									found = true;		break;
+									found = true;		
+									break;
 								}
 							}
 						}
