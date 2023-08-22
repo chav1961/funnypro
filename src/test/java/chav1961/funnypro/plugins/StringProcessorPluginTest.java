@@ -1,9 +1,6 @@
 package chav1961.funnypro.plugins;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,14 +15,10 @@ import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginDescriptor;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProVM;
-import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
-import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.SubstitutableProperties;
-import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
-import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.streams.charsource.StringCharSource;
 
 public class StringProcessorPluginTest {
@@ -34,7 +27,7 @@ public class StringProcessorPluginTest {
 		final StringProcessorPlugin	spp = new StringProcessorPlugin();
 		
 		Assert.assertEquals(StringProcessorPlugin.PLUGIN_NAME, spp.getName());
-		Assert.assertArrayEquals(StringProcessorPlugin.PLUGIN_VERSION, spp.getVersion());
+		Assert.assertEquals(StringProcessorPlugin.PLUGIN_VERSION, spp.getVersion());
 		
 		final PluginDescriptor[]	desc = spp.getPluginDescriptors();
 		

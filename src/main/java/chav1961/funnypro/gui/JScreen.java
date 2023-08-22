@@ -1,4 +1,4 @@
-package chav1961.funnypro;
+package chav1961.funnypro.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,6 +27,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import chav1961.funnypro.app.FunnyProEngine;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.purelib.basic.PureLibSettings;
@@ -58,7 +59,7 @@ import chav1961.purelib.ui.swing.useful.JStateString;
  * @since 0.0.1 
  * @last.update 0.0.2
  */
-class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner {
+public class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner {
 	private static final long 			serialVersionUID = 3667603693613366899L;
 	
 	private static final String			KEY_APPLICATION_CAPTION = "JScreen.caption";
@@ -111,7 +112,7 @@ class JScreen extends JFrame implements LocaleChangeListener, LoggerFacadeOwner 
 		}
 	}
 	
-	JScreen(final Localizer parent, final ContentMetadataInterface xda, final FunnyProEngine fpe) throws IOException, EnvironmentException {
+	public JScreen(final Localizer parent, final ContentMetadataInterface xda, final FunnyProEngine fpe) throws IOException, EnvironmentException {
 		final JSplitPane	split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		final JScrollPane	scrollLog = new JScrollPane(log);
 		final JScrollPane	scrollConsole = new JScrollPane(console);

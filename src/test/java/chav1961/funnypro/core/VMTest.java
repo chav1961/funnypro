@@ -18,6 +18,7 @@ import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -131,7 +132,7 @@ class PseudoFProVM extends FProVM {
 			new IResolvable<GlobalDescriptor,LocalDescriptor>() {
 			@Override public ResolveRC nextResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.False;}
 			@Override public String getName() {return "test";}
-			@Override public int[] getVersion() {return new int[]{1};}
+			@Override public DottedVersion getVersion() {return DottedVersion.ZERO;}
 			@Override public LocalDescriptor beforeCall(GlobalDescriptor global, IFProGlobalStack gs, List<IFProVariable> vars,IFProCallback callback) {return null;}
 			@Override public ResolveRC firstResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.True;}
 			@Override public void endResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {}			

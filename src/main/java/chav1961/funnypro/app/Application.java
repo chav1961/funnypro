@@ -1,4 +1,4 @@
-package chav1961.funnypro;
+package chav1961.funnypro.app;
 
 
 import java.io.IOException;
@@ -12,6 +12,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import chav1961.funnypro.gui.JScreen;
 import chav1961.purelib.basic.ArgParser;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.exceptions.CommandLineParametersException;

@@ -18,6 +18,7 @@ import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 
 public class EntitiesTest {
@@ -231,13 +232,14 @@ public class EntitiesTest {
 	@Test
 	public void externalEntityTest() {
 		final IResolvable<?,?>			res = (IResolvable<?, ?>) Proxy.newProxyInstance(this.getClass().getClassLoader(),new Class[]{IResolvable.class},(a,b,c)->{return null;});
-		final ExternalPluginEntity<?,?>	e1 = new ExternalPluginEntity<>(123,"name1","vendor1",new int[] {1,2},res), e2 = new ExternalPluginEntity<>(123,"name1","vendor1",new int[] {1,2},res);
+		final ExternalPluginEntity<?,?>	e1 = new ExternalPluginEntity<>(123, "name1", "vendor1", DottedVersion.ZERO, res), 
+										e2 = new ExternalPluginEntity<>(123, "name1", "vendor1", DottedVersion.ZERO, res);
 
 		Assert.assertEquals(EntityType.externalplugin,e1.getEntityType());
 		Assert.assertEquals(123,e1.getEntityId());
 		Assert.assertEquals("name1",e1.getPluginName());
 		Assert.assertEquals("vendor1",e1.getPluginProducer());
-		Assert.assertArrayEquals(new int[] {1,2},e1.getPluginVersion());
+		Assert.assertEquals(DottedVersion.ZERO, e1.getPluginVersion());
 		Assert.assertEquals(e1,e2);
 		Assert.assertEquals(e1.hashCode(),e2.hashCode());
 		Assert.assertEquals(e1.toString(),e2.toString());

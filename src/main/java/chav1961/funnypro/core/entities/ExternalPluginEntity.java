@@ -5,6 +5,8 @@ import java.util.Arrays;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.DottedVersion;
+import chav1961.purelib.basic.Utils;
 
 /**
  * <p>This class describes external plugin description entity in the expression tree</p> 
@@ -12,18 +14,18 @@ import chav1961.funnypro.core.interfaces.IResolvable;
  * @since 0.0.1
  */
 public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
-	private final long			pluginId;
-	private final String		pluginName, pluginProducer;
-	private final int[]			pluginVersion;
+	private final long				pluginId;
+	private final String			pluginName, pluginProducer;
+	private final DottedVersion		pluginVersion;
 	private final IResolvable<G,L>	resolver;
-	private IFProEntity			parent;
+	private IFProEntity				parent;
 
 	/**
 	 * <p>Constructor of the object</p>
 	 * @param entity plugin descriptor
 	 */
 	public ExternalPluginEntity(final IFProExternalEntity<G,L> entity){
-		this(entity.getEntityId(),entity.getPluginName(),entity.getPluginProducer(),entity.getPluginVersion(),entity.getResolver());
+		this(entity.getEntityId(), entity.getPluginName(), entity.getPluginProducer(), entity.getPluginVersion(), entity.getResolver());
 	}
 	
 	/**
@@ -34,8 +36,8 @@ public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
 	 * @param pluginVersion any non-empty version number
 	 * @param resolver any implementation of plugin resolver
 	 */
-	public ExternalPluginEntity(final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable<G,L> resolver){
-		this(null,pluginId,pluginName,pluginProducer,pluginVersion,resolver);
+	public ExternalPluginEntity(final long pluginId, final String pluginName, final String pluginProducer, final DottedVersion pluginVersion, final IResolvable<G,L> resolver){
+		this(null, pluginId, pluginName, pluginProducer, pluginVersion, resolver);
 	}
 	
 	/**
@@ -47,23 +49,23 @@ public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
 	 * @param pluginVersion any non-empty version number
 	 * @param resolver any implementation of plugin resolver
 	 */
-	public ExternalPluginEntity(final IFProEntity parent, final long pluginId, final String pluginName, final String pluginProducer, final int[] pluginVersion, final IResolvable<G,L> resolver){
-		if (pluginName == null || pluginName.isEmpty()) {
+	public ExternalPluginEntity(final IFProEntity parent, final long pluginId, final String pluginName, final String pluginProducer, final DottedVersion pluginVersion, final IResolvable<G,L> resolver){
+		if (Utils.checkEmptyOrNullString(pluginName)) {
 			throw new IllegalArgumentException("Plugin name can't be null or empty");
 		}
-		else if (pluginProducer == null || pluginProducer.isEmpty()) {
+		else if (Utils.checkEmptyOrNullString(pluginProducer)) {
 			throw new IllegalArgumentException("Plugin producer can't be null or empty");
 		}
-		else if (pluginVersion == null || pluginVersion.length == 0) {
-			throw new IllegalArgumentException("Plugin version can't be null or empty");
+		else if (pluginVersion == null) {
+			throw new NullPointerException("Plugin version can't be null");
 		}
 		else if (resolver == null) {
-			throw new IllegalArgumentException("Resolver can't be null");
+			throw new NullPointerException("Resolver can't be null");
 		}
 		else {
 			this.parent = parent;			this.pluginId = pluginId;	
 			this.pluginName = pluginName;	this.pluginProducer = pluginProducer;
-			this.resolver = resolver;		this.pluginVersion = pluginVersion.clone();
+			this.resolver = resolver;		this.pluginVersion = pluginVersion;
 		}
 	}
 	
@@ -74,12 +76,12 @@ public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
 	@Override public IFProEntity setParent(final IFProEntity entity) {this.parent = entity; return this;}
 	@Override public String getPluginName() {return pluginName;}
 	@Override public String getPluginProducer() {return pluginProducer;}
-	@Override public int[] getPluginVersion() {return pluginVersion.clone();}
+	@Override public DottedVersion getPluginVersion() {return pluginVersion;}
 	@Override public IResolvable<G,L> getResolver() {return resolver;}
 
 	@Override
 	public String toString() {
-		return "EnternalPluginEntity [pluginName=" + pluginName + ", pluginProducer=" + pluginProducer + ", pluginVersion=" + Arrays.toString(pluginVersion) + "]";
+		return "EnternalPluginEntity [pluginName=" + pluginName + ", pluginProducer=" + pluginProducer + ", pluginVersion=" + pluginVersion + "]";
 	}
 
 	@Override
@@ -88,7 +90,7 @@ public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
 		int result = 1;
 		result = prime * result + ((pluginName == null) ? 0 : pluginName.hashCode());
 		result = prime * result + ((pluginProducer == null) ? 0 : pluginProducer.hashCode());
-		result = prime * result + ((pluginVersion == null) ? 0 : Arrays.hashCode(pluginVersion));
+		result = prime * result + ((pluginVersion == null) ? 0 : pluginVersion.hashCode());
 		return result;
 	}
 
@@ -104,7 +106,7 @@ public class ExternalPluginEntity<G,L> implements IFProExternalEntity<G,L> {
 		if (pluginProducer == null) { if (other.pluginProducer != null) return false;
 		} else if (!pluginProducer.equals(other.pluginProducer)) return false;
 		if (pluginVersion == null) { if (other.pluginVersion != null) return false;
-		} else if (!Arrays.equals(pluginVersion,other.pluginVersion)) return false;
+		} else if (!pluginVersion.equals(other.pluginVersion)) return false;
 		return true;
 	}
 

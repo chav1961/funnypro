@@ -103,7 +103,7 @@
                        <manifest>
                            <addClasspath>true</addClasspath>
                            <classpathPrefix>./</classpathPrefix>
-                            <mainClass>chav1961.funnypro.Application</mainClass>
+                            <mainClass>chav1961.funnypro.app.Application</mainClass>
                        </manifest>
                        <manifestEntries>
                            <SplashScreen-Image>splash.jpg</SplashScreen-Image>

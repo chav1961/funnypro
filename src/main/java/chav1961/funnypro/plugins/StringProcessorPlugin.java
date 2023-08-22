@@ -34,6 +34,7 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -42,13 +43,13 @@ import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
 import chav1961.purelib.enumerations.ContinueMode;
 
 public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,StringProcessorLocal>, FProPluginList {
-	public static final String		PLUGIN_NAME = "StringProcessorPlugin";
-	public static final String		PLUGIN_DESCRIPTION = "This plugin supports a set of string predicates and operators";
-	public static final String		PLUGIN_PRODUCER = "(c) 2017, Alexander V. Chernomyrdin aka chav1961";
-	public static final int[]		PLUGIN_VERSION = {1,0};
-	public static final char[]		PREDICATE_SPLIT = "split(String, Divizor, List).".toCharArray(); 
-	public static final char[]		PREDICATE_LIST = "inList(String, List).".toCharArray(); 
-	public static final char[]		OPERATOR_CHARARRAY = ":-op(700,xfx,=>..).".toCharArray();
+	public static final String			PLUGIN_NAME = "StringProcessorPlugin";
+	public static final String			PLUGIN_DESCRIPTION = "This plugin supports a set of string predicates and operators";
+	public static final String			PLUGIN_PRODUCER = "(c) 2017, Alexander V. Chernomyrdin aka chav1961";
+	public static final DottedVersion	PLUGIN_VERSION = DottedVersion.ZERO;
+	public static final char[]			PREDICATE_SPLIT = "split(String, Divizor, List).".toCharArray(); 
+	public static final char[]			PREDICATE_LIST = "inList(String, List).".toCharArray(); 
+	public static final char[]			OPERATOR_CHARARRAY = ":-op(700,xfx,=>..).".toCharArray();
 	
 	private long	splitId, listId, charArrayId;
 	
@@ -69,7 +70,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	}
 	
 	@Override
-	public int[] getVersion() {
+	public DottedVersion getVersion() {
 		return PLUGIN_VERSION;
 	}
 	

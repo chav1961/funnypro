@@ -10,10 +10,10 @@ module chav1961.funnypro {
 	requires jdk.javadoc;
 	requires chav1961.purelib;
 
-	opens chav1961.funnypro to chav1961.purelib;
+	opens chav1961.funnypro.app to chav1961.purelib;
 	
 	uses javax.script.ScriptEngineFactory;
-	provides javax.script.ScriptEngineFactory with chav1961.funnypro.FunnyProEngineFactory;
+	provides javax.script.ScriptEngineFactory with chav1961.funnypro.app.FunnyProEngineFactory;
 	
 	uses chav1961.funnypro.core.interfaces.FProPluginList;
 	provides chav1961.funnypro.core.interfaces.FProPluginList with 

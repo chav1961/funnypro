@@ -48,6 +48,7 @@ import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
@@ -71,10 +72,10 @@ import chav1961.purelib.streams.interfaces.CharacterTarget;
  */
 
 public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescriptor>, FProPluginList {
-	public static final String					PLUGIN_NAME	= "StandardResolver";
-	public static final String					PLUGIN_PRODUCER	= "internal";
-	public static final int[]					PLUGIN_VERSION	= new int[]{0};
-	public static final String					PLUGIN_DESCRIPTION	= "Standard resolver for the fpro";
+	public static final String			PLUGIN_NAME	= "StandardResolver";
+	public static final String			PLUGIN_PRODUCER	= "internal";
+	public static final DottedVersion	PLUGIN_VERSION = DottedVersion.ZERO;
+	public static final String			PLUGIN_DESCRIPTION	= "Standard resolver for the fpro";
 
 	static final RegisteredOperators[]			OPS = { new RegisteredOperators<RegisteredEntities>(1200,OperatorType.xfx,":-",RegisteredEntities.Op1200xfxGoal),
 														new RegisteredOperators<RegisteredEntities>(1200,OperatorType.fx,":-",RegisteredEntities.Op1200fxGoal),
@@ -228,7 +229,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 	
 	@Override public String getName() {return PLUGIN_NAME;}
-	@Override public int[] getVersion() {return null;}
+	@Override public DottedVersion getVersion() {return null;}
 
 	@Override
 	public GlobalDescriptor onLoad(final LoggerFacade log, final SubstitutableProperties parameters, final IFProEntitiesRepo repo) throws SyntaxException  {
@@ -1040,7 +1041,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	
 	@Override
 	public String toString() {
-		return "StandardResolver [getPluginDescriptors()=" + Arrays.toString(getPluginDescriptors()) + ", getName()=" + getName() + ", getVersion()=" + Arrays.toString(getVersion())+ "]";
+		return "StandardResolver [getPluginDescriptors()=" + Arrays.toString(getPluginDescriptors()) + ", getName()=" + getName() + ", getVersion()=" + getVersion() + "]";
 	}
 
 	private boolean containsVars(final IFProEntity entity) {

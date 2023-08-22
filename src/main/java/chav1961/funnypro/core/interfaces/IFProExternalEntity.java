@@ -1,5 +1,7 @@
 package chav1961.funnypro.core.interfaces;
 
+import chav1961.purelib.basic.DottedVersion;
+
 /**
  * <p>This interface describes FPro external entities</p>
  * @author Alexander Chernomyrdin aka chav1961
@@ -22,7 +24,7 @@ public interface IFProExternalEntity<Global,Local> extends IFProEntity {
 	 * <p>Get plugin version for the given entity</p>
 	 * @return plugin version for the given entity. Can't be null
 	 */
-	int[] getPluginVersion();
+	DottedVersion getPluginVersion();
 	
 	/**
 	 * <p>Get resolver to process plugin rule.

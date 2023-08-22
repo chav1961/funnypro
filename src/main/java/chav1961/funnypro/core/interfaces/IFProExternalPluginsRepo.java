@@ -2,6 +2,8 @@ package chav1961.funnypro.core.interfaces;
 
 import java.util.List;
 
+import chav1961.purelib.basic.DottedVersion;
+
 /**
  * <p>This interface describes all external plugins in the system</p> 
  * @author Alexander Chernomyrdin aka chav1961
@@ -100,7 +102,7 @@ public interface IFProExternalPluginsRepo extends AutoCloseable {
 	 * @param pluginVersion plugin version to seek. Null or empty array means 'any'.
 	 * @return plugin descriptors was found. Can be empty but not null
 	 */
-	Iterable<PluginItem> seek(String pluginName, String pluginProducer, int[] pluginVersion);
+	Iterable<PluginItem> seek(String pluginName, String pluginProducer, DottedVersion... pluginVersion);
 
 	/**
 	 * <p>Get all plugins in the system</p>

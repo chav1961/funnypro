@@ -19,11 +19,11 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack.BoundStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
-import chav1961.funnypro.core.interfaces.IFProParserAndPrinter.FProParserCallback;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
@@ -41,11 +41,11 @@ import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
  */
 
 public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>, FProPluginList {
-	public static final String		PLUGIN_NAME = "TutorialPlugin";
-	public static final String		PLUGIN_DESCRIPTION = "This is a tutorial plugin for Funny Prolog plugin developers";
-	public static final String		PLUGIN_PRODUCER = "Vassya Pupkind";
-	public static final int[]		PLUGIN_VERSION = {1,0};
-	public static final char[]		PREDICATE = "scanlist(List,Item).".toCharArray(); 
+	public static final String			PLUGIN_NAME = "TutorialPlugin";
+	public static final String			PLUGIN_DESCRIPTION = "This is a tutorial plugin for Funny Prolog plugin developers";
+	public static final String			PLUGIN_PRODUCER = "Vassya Pupkind";
+	public static final DottedVersion	PLUGIN_VERSION = DottedVersion.ZERO;
+	public static final char[]			PREDICATE = "scanlist(List,Item).".toCharArray(); 
 
 	private long		scanlistId;
 	
@@ -66,7 +66,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	}
 
 	@Override
-	public int[] getVersion() {
+	public DottedVersion getVersion() {
 		return PLUGIN_VERSION;
 	}
 
@@ -199,6 +199,6 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 
 	@Override
 	public String toString() {
-		return "TutorialPlugin [getPluginDescriptors()=" + Arrays.toString(getPluginDescriptors()) + ", getName()=" + getName() + ", getVersion()=" + Arrays.toString(getVersion())+ "]";
+		return "TutorialPlugin [getPluginDescriptors()=" + Arrays.toString(getPluginDescriptors()) + ", getName()=" + getName() + ", getVersion()=" + getVersion() + "]";
 	}
 }

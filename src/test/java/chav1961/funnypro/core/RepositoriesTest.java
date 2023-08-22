@@ -248,7 +248,7 @@ public class RepositoriesTest {
 				Assert.assertEquals(item.getDescriptor().getPluginDescription(),StandardResolver.PLUGIN_DESCRIPTION);
 				Assert.assertEquals(item.getDescriptor().getPluginEntity().getPluginName(),StandardResolver.PLUGIN_NAME);
 				Assert.assertEquals(item.getDescriptor().getPluginEntity().getPluginProducer(),StandardResolver.PLUGIN_PRODUCER);
-				Assert.assertArrayEquals(item.getDescriptor().getPluginEntity().getPluginVersion(),StandardResolver.PLUGIN_VERSION);
+				Assert.assertEquals(item.getDescriptor().getPluginEntity().getPluginVersion(),StandardResolver.PLUGIN_VERSION);
 				count++;
 			}
 			Assert.assertEquals(count,1);

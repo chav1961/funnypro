@@ -12,6 +12,7 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -19,10 +20,10 @@ import chav1961.purelib.basic.interfaces.LoggerFacade;
 
 public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Local extends LocalDescriptor, ProcessingType extends Enum<?>> implements IResolvable<Global,Local>, FProPluginList {
 	private final String				pluginName;
-	private final int[]					pluginVersion;
+	private final DottedVersion			pluginVersion;
 	private final PluginDescriptor[]	desc;
 	
-	protected AbstractExternalPlugin(final String pluginName, final String pluginProducer, final String pluginDescription, final int[] pluginVersion) {
+	protected AbstractExternalPlugin(final String pluginName, final String pluginProducer, final String pluginDescription, final DottedVersion pluginVersion) {
 		if (Utils.checkEmptyOrNullString(pluginName)) {
 			throw new IllegalArgumentException("Plugin name can;t be null or empty"); 
 		}
@@ -32,8 +33,8 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 		else if (Utils.checkEmptyOrNullString(pluginDescription)) {
 			throw new IllegalArgumentException("Plugin description can't be null or empty"); 
 		}
-		else if (pluginVersion == null || pluginVersion.length != 3) {
-			throw new IllegalArgumentException("Plugin version need be 3-number int"); 
+		else if (pluginVersion == null) {
+			throw new NullPointerException("Plugin version can't be null"); 
 		}
 		else {
 			this.pluginName = pluginName;
@@ -57,7 +58,7 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 	
 	@Override public PluginDescriptor[] getPluginDescriptors() {return desc;}
 	@Override public String getName() {return pluginName;}
-	@Override public int[] getVersion() {return pluginVersion;}
+	@Override public DottedVersion getVersion() {return pluginVersion;}
 
 	@Override
 	public Global onLoad(final LoggerFacade debug, final SubstitutableProperties parameters, final IFProEntitiesRepo repo) throws SyntaxException {

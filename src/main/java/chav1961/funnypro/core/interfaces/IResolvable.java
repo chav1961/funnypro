@@ -5,6 +5,7 @@ import java.util.Properties;
 
 import chav1961.funnypro.core.StandardResolver;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.PreparationException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -71,13 +72,15 @@ public interface IResolvable<Global,Local> {
 	 * <p>Get implementation module version</p>
 	 * @return implementation module version
 	 */
-	int[] getVersion();
+	DottedVersion getVersion();
 	
 	/**
-	 * <p>This method will be called after load</p>
+	 * <p>This method will be called once after loading plugin into memory. You need to prepare all data required to support plugin execution here. 
+	 * All internal data for the given plugin must be placed into 'global memory' instance, and you must return it as a result of this method call.
+	 * This instance will be passed as argument for all other methods in the interface. If no any data required for your plugin, null value can be returned</p>
 	 * @param debug log to use
 	 * @param parameters to use
-	 * @param repo entities repo to use with. Can be stored in the plugin for longer using
+	 * @param repo entities repo to use with. Can be stored in the plugin 'global memory' for longer using
 	 * @return global object to use with longer calls
 	 * @throws SyntaxException any plugin loading problem
 	 * @throws PreparationException plugin in not prepared correctly and must be excluded from plugin list 
@@ -85,14 +88,17 @@ public interface IResolvable<Global,Local> {
 	Global onLoad(LoggerFacade debug, SubstitutableProperties parameters, IFProEntitiesRepo repo) throws SyntaxException, PreparationException;
 	
 	/**
-	 * <p>This method will be called before removing</p>
+	 * <p>This method will be called once before removing plugin from memory.</p>
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
 	 * @throws SyntaxException any plugin removing problem
 	 */
 	void onRemove(Global global) throws SyntaxException;
 	
 	/**
-	 * <p>This method will be called before first call of the predicate</p>
+	 * <p>This method will be called before first call of the predicate. This method will be called each time the plugin predicate/operator
+	 * appears on the top of resolution stack. You need to prepare your plugin to process top stack predicate/operator. Any data prepared must me placed into 
+	 * 'local memory' instance, and you must return it as a result of this method call. This instance will be passed as argument for all other methods 
+	 * in the interface. If no any data required for your plugin, null value can be returned</p>
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
 	 * @param gs global stack for the resolving
 	 * @param vars variables from the predicate to use. Can be null
@@ -103,7 +109,7 @@ public interface IResolvable<Global,Local> {
 	Local beforeCall(Global global, IFProGlobalStack gs, List<IFProVariable> vars, IFProCallback callback) throws SyntaxException;
 	
 	/**
-	 * <p>This method will be called on the first resolution</p>
+	 * <p>This method will be called on the first resolution attempt</p>
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)})
 	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)})
 	 * @param entity entity to resolve
@@ -123,7 +129,7 @@ public interface IResolvable<Global,Local> {
 	ResolveRC nextResolve(Global global, Local local, IFProEntity entity) throws SyntaxException;
 	
 	/**
-	 * <p>This method ends resolution loop</p> 
+	 * <p>This method ends resolution loop. Will be called always as pair to {@linkplain #firstResolve(Object, Object, IFProEntity)} 
 	 * @param global object to use with longer calls (see {@link #onLoad(LoggerFacade, Properties, IFProEntitiesRepo)}
 	 * @param local object to use with longer calls (see {@link #beforeCall(Object, IFProGlobalStack, List, IFProCallback)}
 	 * @param entity entity to resolve

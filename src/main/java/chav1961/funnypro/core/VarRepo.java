@@ -15,15 +15,15 @@ class VarRepo implements AutoCloseable {
 	int									varCount = 0;
 	
 	VarRepo() {
-		this(null,INITIAL_ARRAYS_SIZE);
+		this(null, INITIAL_ARRAYS_SIZE);
 	}
 	
 	VarRepo(final List<IFProVariable> vars) {
-		this(vars,INITIAL_ARRAYS_SIZE);
+		this(vars, INITIAL_ARRAYS_SIZE);
 	}
 
 	VarRepo(final int initialSize) {
-		this(null,initialSize);
+		this(null, initialSize);
 	}
 	
 	VarRepo(final List<IFProVariable> vars, final int initialSize) {
@@ -103,7 +103,7 @@ class VarRepo implements AutoCloseable {
 	}
 
 	
-	static class VariableChain implements Comparable<VariableChain>{
+	static class VariableChain implements Comparable<VariableChain> {
 		public long				id;
 		public IFProVariable	chain = null;
 		
@@ -112,8 +112,8 @@ class VarRepo implements AutoCloseable {
 		}
 
 		public VariableChain(final long id, final IFProVariable chain) {
-			this.id = id;		this.chain = chain;
-
+			this.id = id;
+			this.chain = chain;
 		}
 		
 		@Override
@@ -121,6 +121,9 @@ class VarRepo implements AutoCloseable {
 			return o.id < id ? 1 : (o.id > id ? -1 : 0);
 		}
 
-		@Override public String toString() {return "VariableChain [id=" + id + "]";}		
+		@Override 
+		public String toString() {
+			return "VariableChain [id=" + id + "]";
+		}		
 	}
 }

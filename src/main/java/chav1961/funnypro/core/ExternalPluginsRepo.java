@@ -24,6 +24,7 @@ import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
+import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.PreparationException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -101,7 +102,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 				for (Entry<IFProExternalEntity<?, ?>, List<PluginItem>> desc : plugins.entrySet()) {
 					for (PluginItem item : desc.getValue()) {	// Standard resolver must be always prepared first!
 						if (StandardResolver.PLUGIN_DESCRIPTION.equals(item.getDescriptor().getPluginDescription())) {
-							try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(),getParameters(),repo));
+							try{item.setGlobal(item.getDescriptor().getPluginEntity().getResolver().onLoad(getDebug(), getParameters(), repo));
 								standardResolverDetected = true;
 							} catch (SyntaxException e) {
 								logger.message(Severity.warning,e,"Error preparing plugin item [%1$s] for plugin [%2$s]: %3$s", item.getDescriptor().getPluginPredicate(), item.getDescriptor().getPluginDescription(), e.getLocalizedMessage());
@@ -139,11 +140,11 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	}
 	
 	@Override
-	public Iterable<PluginItem> seek(final String pluginName, final String pluginProducer, final int[] pluginVersion) {
+	public Iterable<PluginItem> seek(final String pluginName, final String pluginProducer, final DottedVersion... pluginVersions) {
 		final List<PluginItem>	collection = new ArrayList<PluginItem>();
 		
 		for (Entry<IFProExternalEntity<?,?>, List<PluginItem>> item : plugins.entrySet()) {
-			if (equals(item.getKey().getPluginName(),pluginName) && equals(item.getKey().getPluginProducer(),pluginProducer)  && equals(item.getKey().getPluginVersion(),pluginVersion)) {
+			if (equals(item.getKey().getPluginName(), pluginName) && equals(item.getKey().getPluginProducer(), pluginProducer) && inList(item.getKey().getPluginVersion(), pluginVersions)) {
 				for (PluginItem element : item.getValue()) {
 					collection.add(element);
 				}
@@ -154,7 +155,7 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 
 	@Override
 	public Iterable<PluginItem> allPlugins() {
-		return seek(null,null,null);
+		return seek(null, null);
 	}
 
 	@Override
@@ -236,11 +237,23 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 	private static boolean equals(final String left, final String right) {
 		return right == null || right.isEmpty() || left.equals(right);
 	}
-
-	private static boolean equals(final int[] left, final int[] right) {
-		return right == null || right.length == 0|| Arrays.equals(left,right);
-	}
 	
+	private boolean inList(final DottedVersion pluginVersion, final DottedVersion[] pluginVersions) {
+		if (pluginVersions == null || pluginVersions.length == 0) {
+			return true;
+		}
+		else {
+			for(DottedVersion item : pluginVersions) {
+				if (item.equals(pluginVersion)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	
+
 	private static class PluginItemImpl implements PluginItem {
 		private final PluginDescriptor		desc; 
 		private Object 						global;

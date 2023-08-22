@@ -63,10 +63,10 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator : 
-					assertValue(((IFProOperator)value).getOperatorType().getArgumentCount(),true,value);
+					assertValue(((IFProOperator)value).getOperatorType().getArgumentCount(), true, value);
 					break;
 				case predicate :
-					assertValue(((IFProPredicate)value).getArity(),true,value);
+					assertValue(((IFProPredicate)value).getArity(), true, value);
 					break;
 				default :
 					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directly to the fact/rule base");
@@ -82,10 +82,10 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					assertValue(((IFProOperator)value).getOperatorType().getArgumentCount(),false,value);
+					assertValue(((IFProOperator)value).getOperatorType().getArgumentCount(), false, value);
 					break;
 				case predicate :
-					assertValue(((IFProPredicate)value).getArity(),false,value);
+					assertValue(((IFProPredicate)value).getArity(), false, value);
 					break;
 				default :
 					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be stored directly to the fact/rule base");
@@ -105,13 +105,8 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	}
 
 	@Override
-	public void retractAll(IFProEntity value, int module) throws NullPointerException, IllegalArgumentException {
-		throw new UnsupportedOperationException("Not supported!"); 
-	}
-
-	@Override
 	public void retractAll(final long id, final int arity) throws NullPointerException, IllegalArgumentException {
-		removeChain(arity,id);
+		removeChain(arity, id);
 	}
 	
 	@Override
@@ -124,9 +119,9 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 
 			try{switch (value.getEntityType()) {
 					case operator :
-						return removeFromChain(((IFProOperator)value).getOperatorType().getArgumentCount(),value.getEntityId(),value,temp);
+						return removeFromChain(((IFProOperator)value).getOperatorType().getArgumentCount(), value.getEntityId(), value, temp);
 					case predicate :
-						return removeFromChain(((IFProPredicate)value).getArity(),value.getEntityId(),value,temp);
+						return removeFromChain(((IFProPredicate)value).getArity(), value.getEntityId(), value, temp);
 					default :
 						throw new IllegalArgumentException("Entity type ["+value.getEntityType()+"] can't be removed directly from the fact/rule base");
 				}
@@ -138,20 +133,15 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	
 	@Override
 	public Iterable<IFProEntity> call(final IFProEntity value) throws NullPointerException, IllegalArgumentException {
-		return call(value,0);
-	}
-
-	@Override
-	public Iterable<IFProEntity> call(IFProEntity value, int module) throws NullPointerException, IllegalArgumentException {
 		if (value == null) {
 			throw new NullPointerException("Value can't be null!");
 		}
 		else {
 			switch (value.getEntityType()) {
 				case operator :
-					return getChain(((IFProOperator)value).getOperatorType().getArgumentCount(),value.getEntityId());
+					return getChain(((IFProOperator)value).getOperatorType().getArgumentCount(), value.getEntityId());
 				case predicate :
-					return getChain(((IFProPredicate)value).getArity(),value.getEntityId());
+					return getChain(((IFProPredicate)value).getArity(), value.getEntityId());
 				default :
 					throw new IllegalArgumentException("Predicate type ["+value.getEntityType()+"] can't be called directly to the fact/rule base");
 			}
@@ -160,28 +150,41 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 
 	@Override
 	public Iterable<NameAndArity> content(final int arity, final long... ids) {
-		final List<NameAndArity>	result = new ArrayList<NameAndArity>();
-		final int					minArity = arity == -1 ? IFProPredicate.MIN_ARITY : arity, maxArity = arity == -1 ? IFProPredicate.MAX_ARITY-1 : arity;   
-
-		for (int actualArity = minArity; actualArity <= maxArity; actualArity++) {
-			if (predicates[actualArity] != null) {
-				if (ids.length == 0) {
-					for (Long item : predicates[actualArity].content()) {
-						if (predicates[actualArity].get(item).start != null) {
-							result.add(new ContentDescriptor(predicates[actualArity].get(item).predicateId,predicates[actualArity].get(item).start.getEntityType(),actualArity));
+		if (arity != -1 && (arity < IFProPredicate.MIN_ARITY || arity > IFProPredicate.MAX_ARITY)) {
+			throw new IllegalArgumentException("Arity typed ["+arity+"] out of range "+IFProPredicate.MIN_ARITY+".."+IFProPredicate.MAX_ARITY);
+		}
+		else if (ids == null) {
+			throw new NullPointerException("Id list typed can't be null");
+		}
+		else {
+			final List<NameAndArity>	result = new ArrayList<NameAndArity>();
+			final int					minArity = arity == -1 ? IFProPredicate.MIN_ARITY : arity, 
+										maxArity = arity == -1 ? IFProPredicate.MAX_ARITY - 1 : arity;   
+	
+			for (int actualArity = minArity; actualArity <= maxArity; actualArity++) {
+				if (predicates[actualArity] != null) {
+					if (ids.length == 0) {
+						for (Long item : predicates[actualArity].content()) {
+							final ChainDescriptor current = predicates[actualArity].get(item);
+							
+							if (current.start != null) {
+								result.add(new ContentDescriptor(current.predicateId, current.start.getEntityType(), actualArity));
+							}
 						}
 					}
-				}
-				else {
-					for (long item : ids) {
-						if (predicates[actualArity].get(item) != null && predicates[actualArity].get(item).start != null) {
-							result.add(new ContentDescriptor(predicates[actualArity].get(item).predicateId,predicates[actualArity].get(item).start.getEntityType(),actualArity));
+					else {
+						for (long item : ids) {
+							final ChainDescriptor current = predicates[actualArity].get(item);
+							
+							if (current != null && current.start != null) {
+								result.add(new ContentDescriptor(current.predicateId, current.start.getEntityType(), actualArity));
+							}
 						}
 					}
 				}
 			}
+			return result;
 		}
-		return result;
 	}
 	
 	@Override
@@ -257,10 +260,12 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		if (predicates[arity] == null) {
 			predicates[arity] = new QuickList<ChainDescriptor>(ChainDescriptor.class);
 		}
-		if (!predicates[arity].contains(value.getEntityId())) {
-			predicates[arity].insert(value.getEntityId(),new ChainDescriptor(value.getEntityId()));
+		final long entityId = value.getEntityId();
+		
+		if (!predicates[arity].contains(entityId)) {
+			predicates[arity].insert(entityId, new ChainDescriptor(entityId));
 		}
-		final ChainDescriptor	key = predicates[arity].get(value.getEntityId()); 
+		final ChainDescriptor	key = predicates[arity].get(entityId); 
 		
 		if (key.start == null) {
 			key.start = key.end = value;

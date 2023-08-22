@@ -67,7 +67,9 @@ public interface IFProRepo {
 	 * @param value template to match
 	 * @param module thread seq to distribute resource processing to some threads
 	 */
-	void retractAll(IFProEntity value, int module);
+	default void retractAll(IFProEntity value, int module) {
+		retractAll(value);
+	}
 
 	/**
 	 * <p>Retract all predicates matched with this predicate. This method is thread-safe</p>
@@ -98,12 +100,14 @@ public interface IFProRepo {
 	 * @return list of matched predicates. Can be empty but not null. If some predicates will be retracted from the repo, list will skip it on the next(). 
 	 * If some predicated will be asserted into the repo, they will not be appeared here before ending iterative process 
 	 */
-	Iterable<IFProEntity> call(IFProEntity value, int module);
+	default Iterable<IFProEntity> call(IFProEntity value, int module) {
+		return call(value);
+	}
 	
 	/**
 	 * <p>Select content of the database types</p>
-	 * @param arity arity to select. Type -1 to select all arities
-	 * @param ids ids to select. Don't type any values to select all types
+	 * @param arity arity to select. To select all arities type -1 
+	 * @param ids ids to select. To select all types don't type any values 
 	 * @return names and arities for database content. Can be empty but not null
 	 */
 	Iterable<NameAndArity> content(int arity, long... ids);

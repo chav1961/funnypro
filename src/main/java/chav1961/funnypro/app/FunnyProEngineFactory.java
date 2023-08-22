@@ -1,4 +1,4 @@
-package chav1961.funnypro;
+package chav1961.funnypro.app;
 
 import java.io.IOException;
 import java.util.ArrayList;

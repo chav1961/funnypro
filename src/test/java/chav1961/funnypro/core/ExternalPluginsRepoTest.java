@@ -28,13 +28,13 @@ public class ExternalPluginsRepoTest {
 			final ExternalPluginsRepo	repo = new ExternalPluginsRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 			final Set<String>			pluginList = new HashSet<>();
 			
-			Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,repo.getDebug());
+			Assert.assertEquals(PureLibSettings.CURRENT_LOGGER, repo.getDebug());
 			Assert.assertEquals(props,repo.getParameters());
 			
 			for (PluginItem item : repo.allPlugins()) {
 				pluginList.add(item.getDescriptor().getPluginDescription());
 			}
-			Assert.assertEquals(1,pluginList.size());
+			Assert.assertEquals(1 ,pluginList.size());
 			
 			repo.prepare(entities);
 		}
