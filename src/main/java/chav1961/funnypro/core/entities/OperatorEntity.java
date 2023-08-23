@@ -76,7 +76,7 @@ public class OperatorEntity implements IFProOperator {
 
 	@Override 
 	public int getUnderlyingPriority(final int prioritySide) {
-		return IFProOperator.getUnderlyingPriority(this,prioritySide);
+		return IFProOperator.getUnderlyingPriority(this, prioritySide);
 	}
 	
 	@Override public String toString() {return "OperatorEntity [id=" + id + ", type=" + type + ", prty=" + prty + "]";}

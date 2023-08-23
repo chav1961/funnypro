@@ -953,6 +953,7 @@ public class FProUtil {
 						}
 						break;
 					default :
+						throw new UnsupportedOperationException("Entity type ["+entity.getEntityType()+"] is not supported yet");
 				}
 				return defaultValue; 
 			}

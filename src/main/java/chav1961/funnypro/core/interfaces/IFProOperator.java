@@ -6,22 +6,22 @@ package chav1961.funnypro.core.interfaces;
  * @since 0.0.1
  */
 public interface IFProOperator extends IFProEntity, IFProRuledEntity {
-	public static final int		MIN_PRTY = 0;
-	public static final int		MAX_PRTY = 1200;
-	public static final int		LEFT = 0;
-	public static final int		RIGHT = 1;
+	public static final int	MIN_PRTY = 0;
+	public static final int	MAX_PRTY = 1200;
+	public static final int	LEFT = 0;
+	public static final int	RIGHT = 1;
 
 	/**
 	 * <p>This enumeration rescribes operator sort</p> 
 	 */
-	public enum OperatorSort {
+	public static enum OperatorSort {
 		prefix, postfix, infix
 	}
 	
 	/**
 	 * <p>This enumeration describes operator types</p>
 	 */
-	public enum OperatorType {
+	public static enum OperatorType {
 		xf(OperatorSort.prefix, 1), 
 		fx(OperatorSort.postfix, 1), 
 		yf(OperatorSort.prefix, 1), 
@@ -112,11 +112,12 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 		}
 		else {
 			switch (op.getOperatorType()) {
-				case fx 	: return op.getPriority()-1;
+				case fx 	: return op.getPriority() - 1;
 				case fy 	: return op.getPriority();
-				case xf 	: return op.getPriority()-1;
+				case xf 	: return op.getPriority() - 1;
 				case yf 	: return op.getPriority();
-				default 	: throw new IllegalArgumentException("This call unavailable for infix operator!");
+				default 	: 
+					throw new IllegalArgumentException("This call unavailable for infix operator!");
 			}
 		}
 	}
@@ -127,18 +128,20 @@ public interface IFProOperator extends IFProEntity, IFProRuledEntity {
 		}
 		else if (prioritySide == LEFT) {
 			switch (op.getOperatorType()) {
-				case xfx 	: return op.getPriority()-1;
-				case xfy 	: return op.getPriority()-1;
+				case xfx 	: return op.getPriority() - 1;
+				case xfy 	: return op.getPriority() - 1;
 				case yfx 	: return op.getPriority();
-				default 	: throw new IllegalArgumentException("This call is available for infix operators only!");
+				default 	: 
+					throw new IllegalArgumentException("This call is available for infix operators only!");
 			}
 		}
 		else if (prioritySide == RIGHT) {
 			switch (op.getOperatorType()) {
-				case xfx 	: return op.getPriority()-1;
+				case xfx 	: return op.getPriority() - 1;
 				case xfy 	: return op.getPriority();
-				case yfx 	: return op.getPriority()-1;
-				default 	: throw new IllegalArgumentException("This call is available for infix operators only!");
+				case yfx 	: return op.getPriority() - 1;
+				default 	: 
+					throw new IllegalArgumentException("This call is available for infix operators only!");
 			}
 		}
 		else {
