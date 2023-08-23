@@ -14,5 +14,8 @@ class LocalDescriptor {
 	public List<IFProVariable>		vars;
 	public String[]					varNames = null;
 	
-	@Override public String toString() {return "LocalDescriptor [stack=" + stack + ", pap=" + pap + "]";}
+	@Override 
+	public String toString() {
+		return "LocalDescriptor [stack=" + stack + ", pap=" + pap + "]";
+	}
 }

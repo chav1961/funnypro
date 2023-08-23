@@ -146,7 +146,7 @@ public class FProVM implements IFProVM, IFProModule {
 			throw new IllegalStateException("You can't make this operatio when VM is turned on. Turn off VM firstly!");
 		}
 		else {
-			try(final IFProEntitiesRepo	temp = new EntitiesRepo(getDebug(),getParameters())) {
+			try(final IFProEntitiesRepo	temp = new EntitiesRepo(getDebug(), getParameters())) {
 				final DataOutputStream	dos = new DataOutputStream(target); 
 				
 				dos.writeInt(SERIALIZATION_MAGIC);		// Write magic

@@ -20,8 +20,8 @@ import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo.Classification;
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
-import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IFProList;
+import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorSort;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
@@ -29,7 +29,6 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRuledEntity;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.purelib.basic.BitCharSet;
 import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
@@ -270,7 +269,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 					target.put(String.format("op(%1$d,%2$s,%3$s)",((IFProOperator)entity).getPriority(),((IFProOperator)entity).getOperatorType(),repo.termRepo().getName(entity.getEntityId())));
 					break;
 				default :
-					throw new UnsupportedOperationException("Unknown type ti upload: "+entity.getEntityType());
+					throw new UnsupportedOperationException("Unknown type to upload: "+entity.getEntityType());
 			}
 		}
 	}
@@ -283,7 +282,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	}
 
 	@FunctionalInterface
-	private interface ValidationError {
+	private static interface ValidationError {
 		void print(String validationError) throws SyntaxException;
 	}
 	
@@ -685,11 +684,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 
 	private void validateResult(final IFProEntity entity, final ValidationError print) throws SyntaxException {
 		switch (entity.getEntityType()) {
-			case anonymous			:
-				break;
-			case externalplugin		:
-				break;
-			case integer			:
+			case anonymous : case externalplugin : case integer : case operatordef : case real : case string : case variable :
 				break;
 			case list				:
 				if (((IFProList)entity).getChild() != null) {
@@ -738,8 +733,6 @@ loop:	while (from < maxLen && source[from] != '.') {
 					validateResult(((IFProOperator)entity).getRule(),print);
 				}
 				break;
-			case operatordef	:
-				break;
 			case predicate		:
 				final IFProEntity[]	parm = ((IFProPredicate)entity).getParameters();
 				
@@ -752,14 +745,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 					validateResult(((IFProPredicate)entity).getRule(),print);
 				}
 				break;
-			case real			:
-				break;
-			case string			:
-				break;
-			case variable		:
-				break;
 			default:
-				throw new UnsupportedOperationException();
+				throw new UnsupportedOperationException("Entity type ["+entity.getEntityType()+"] is not supported yet");
 		}
 	}
 

@@ -252,8 +252,6 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		}
 	}
 
-	
-
 	private static class PluginItemImpl implements PluginItem {
 		private final PluginDescriptor		desc; 
 		private Object 						global;
@@ -268,7 +266,10 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		public Object getGlobal(){return global;}
 		public void setGlobal(final Object global){this.global = global;}
 
-		@Override public String toString() {return "PluginItem [desc=" + desc + ", global=" + global + "]";}
+		@Override 
+		public String toString() {
+			return "PluginItem [desc=" + desc + ", global=" + global + "]";
+		}
 	}
 	
 	private static class ExternalEntityDescriptorImpl<Global> implements ExternalEntityDescriptor<Global> {

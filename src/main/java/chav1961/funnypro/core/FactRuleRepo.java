@@ -369,7 +369,10 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 				final Iterator<IFProEntity>	iterator = new Iterator<IFProEntity>(){
 															private IFProEntity		actual = predicates[arity].get(entityId).start;
 										
-															@Override public boolean hasNext() {return actual != null;}
+															@Override 
+															public boolean hasNext() {
+																return actual != null;
+															}
 										
 															@Override
 															public IFProEntity next() {	// Clone - to protect side effects of unification in the fact/rule repo (about variables)
@@ -404,7 +407,10 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			return another.predicateId == this.predicateId ? 0 : another.predicateId > this.predicateId ? 1 : -1;
 		}
 
-		@Override public String toString() {return "ChainDescriptor [predicateId=" + predicateId + ", start=" + start + ", end=" + end + "]";}
+		@Override 
+		public String toString() {
+			return "ChainDescriptor [predicateId=" + predicateId + ", start=" + start + ", end=" + end + "]";
+		}
 	}
 	
 	private static class ContentDescriptor implements NameAndArity {
@@ -421,7 +427,10 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 		@Override public EntityType getType() {return type;}
 		@Override public int getArity() {return arity;}
 
-		@Override public String toString() {return "ContentDescriptor [id=" + id + ", type=" + type + ", arity=" + arity + "]";}
+		@Override 
+		public String toString() {
+			return "ContentDescriptor [id=" + id + ", type=" + type + ", arity=" + arity + "]";
+		}
 
 		@Override
 		public int hashCode() {

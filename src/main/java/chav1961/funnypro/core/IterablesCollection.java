@@ -40,8 +40,8 @@ class IterablesCollection {
 			else if (nameAndArity.getLeft() == null || nameAndArity.getRight() == null) {
 				iterator = NULL_NA_ITERATOR; 
 			}
-			else if (!FProUtil.isEntityA(nameAndArity.getLeft(),ContentType.NonVar)) {
-				if (!FProUtil.isEntityA(nameAndArity.getRight(),ContentType.NonVar)) {
+			else if (!FProUtil.isEntityA(nameAndArity.getLeft(), ContentType.NonVar)) {
+				if (!FProUtil.isEntityA(nameAndArity.getRight(), ContentType.NonVar)) {
 					iterator = repo.predicateRepo().content(-1).iterator();
 				}
 				else if (nameAndArity.getRight().getEntityType() == EntityType.integer && nameAndArity.getRight().getEntityId() >= IFProPredicate.MIN_ARITY && nameAndArity.getRight().getEntityId() <= IFProPredicate.MAX_ARITY) {
@@ -52,7 +52,7 @@ class IterablesCollection {
 				}
 			}
 			else if (nameAndArity.getLeft().getEntityType() == EntityType.predicate) {
-				if (!FProUtil.isEntityA(nameAndArity.getRight(),ContentType.NonVar)) {
+				if (!FProUtil.isEntityA(nameAndArity.getRight(), ContentType.NonVar)) {
 					iterator = repo.predicateRepo().content(-1,nameAndArity.getLeft().getEntityId()).iterator();
 				}
 				else if (nameAndArity.getRight().getEntityType() == EntityType.integer && nameAndArity.getRight().getEntityId() >= IFProPredicate.MIN_ARITY && nameAndArity.getRight().getEntityId() <= IFProPredicate.MAX_ARITY) {
@@ -93,7 +93,7 @@ class IterablesCollection {
 			else if (call == null) {
 				throw new NullPointerException("Name and arity can't be null"); 
 			}
-			else if (call.getArity() != 1 || !FProUtil.isEntityA(call.getParameters()[0],ContentType.NonVar)) {
+			else if (call.getArity() != 1 || !FProUtil.isEntityA(call.getParameters()[0], ContentType.NonVar)) {
 				this.iterator = NULL_ENTITY_ITERATOR;
 			}
 			else {

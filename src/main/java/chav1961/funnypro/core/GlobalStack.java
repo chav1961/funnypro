@@ -45,7 +45,10 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 		return repo;
 	}	
 
-	@Override public boolean isEmpty() {return top == null;}
+	@Override 
+	public boolean isEmpty() {
+		return top == null;
+	}
 	
 	@Override
 	public IFProGlobalStack clear() {
@@ -128,7 +131,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 				@Override public StackTopType getTopType() {return StackTopType.andChain;}
 				@Override public IFProEntity getEntity() {return entity;}
 				@Override public IFProEntity getEntityAssicated() {return entity;}
-				@Override public String toString() {return "AndChainStackTop [assoc=+getEntityAssicated()]";}
+				@Override public String toString() {return "AndChainStackTop [assoc="+getEntityAssicated()+"]";}
 			};
 		}
 	}

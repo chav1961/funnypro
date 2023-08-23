@@ -19,7 +19,7 @@ class CommonUtil {
 	 * @param value string to serialize
 	 * @throws IOException
 	 */
-	public static void writeString(final DataOutput target, final String value) throws IOException, NullPointerException {
+	public static void writeString(final DataOutput target, final CharSequence value) throws IOException, NullPointerException {
 		if (target == null) {
 			throw new NullPointerException("Target can't be null");
 		}
@@ -27,11 +27,11 @@ class CommonUtil {
 			target.writeInt(-1);
 		}
 		else {
-			final char[]	data = value.toCharArray();
+			final int	len = value.length();
 			
-			target.writeInt(data.length);
-			for (char symbol : data) {
-				target.writeChar(symbol);
+			target.writeInt(len);
+			for (int index = 0; index < len; index++) {
+				target.writeChar(value.charAt(index));
 			}
 		}
 	}

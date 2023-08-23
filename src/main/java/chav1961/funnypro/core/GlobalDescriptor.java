@@ -19,5 +19,8 @@ public class GlobalDescriptor {
 	public boolean					prepared = false;
 	public boolean					trace = false;
 	
-	@Override public String toString() {return "GlobalDescriptor [registered=" + registered + ", repo=" + repo + ", parameters=" + parameters + ", prepared=" + prepared  + ", trace=" + trace + "]";}
+	@Override 
+	public String toString() {
+		return "GlobalDescriptor [registered=" + registered + ", repo=" + repo + ", parameters=" + parameters + ", prepared=" + prepared  + ", trace=" + trace + "]";
+	}
 }

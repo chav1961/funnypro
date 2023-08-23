@@ -37,11 +37,14 @@ public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Loc
 			throw new NullPointerException("Plugin version can't be null"); 
 		}
 		else {
+			final ExternalPluginEntity<Global, Local>	entity = new ExternalPluginEntity<Global, Local>(1, pluginName, pluginProducer, pluginVersion, AbstractExternalPlugin.this); 
+			
 			this.pluginName = pluginName;
 			this.pluginVersion = pluginVersion;
 			this.desc = new PluginDescriptor[]{
 					new PluginDescriptor(){
-						@Override public <G,L> IFProExternalEntity<G,L> getPluginEntity() {return new ExternalPluginEntity(1, pluginName, pluginProducer, pluginVersion, AbstractExternalPlugin.this);}
+						@SuppressWarnings("unchecked")
+						@Override public IFProExternalEntity<Global, Local> getPluginEntity() {return entity;}
 						@Override public String getPluginPredicate() {return null;}
 						@Override public String getPluginDescription() {return pluginDescription;}
 					}

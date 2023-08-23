@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import chav1961.funnypro.core.entities.AnonymousEntity;
@@ -235,9 +234,9 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			final OperatorDefRepo	found = operators.get(id);
 			
 			if (found != null) {
-				final int			min = Math.min(minPrty,maxPrty), max = Math.max(minPrty,maxPrty); // Max prty can be less than min prty when seek postfix operators
-				IFProOperator		root = found.data;
-				int					count = 0, prty;
+				final int		min = Math.min(minPrty, maxPrty), max = Math.max(minPrty, maxPrty); // Max prty can be less than min prty when seek postfix operators
+				IFProOperator	root = found.data;
+				int				count = 0, prty;
 				
 				while (root != null) {
 					if ((prty = root.getPriority()) >= min && prty <= max && root.getOperatorType().getSort() == sort) {
@@ -299,8 +298,8 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 				found.data = (IFProOperator) op.setParent(found.data);
 			}
 			
-			if (Arrays.binarySearch(getOperatorPriorities(),op.getPriority()) < 0) {
-				final int[] 	newOperatorPriorities = new int[operatorPriorities.length+1];
+			if (Arrays.binarySearch(getOperatorPriorities(), op.getPriority()) < 0) {
+				final int[] 	newOperatorPriorities = new int[operatorPriorities.length + 1];
 				
 				System.arraycopy(operatorPriorities, 0, newOperatorPriorities, 1, operatorPriorities.length);
 				newOperatorPriorities[0] = op.getPriority();
@@ -310,7 +309,10 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		}
 	}
 
-	@Override public int[] getOperatorPriorities() {return operatorPriorities;}
+	@Override 
+	public int[] getOperatorPriorities() {
+		return operatorPriorities;
+	}
 	
 	@Override
 	public Iterable<IFProOperator> registeredOperators() {
@@ -333,13 +335,13 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		}
 		else {
 			final ParserAndPrinter	pap = new ParserAndPrinter(getDebug(),getParameters(),this);
-			int[]					count = new int[1], ops = new int[1];
+			int[]					count = new int[2];
 			
 			try{pap.parseEntities(source,(entity,vars)->
 										   {if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
-													ops[0]++;
+													count[1]++;
 												}
 												else {
 													getDebug().message(Severity.warning,"Consulted data contains goal. Content will be ignored");
@@ -358,7 +360,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			} catch (IOException | ContentException e) {
 				throw new SyntaxException(0,0,e.getMessage()); 
 			} 
-			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted",count[0],ops[0]);
+			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted", count[0], count[1]);
 		}
 	}
 
@@ -372,13 +374,13 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		}
 		else {
 			final ParserAndPrinter	pap = new ParserAndPrinter(getDebug(),getParameters(),this);
-			int[]					count = new int[1], ops = new int[1];
+			int[]					count = new int[2];
 			
 			try{from = pap.parseEntities(source,from,(entity,vars)->
 											{if (entity.getEntityId() == goalId && entity.getEntityType() == EntityType.operator && ((IFProOperator)entity).getOperatorType() == OperatorType.fx) {
 												if (((IFProOperator)entity).getRight().getEntityType() == EntityType.operatordef) {
 													putOperatorDef((IFProOperator)((IFProOperator)entity).getRight());
-													ops[0]++;
+													count[1]++;
 												}
 												else {
 													getDebug().message(Severity.warning,"Consulted data contains goal. Content will be ignored");
@@ -395,10 +397,9 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 											}
 										);
 			} catch (SyntaxException | IOException e) {
-//				e.printStackTrace();
 				throw new SyntaxException(0,0,e.getMessage()); 
 			} 
-			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted",count[0],ops[0]);
+			getDebug().message(Severity.info,"%1$d entities and %2$d operators was consulted", count[0], count[1]);
 			return from;
 		}
 	}
@@ -419,7 +420,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 					
 					for (IFProEntity item : predicateRepo().call(new PredicateEntity(naa.getId(),parm))) {
 						pap.putEntity(item,target);
-						target.put(" . ");
+						target.put(" .\n");
 						count++;
 					}
 				}
@@ -446,7 +447,6 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 				wr.flush();
 				result = wr.toString();			
 			} catch (IOException e) {
-//				e.printStackTrace();
 				throw new PrintingException(e.getMessage());
 			}
 			
@@ -478,7 +478,10 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 			return other.id - this.id < 0 ? 1 : (other.id - this.id > 0 ? -1 : 0);
 		}
 
-		@Override public String toString() {return "OperatorDefRepo [id=" + id + ", data=" + data + "]";}
+		@Override 
+		public String toString() {
+			return "OperatorDefRepo [id=" + id + ", data=" + data + "]";
+		}
 
 		@Override
 		public int hashCode() {

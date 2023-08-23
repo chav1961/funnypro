@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import chav1961.funnypro.core.StandardResolver.RegisteredEntities;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
@@ -29,6 +28,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.purelib.basic.LongIdMap;
+import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
@@ -79,11 +79,11 @@ public class FProUtil {
 	 * @return end position in the parsed string
 	 */
 	public static int simpleParser(final char[] source, final int from, final String template, final int[][] locations) {
-		if (template == null || template.isEmpty()) {
-			throw new IllegalArgumentException("Template can;t be null or empty");
+		if (Utils.checkEmptyOrNullString(template)) {
+			throw new IllegalArgumentException("Template can't be null or empty");
 		}
 		else {
-			return simpleParser(source,from,template.toCharArray(),locations);
+			return simpleParser(source, from, template.toCharArray(), locations);
 		}
 	}
 
@@ -379,7 +379,9 @@ public class FProUtil {
 					((IFProPredicate)actual.container).getParameters()[actual.location] = oldVal;
 					break;
 			}
-			temp = actual.next;		actual.next = null;		actual = temp;			
+			temp = actual.next;		
+			actual.next = null;		
+			actual = temp;			
 		}
 	}
 	
@@ -389,7 +391,7 @@ public class FProUtil {
 	 * @return duplicated item
 	 */
 	public static IFProEntity duplicate(final IFProEntity source) {
-		try{return duplicate(source,null);
+		try{return duplicate(source, null);
 		} catch (CloneNotSupportedException e) {
 			return null;
 		}
@@ -397,7 +399,7 @@ public class FProUtil {
 	
 	public static IFProEntity cloneEntity(final IFProEntity source) {
 		try(final VarRepo	repo = new VarRepo()) {
-			return duplicate(source,repo);
+			return duplicate(source, repo);
 		} catch (CloneNotSupportedException e) {
 			return null;
 		}
@@ -424,7 +426,7 @@ public class FProUtil {
 					e = ((AnonymousEntity)source).clone(); 
 					break;
 				case list			:
-					final IFProList			list = new ListEntity(duplicate(((IFProList)source).getChild(),repo),duplicate(((IFProList)source).getTail(),repo)); 
+					final IFProList			list = new ListEntity(duplicate(((IFProList)source).getChild(),repo), duplicate(((IFProList)source).getTail(),repo)); 
 					
 					if (list.getChild() != null) {
 						list.getChild().setParent(list);
@@ -471,7 +473,7 @@ public class FProUtil {
 					final IFProVariable		var = new VariableEntity(source.getEntityId());
 					
 					if (repo == null) {
-						final IFProVariable		ref = ((IFProVariable)source).getChain();
+						final IFProVariable	ref = ((IFProVariable)source).getChain();
 						
 						var.setChain(ref);
 						((IFProVariable)source).setChain(var);
@@ -556,33 +558,22 @@ public class FProUtil {
 	public static boolean hasAnyVariable(final IFProEntity source) {
 		if (source != null) {
 			switch (source.getEntityType()) {
-				case string			:
-				case integer		:
-				case real			:
-				case anonymous		:
+				case string	: case integer : case real : case anonymous :
 					return false;
 				case list			:
-					if (((IFProList)source).getChild() != null) {
-						if (hasAnyVariable(((IFProList)source).getChild())) {
-							return true;
-						}
+					if (hasAnyVariable(((IFProList)source).getChild())) {
+						return true;
 					}
-					if (((IFProList)source).getTail() != null) {
-						if (hasAnyVariable(((IFProList)source).getTail())) {
-							return true;
-						}
+					if (hasAnyVariable(((IFProList)source).getTail())) {
+						return true;
 					}
 					return false;
 				case operator		:
-					if (((IFProOperator)source).getLeft() != null) {
-						if (hasAnyVariable(((IFProOperator)source).getLeft())) {
-							return true;
-						}
+					if (hasAnyVariable(((IFProOperator)source).getLeft())) {
+						return true;
 					}
-					if (((IFProOperator)source).getRight() != null) {
-						if (hasAnyVariable(((IFProOperator)source).getRight())) {
-							return true;
-						}
+					if (hasAnyVariable(((IFProOperator)source).getRight())) {
+						return true;
 					}
 					return false;
 				case predicate		:
@@ -613,32 +604,22 @@ public class FProUtil {
 	public static boolean hasAnyVariableOrAnonymous(final IFProEntity source) {
 		if (source != null) {
 			switch (source.getEntityType()) {
-				case string			:
-				case integer		:
-				case real			:
+				case string : case integer : case real :
 					return false;
 				case list			:
-					if (((IFProList)source).getChild() != null) {
-						if (hasAnyVariableOrAnonymous(((IFProList)source).getChild())) {
-							return true;
-						}
+					if (hasAnyVariableOrAnonymous(((IFProList)source).getChild())) {
+						return true;
 					}
-					if (((IFProList)source).getTail() != null) {
-						if (hasAnyVariableOrAnonymous(((IFProList)source).getTail())) {
-							return true;
-						}
+					if (hasAnyVariableOrAnonymous(((IFProList)source).getTail())) {
+						return true;
 					}
 					return false;
 				case operator		:
-					if (((IFProOperator)source).getLeft() != null) {
-						if (hasAnyVariableOrAnonymous(((IFProOperator)source).getLeft())) {
-							return true;
-						}
+					if (hasAnyVariableOrAnonymous(((IFProOperator)source).getLeft())) {
+						return true;
 					}
-					if (((IFProOperator)source).getRight() != null) {
-						if (hasAnyVariableOrAnonymous(((IFProOperator)source).getRight())) {
-							return true;
-						}
+					if (hasAnyVariableOrAnonymous(((IFProOperator)source).getRight())) {
+						return true;
 					}
 					return false;
 				case predicate		:
@@ -650,8 +631,7 @@ public class FProUtil {
 						}
 					}
 					return false;
-				case anonymous		:
-				case variable		:
+				case anonymous : case variable :
 					return true;
 				default :
 					throw new IllegalArgumentException("Entity type ["+source.getEntityType()+"] can't be removed!");
@@ -668,7 +648,7 @@ public class FProUtil {
 		
 		if (result) {
 			if (list[0] != null) {
-				stack.push(GlobalStack.getBoundStackTop(mark,mark,list[0]));
+				stack.push(GlobalStack.getBoundStackTop(mark, mark, list[0]));
 			}
 		}
 		else if (list[0] != null) {
@@ -677,8 +657,8 @@ public class FProUtil {
 		return result;
 	}
 
-	public static boolean unifyTemporaries(final IFProEntity mark, final IFProEntity left, final IFProEntity right, final IFProEntity created, final SyntaxTreeInterface<?>  repo, final IFProGlobalStack stack, final Change[] list) {
-		if (!unify(mark,left,right,stack,list)) {
+	public static boolean unifyTemporaries(final IFProEntity mark, final IFProEntity left, final IFProEntity right, final IFProEntity created, final SyntaxTreeInterface<?> repo, final IFProGlobalStack stack, final Change[] list) {
+		if (!unify(mark, left, right, stack, list)) {
 			removeEntity(repo, created);
 			return false;
 		}
@@ -734,25 +714,27 @@ public class FProUtil {
 			return false;
 		}
 		else {
+			final EntityType	entityType = entity.getEntityType();
+			
 			switch (type) {
 				case Anon		:
-					return entity.getEntityType() == EntityType.anonymous;
+					return entityType == EntityType.anonymous;
 				case Var		:
-					return entity.getEntityType() == EntityType.variable;
+					return entityType == EntityType.variable;
 				case NonVar		:
-					return entity.getEntityType() != EntityType.variable && entity.getEntityType() != EntityType.anonymous;
+					return entityType != EntityType.variable && entityType != EntityType.anonymous;
 				case Atom		:
-					return entity.getEntityType() == EntityType.string || entity.getEntityType() == EntityType.predicate; 
+					return entityType == EntityType.string || entityType == EntityType.predicate; 
 				case Integer	:
-					return entity.getEntityType() == EntityType.integer;
+					return entityType == EntityType.integer;
 				case Float		:
-					return entity.getEntityType() == EntityType.real;
+					return entityType == EntityType.real;
 				case Number		:
-					return entity.getEntityType() == EntityType.integer || entity.getEntityType() == EntityType.real; 
+					return entityType == EntityType.integer || entityType == EntityType.real; 
 				case Atomic		:
-					return entity.getEntityType() == EntityType.integer || entity.getEntityType() == EntityType.real || entity.getEntityType() == EntityType.string || entity.getEntityType() == EntityType.predicate || entity.getEntityType() == EntityType.anonymous; 
+					return entityType == EntityType.integer || entityType == EntityType.real || entityType == EntityType.string || entityType == EntityType.predicate || entityType == EntityType.anonymous; 
 				case Compound	:	
-					return entity.getEntityType() == EntityType.list || entity.getEntityType() == EntityType.operator;
+					return entityType == EntityType.list || entityType == EntityType.operator;
 				default :
 					return false;
 			}
@@ -777,11 +759,7 @@ public class FProUtil {
 		}
 		else {
 			switch (left.getEntityType()) {
-				case string		:
-				case integer	:
-				case real		:
-				case anonymous	:
-				case variable	:
+				case string : case integer : case real : case anonymous : case variable :
 					return true;
 				case list		:
 					return isIdentical(((IFProList)left).getChild(),((IFProList)right).getChild()) && isIdentical(((IFProList)left).getTail(),((IFProList)right).getTail()); 
@@ -793,9 +771,14 @@ public class FProUtil {
 						return false;
 					}						
 				case predicate	:
-					if (((IFProPredicate)left).getArity() == ((IFProPredicate)right).getArity()) {
-						for (int index = 0; index < ((IFProPredicate)left).getArity(); index++) {
-							if (!isIdentical(((IFProPredicate)left).getParameters()[index],((IFProPredicate)right).getParameters()[index])) {
+					final int	size;
+					
+					if ((size = ((IFProPredicate)left).getArity()) == ((IFProPredicate)right).getArity()) {
+						final IFProEntity[]	leftP = ((IFProPredicate)left).getParameters();
+						final IFProEntity[]	rightP = ((IFProPredicate)right).getParameters();
+						
+						for (int index = 0; index < size; index++) {
+							if (!isIdentical(leftP[index], rightP[index])) {
 								return false;
 							}
 						}
@@ -805,7 +788,7 @@ public class FProUtil {
 						return false;
 					}
 				default :
-					throw new IllegalArgumentException();
+					throw new UnsupportedOperationException("Entity type ["+left.getEntityType()+"] is not supported yet");
 			}
 		}
 	}
@@ -928,8 +911,9 @@ public class FProUtil {
 			if (start != null) {
 				switch (entity.getEntityType()) {
 					case operator	:
-						final int			priority = ((IFProOperator)entity).getPriority();
-						final OperatorType	operType = ((IFProOperator)entity).getOperatorType(); 
+						final IFProOperator	oper = (IFProOperator)entity;
+						final int			priority = oper.getPriority();
+						final OperatorType	operType = oper.getOperatorType(); 
 						
 						while (start != null) {
 							if (((IFProOperator)start.def).getPriority() == priority &&  ((IFProOperator)start.def).getOperatorType() == operType) {
@@ -964,8 +948,8 @@ public class FProUtil {
 	}
 
 	public static ResolvableAndGlobal<GlobalDescriptor,LocalDescriptor> getStandardResolver(final IFProEntitiesRepo repo) {
-		for (PluginItem item : repo.pluginsRepo().seek(StandardResolver.PLUGIN_NAME,StandardResolver.PLUGIN_PRODUCER,StandardResolver.PLUGIN_VERSION)) {
-			return new ResolvableAndGlobal(item.getDescriptor().getPluginEntity().getResolver(),item.getGlobal());
+		for (PluginItem item : repo.pluginsRepo().seek(StandardResolver.PLUGIN_NAME, StandardResolver.PLUGIN_PRODUCER, StandardResolver.PLUGIN_VERSION)) {
+			return new ResolvableAndGlobal(item.getDescriptor().getPluginEntity().getResolver(), item.getGlobal());
 		}
 		throw new IllegalStateException("No standard resolver was registered in the system. Use inference with explicit call");
 	}
@@ -1427,13 +1411,14 @@ repeat:					while(start < to) {
 	}
 	
 	private static void placeChanges(final Change[] changesList, final IFProEntity container, final IFProEntity oldValue, final int location) {
-		final Change	ch = new Change();
-		
-		ch.next = changesList[0];
-		ch.container = container;
-		ch.oldValue = oldValue;
-		ch.location = location;
-		changesList[0] = ch;
+//		final Change	ch = new Change();
+//		
+//		ch.next = changesList[0];
+//		ch.container = container;
+//		ch.oldValue = oldValue;
+//		ch.location = location;
+//		changesList[0] = ch;
+		changesList[0] = new Change(changesList[0], container, oldValue, location);
 	}	
 	
 	public static class Change {
@@ -1448,5 +1433,20 @@ repeat:					while(start < to) {
 		public IFProEntity 			container;
 		public IFProEntity 			oldValue;
 		public int 					location;
+
+		public Change() {
+		}
+		
+		public Change(final Change next, final IFProEntity container, final IFProEntity oldValue, final int location) {
+			this.next = next;
+			this.container = container;
+			this.oldValue = oldValue;
+			this.location = location;
+		}
+
+		@Override
+		public String toString() {
+			return "Change [next=" + next + ", container=" + container + ", oldValue=" + oldValue + ", location=" + location + "]";
+		}
 	}
 }
