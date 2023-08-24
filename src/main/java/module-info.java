@@ -11,6 +11,11 @@ module chav1961.funnypro {
 	requires chav1961.purelib;
 
 	opens chav1961.funnypro.app to chav1961.purelib;
+
+	exports chav1961.funnypro.app;
+	exports chav1961.funnypro.core;
+	exports chav1961.funnypro.core.entities;
+	exports chav1961.funnypro.core.interfaces;
 	
 	uses javax.script.ScriptEngineFactory;
 	provides javax.script.ScriptEngineFactory with chav1961.funnypro.app.FunnyProEngineFactory;
