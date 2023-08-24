@@ -224,7 +224,7 @@ public class EntitiesRepoTest {
 				repo.save(new WriterCharTarget(wr,true));
 				wr.flush();
 				
-				Assert.assertEquals("a(Z):-Z<0,!,false . a(0) . a(Z):-Z1 is Z-1,a(Z1) . ",wr.toString());
+				Assert.assertEquals("a(Z):-Z<0,!,false .\na(0) .\na(Z):-Z1 is Z-1,a(Z1) .\n",wr.toString());
 			}
 			
 			try {repo.save(null);
@@ -253,7 +253,7 @@ public class EntitiesRepoTest {
 			final char[]	target = new char[1000];
 			final int		len = repo.save(target,0);
 				
-			Assert.assertEquals("a(Z):-Z<0,!,false . a(0) . a(Z):-Z1 is Z-1,a(Z1) . ",new String(target,0,len));
+			Assert.assertEquals("a(Z):-Z<0,!,false .\na(0) .\na(Z):-Z1 is Z-1,a(Z1) .\n",new String(target, 0, len));
 			
 			try {repo.save(null,0);
 				Assert.fail("Mandatory exception was not detected (null 1-st argument)");

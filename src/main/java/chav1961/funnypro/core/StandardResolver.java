@@ -73,7 +73,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	public static final String			PLUGIN_NAME	= "StandardResolver";
 	public static final String			PLUGIN_PRODUCER	= "internal";
 	public static final DottedVersion	PLUGIN_VERSION = DottedVersion.ZERO;
-	public static final String			PLUGIN_DESCRIPTION	= "Standard resolver for the fpro";
+	public static final String			PLUGIN_DESCRIPTION	= "Standard resolver for the Funny Prolog";
 
 	@SuppressWarnings("rawtypes")
 	static final RegisteredOperators[]			OPS = { new RegisteredOperators<RegisteredEntities>(1200,OperatorType.xfx,":-",RegisteredEntities.Op1200xfxGoal),

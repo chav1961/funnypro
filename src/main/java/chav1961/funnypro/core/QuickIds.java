@@ -19,5 +19,8 @@ public class QuickIds<T extends Enum<?>> implements Comparable<QuickIds<T>>{
 		return o.id < id ? 1 : (o.id > id ? -1 : 0);
 	}
 
-	@Override public String toString() {return "QuickIds [id=" + id + ", def=" + def + ", action=" + action + "]";}
+	@Override 
+	public String toString() {
+		return "QuickIds [id=" + id + ", def=" + def + ", action=" + action + "]";
+	}
 }

@@ -10,5 +10,8 @@ public class RegisteredPredicates<T extends Enum<?>> {
 		this.action = action;
 	}
 
-	@Override public String toString() {return "RegisteredPredicates [text=" + text + ", action=" + action + "]";}
+	@Override 
+	public String toString() {
+		return "RegisteredPredicates [text=" + text + ", action=" + action + "]";
+	}
 }

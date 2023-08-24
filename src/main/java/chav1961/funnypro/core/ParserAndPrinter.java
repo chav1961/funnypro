@@ -33,6 +33,7 @@ import chav1961.purelib.basic.BitCharSet;
 import chav1961.purelib.basic.CharUtils;
 import chav1961.purelib.basic.ExtendedBitCharSet;
 import chav1961.purelib.basic.SubstitutableProperties;
+import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -47,7 +48,7 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 	private static final ExtendedBitCharSet	VALID_LOWER_LETTERS = new ExtendedBitCharSet(); 
 	private static final BitCharSet			PUNCTUATIONS = new BitCharSet(); 
 
-	private final long						colonId, tailId, goalId, emptyStringId = 0;
+	private final long						colonId, tailId, goalId, cutId, emptyStringId = 0;
 	private final LoggerFacade				log;
 	private final SubstitutableProperties	props;
 	private final IFProEntitiesRepo			repo;
@@ -96,11 +97,13 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 			throw new NullPointerException("Entities repo can't bw null"); 
 		}
 		else {
-			this.log = log;			this.props = prop;
+			this.log = log;
+			this.props = prop;
 			this.repo = repo;		
 			this.colonId = repo.termRepo().seekName((CharSequence)",");
 			this.tailId = repo.termRepo().seekName((CharSequence)"|");
 			this.goalId = repo.termRepo().seekName((CharSequence)":-");
+			this.cutId = repo.termRepo().placeName((CharSequence)"!", null);
 		}
 	}
 	
@@ -214,10 +217,11 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 						char			start = '[';
 						IFProEntity		actual = entity;
 						
-						while (actual instanceof IFProList) {
-							target.put(start);		start = ',';
+						while (actual != null && actual.getEntityType() == EntityType.list) {
+							target.put(start);		
 							putEntity(((IFProList)actual).getChild(),target);
 							actual = ((IFProList)actual).getTail();
+							start = ',';
 						}
 						
 						if (actual != null) {
@@ -227,42 +231,47 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 					}
 					break;
 				case operator			:
-					final String	opName = blankedName(getRepo().termRepo().getName(entity.getEntityId()));
+					final IFProOperator	op = (IFProOperator)entity;
+					final String		opName = blankedName(getRepo().termRepo().getName(op.getEntityId()));
 					
-					switch (((IFProOperator)entity).getOperatorType().getSort()) {
+					switch (op.getOperatorType().getSort()) {
 						case prefix		:
-							printBracket(target,(IFProOperator)entity,((IFProOperator)entity).getLeft());
+							printBracket(target, op, op.getLeft());
 							target.put(opName);
 							break;
 						case postfix	:
 							target.put(opName);
-							printBracket(target,(IFProOperator)entity,((IFProOperator)entity).getRight());
+							printBracket(target, op, op.getRight());
 							break;
 						case infix		:
-							printBracket(target,(IFProOperator)entity,((IFProOperator)entity).getLeft());
+							printBracket(target, op, op.getLeft());
 							target.put(opName);
-							printBracket(target,(IFProOperator)entity,((IFProOperator)entity).getRight());
+							printBracket(target, op, op.getRight());
 							break;
 					}
-					if (((IFProRuledEntity)entity).getRule() != null) {
+					if (op.getRule() != null) {
 						target.put(":-");
-						putEntity(((IFProRuledEntity)entity).getRule(),target);
+						putEntity(op.getRule(), target);
 					}
 					break;
 				case predicate			:
+					final IFProPredicate	pred = (IFProPredicate)entity;
+					
 					target.put(getRepo().termRepo().getName(entity.getEntityId()));
-					if (((IFProPredicate)entity).getArity() > 0) {
+					
+					if (pred.getArity() > 0) {
 						char	prefix = '(';
 						
-						for (int index = 0; index < ((IFProPredicate)entity).getArity(); index++) {
-							target.put(prefix);	prefix = ',';
-							putEntity(((IFProPredicate)entity).getParameters()[index],target);
+						for (int index = 0; index < pred.getArity(); index++) {
+							target.put(prefix);	
+							putEntity(pred.getParameters()[index], target);
+							prefix = ',';
 						}
 						target.put(')');
 					}
-					if (((IFProRuledEntity)entity).getRule() != null) {
+					if (pred.getRule() != null) {
 						target.put(":-");
-						putEntity(((IFProRuledEntity)entity).getRule(),target);
+						putEntity(pred.getRule(), target);
 					}
 					break;
 				case operatordef		:
@@ -318,7 +327,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						if (from < maxLen && source[from] == ']') {
 							from++;
 							top[0] = new ListEntity(null,null);
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY + 1;
+							actualMax = maxPrty; 
 							prefixNow = false;
 						}
 						else {
@@ -327,7 +337,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 							if (from < maxLen && source[from] == ']') {
 								from++;
 								top[0] = convert2List(source,from,result[0]);
-								actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+								actualMin = IFProOperator.MIN_PRTY + 1;
+								actualMax = maxPrty; 
 								prefixNow = false;
 							}
 							else {
@@ -348,7 +359,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						if (from < maxLen && source[from] == ')') {
 							from++;
 							top[0] = result[0];
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY + 1;
+							actualMax = maxPrty; 
 							prefixNow = false;
 						}
 						else {
@@ -367,14 +379,15 @@ loop:	while (from < maxLen && source[from] != '.') {
 					}
 					
 					if (from < maxLen && source[from] == '\"') {
-						final long	stringId = startConst+1 == from ? emptyStringId : getRepo().stringRepo().placeName(source,startConst+1,from,null);
+						final long	stringId = startConst + 1 == from ? emptyStringId : getRepo().stringRepo().placeName(source, startConst + 1, from, null);
 						
 						if (!prefixNow) {
 							throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 						}
 						else {
 							top[0] = new StringEntity(stringId);
-							actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+							actualMin = IFProOperator.MIN_PRTY + 1;
+							actualMax = maxPrty; 
 							prefixNow = false;
 							from++;
 						}
@@ -385,7 +398,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 					break;
 				case '0' : case '1' : case '2' : case '3' : case '4' : case '5' : case '6' : case '7' : case '8' : case '9' :
 					
-					from = CharUtils.parseNumber(source,from,tempLong,CharUtils.PREF_ANY,false);
+					from = CharUtils.parseNumber(source, from, tempLong, CharUtils.PREF_ANY, false);
 					if (!prefixNow) {
 						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 					}
@@ -396,7 +409,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 							case CharUtils.PREF_FLOAT 	: top[0] = new RealEntity(Float.intBitsToFloat((int)tempLong[0])); break;
 							case CharUtils.PREF_DOUBLE	: top[0] = new RealEntity(Double.longBitsToDouble(tempLong[0])); break;
 						}
-						actualMin = IFProOperator.MIN_PRTY+1;		actualMax = maxPrty; 
+						actualMin = IFProOperator.MIN_PRTY + 1;
+						actualMax = maxPrty; 
 						prefixNow = false;
 					}
 					break;
@@ -406,8 +420,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 						throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
 					}
 					else {
-						top[0] = new PredicateEntity(repo.termRepo().placeName((CharSequence)"!",null));
-						actualMin = IFProOperator.MIN_PRTY+1;		
+						top[0] = new PredicateEntity(cutId);
+						actualMin = IFProOperator.MIN_PRTY + 1;		
 						actualMax = maxPrty; 
 						prefixNow = false;
 					}
@@ -430,10 +444,10 @@ loop:	while (from < maxLen && source[from] != '.') {
 						}
 					}
 					else if (VALID_LOWER_LETTERS.contains(source[from]) || source[from] == '_') {
-						final int	startName = from, endName = from = skipName(source,from);
-						final long	nameId = getRepo().termRepo().placeName(source,startName,endName,null);
+						final int	startName = from, endName = from = skipName(source, from);
+						final long	nameId = getRepo().termRepo().placeName(source, startName, endName, null);
 						
-						switch (classifyName(source,startName,endName)) {
+						switch (classifyName(source, startName, endName)) {
 							case anonymous	:
 								if (!prefixNow) {
 									throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands witout infix operators detected"); 
@@ -783,12 +797,14 @@ loop:	while (from < maxLen && source[from] != '.') {
 	private IFProEntity convert2List(final char[] source, final int from, final IFProEntity root) throws SyntaxException {
 		IFProList		actual;		// Note: list builds from tail to head!
 		
-		if (root.getEntityId() == tailId && (root instanceof IFProOperator)) {	// Tail '|' priority is greater than ','  
-			if (((IFProOperator)root).getRight() != null && !FProUtil.isEntityA(((IFProOperator)root).getRight(),ContentType.NonVar)) {
-				actual = new ListEntity(null,((IFProOperator)root).getRight());
+		if (root.getEntityId() == tailId && (root instanceof IFProOperator)) {	// Tail '|' priority is greater than ','
+			final IFProOperator	item = (IFProOperator)root;
+			
+			if (item.getRight() != null && !FProUtil.isEntityA(item.getRight(), ContentType.NonVar)) {
+				actual = new ListEntity(null, item.getRight());
 				actual.getTail().setParent(actual);
 				
-				final IFProEntity[]		args = andChain2Array(((IFProOperator)root).getLeft(),actual,colonId); 
+				final IFProEntity[]		args = andChain2Array(item.getLeft(), actual, colonId); 
 				
 				for (int index = args.length-1; index > 0; index--){
 					actual.setChild(args[index]);
@@ -809,6 +825,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			actual = new ListEntity(null,null);
 			
 			final IFProEntity[]		args = andChain2Array(root,actual,colonId); 
+			
 			for (int index = args.length-1; index > 0; index--){
 				actual.setChild(args[index]);
 				args[index].setParent(actual);
@@ -821,7 +838,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 			return actual;
 		}
 		else {	// List has one element only 
-			actual = new ListEntity(root,null);
+			actual = new ListEntity(root, null);
 			
 			root.setParent(actual);
 			return actual;
@@ -1003,7 +1020,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 	}
 	
 	private String blankedName(final String name) {
-		if (name == null || name.isEmpty()) {
+		if (Utils.checkEmptyOrNullString(name)) {
 			return name;
 		}
 		else {
@@ -1011,8 +1028,8 @@ loop:	while (from < maxLen && source[from] != '.') {
 				return name;
 			}
 			else {
-				for (char item : name.toCharArray()) {
-					if (!Character.isJavaIdentifierPart(item)) {
+				for(int index = 1, maxIndex = name.length(); index < maxIndex; index++) {
+					if (!Character.isJavaIdentifierPart(name.charAt(index))) {
 						return name;
 					}
 				}
@@ -1033,16 +1050,16 @@ loop:	while (from < maxLen && source[from] != '.') {
 	private void printBracket(final CharacterTarget target, final IFProOperator root, final IFProEntity child) throws PrintingException, IOException {
 		if (needBracket(root,child)) {
 			target.put('(');
-			putEntity(child,target);
+			putEntity(child, target);
 			target.put(')');
 		}
 		else {
-			putEntity(child,target);
+			putEntity(child, target);
 		}
 	}
 
 	private int printBracket(final char[] target, int from, final IFProOperator root, final IFProEntity child) throws PrintingException, IOException {
-		if (needBracket(root,child)) {
+		if (needBracket(root, child)) {
 			if (from < target.length) {
 				target[from] = '(';
 			}
@@ -1074,7 +1091,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 					
 					if (from + stringLength + 2 < targetEnd) {
 						target[from] = '\"';
-						getRepo().stringRepo().getName(entity.getEntityId(),target,from+1);
+						getRepo().stringRepo().getName(entity.getEntityId(), target, from+1);
 						target[from+stringLength+1] = '\"';
 					}
 					from += stringLength + 2;
@@ -1091,7 +1108,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 					final String	realString = String.valueOf(Double.longBitsToDouble(entity.getEntityId()));
 					
 					if (from + realString.length() < targetEnd) {
-						realString.getChars(0,realString.length(),target,from);
+						realString.getChars(0, realString.length(), target, from);
 					}
 					from += realString.length();
 					break;
@@ -1149,88 +1166,26 @@ loop:	while (from < maxLen && source[from] != '.') {
 					
 					switch (((IFProOperator)entity).getOperatorType().getSort()) {
 						case prefix :
-//							final String	prefName = blankedName(getRepo().termRepo().getName(entity.getEntityId()));
-//					
 							from = printBracket(target,from,(IFProOperator)entity,((IFProOperator)entity).getLeft());
-//							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getLeft())) {
-//								if (from < targetEnd) {
-//									target[from] = '(';		
-//								}
-//								from++;
-//								from = putEntity(((IFProOperator)entity).getLeft(),target,from);
-//								if (from < targetEnd) {
-//									target[from] = ')';		
-//								}
-//								from++;
-//							}
-//							else {
-//								from = putEntity(((IFProOperator)entity).getLeft(),target,from);
-//							}
 							if (from + opName.length() < targetEnd) {
 								opName.getChars(0,opName.length(),target,from);
 							}
 							from += opName.length();
 							break;
 						case postfix :
-//							final String	suffName = blankedName(getRepo().termRepo().getName(entity.getEntityId()));
-//							
 							if (from + opName.length() < targetEnd) {
 								opName.getChars(0,opName.length(),target,from);
 							}
 							from += opName.length();
 							from = printBracket(target,from,(IFProOperator)entity,((IFProOperator)entity).getRight());
-//							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getRight())) {
-//								if (from < targetEnd) {
-//									target[from] = '(';		
-//								}
-//								from++;
-//								from = putEntity(((IFProOperator)entity).getRight(),target,from);
-//								if (from < targetEnd) {
-//									target[from] = ')';		
-//								}
-//								from++;
-//							}
-//							else {
-//								from = putEntity(((IFProOperator)entity).getRight(),target,from);
-//							}
 							break;
 						case infix :
-//							final String	infName = blankedName(getRepo().termRepo().getName(entity.getEntityId()));
-							
 							from = printBracket(target,from,(IFProOperator)entity,((IFProOperator)entity).getLeft());
-//							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getLeft())) {
-//								if (from < targetEnd) {
-//									target[from] = '(';		
-//								}
-//								from++;
-//								from = putEntity(((IFProOperator)entity).getLeft(),target,from);
-//								if (from < targetEnd) {
-//									target[from] = ')';		
-//								}
-//								from++;
-//							}
-//							else {
-//								from = putEntity(((IFProOperator)entity).getLeft(),target,from);
-//							}
 							if (from + opName.length() < targetEnd) {
 								opName.getChars(0,opName.length(),target,from);
 							}
 							from += opName.length();
 							from = printBracket(target,from,(IFProOperator)entity,((IFProOperator)entity).getRight());
-//							if (needBracket((IFProOperator)entity,((IFProOperator)entity).getRight())) {
-//								if (from < targetEnd) {
-//									target[from] = '(';		
-//								}
-//								from++;
-//								from = putEntity(((IFProOperator)entity).getRight(),target,from);
-//								if (from < targetEnd) {
-//									target[from] = ')';		
-//								}
-//								from++;
-//							}
-//							else {
-//								from = putEntity(((IFProOperator)entity).getRight(),target,from);
-//							}
 							break;
 					}
 					if (((IFProRuledEntity)entity).getRule() != null) {

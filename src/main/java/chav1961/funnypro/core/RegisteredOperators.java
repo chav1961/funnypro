@@ -15,5 +15,8 @@ public class RegisteredOperators<T extends Enum<?>> {
 		this.action = action;
 	}
 
-	@Override public String toString() {return "RegisteredOperators [priority=" + priority + ", type=" + type + ", text=" + text + ", action = " + action + "]";}
+	@Override 
+	public String toString() {
+		return "RegisteredOperators [priority=" + priority + ", type=" + type + ", text=" + text + ", action = " + action + "]";
+	}
 }

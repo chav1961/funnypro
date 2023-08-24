@@ -102,7 +102,6 @@ class VarRepo implements AutoCloseable {
 		return "VarRepo [vars=" + vars + ", varRepo=" + Arrays.toString(varRepo) + ", varCount=" + varCount + "]";
 	}
 
-	
 	static class VariableChain implements Comparable<VariableChain> {
 		public long				id;
 		public IFProVariable	chain = null;
