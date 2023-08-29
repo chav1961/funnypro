@@ -569,7 +569,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 											throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Two operands without infix operators detected"); 
 										}
 										else {
-											from = parseOp(source,from,result);
+											from = parseOp(source, from, result);
 											top[0] = result[0];
 											actualMin = IFProOperator.MIN_PRTY+1;		
 											actualMax = maxPrty; 
@@ -908,7 +908,9 @@ loop:	while (from < maxLen && source[from] != '.') {
 	private int parseOp(final char[] source, int from, final IFProEntity[] result) throws SyntaxException, SyntaxException {
 		final int			maxLen = source.length, prty;
 		final OperatorType	type;
-		final long			operatorId;
+		int					opCount = 0;
+		long[]				opList = new long[8];
+//		final long			operatorId;
 		
 		from = CharUtils.skipBlank(source,from,false);
 		
@@ -941,44 +943,65 @@ loop:	while (from < maxLen && source[from] != '.') {
 						from = CharUtils.skipBlank(source,from+1,false);
 						
 						if (from < maxLen) {
-							if (source[from] == '\'') {
-								from = CharUtils.parseUnescapedString(source,from+1,'\'',true,forIntResult);
-								if (from < maxLen && source[from-1] == '\'') {
-									if (forIntResult[0] > forIntResult[1]) {
-										throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Empty string can't be used for operator mnemonics!");
+							if (source[from] == '[') {
+								do {
+									System.arraycopy(opList, 0, opList, 1, opList.length - 1);
+									from = buildOperatorId(source, CharUtils.skipBlank(source, from + 1, false), maxLen, opList);
+									if (++opCount >= opList.length) {
+										opList = Arrays.copyOf(opList, 2 * opList.length);
 									}
-									else {
-										operatorId = getRepo().termRepo().placeName(source,forIntResult[0]-1,forIntResult[1]+2,null);
-									}
-								}
-								else {
-									throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing '\'' !");
-								}
-							}
-							else if (Character.isJavaIdentifierStart(source[from])) {
-								from = CharUtils.parseName(source,from,forIntResult);
-								if (forIntResult[0] == forIntResult[1]) {
-									throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");
-								}
-								else {
-									operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1]+1,null);
-								}
-							}
-							else if (PUNCTUATIONS.contains(source[from])) {
-								forIntResult[0] = from;
-								while (PUNCTUATIONS.contains(source[from])) {
+								} while (from < maxLen && source[from] == ',');
+								
+								if (from < maxLen && source[from] == ']') {
 									from++;
 								}
-								forIntResult[1] = from;
-								operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1],null);
+								else {
+									throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing ']' !");
+								}
 							}
 							else {
-								throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");
+								from = buildOperatorId(source, from, maxLen, opList);
+								opCount++;
 							}
-							from = CharUtils.skipBlank(source,from,false);
+							
+//							if (source[from] == '\'') {
+//								from = CharUtils.parseUnescapedString(source,from+1,'\'',true,forIntResult);
+//								if (from < maxLen && source[from-1] == '\'') {
+//									if (forIntResult[0] > forIntResult[1]) {
+//										throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Empty string can't be used for operator mnemonics!");
+//									}
+//									else {
+//										operatorId = getRepo().termRepo().placeName(source,forIntResult[0]-1,forIntResult[1]+2,null);
+//									}
+//								}
+//								else {
+//									throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing '\'' !");
+//								}
+//							}
+//							else if (Character.isJavaIdentifierStart(source[from])) {
+//								from = CharUtils.parseName(source,from,forIntResult);
+//								if (forIntResult[0] == forIntResult[1]) {
+//									throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");
+//								}
+//								else {
+//									operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1]+1,null);
+//								}
+//							}
+//							else if (PUNCTUATIONS.contains(source[from])) {
+//								forIntResult[0] = from;
+//								while (PUNCTUATIONS.contains(source[from])) {
+//									from++;
+//								}
+//								forIntResult[1] = from;
+//								operatorId = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1],null);
+//							}
+//							else {
+//								throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");
+//							}
+//							from = CharUtils.skipBlank(source,from,false);
 							
 							if (from < maxLen && source[from] == ')') {
-								result[0] = new OperatorDefEntity(prty,type,operatorId);
+								result[0] = new OperatorDefEntity(prty, type, Arrays.copyOfRange(opList, 0, opCount));
 								from++;
 							}
 							else {
@@ -1003,6 +1026,45 @@ loop:	while (from < maxLen && source[from] != '.') {
 		}
 		return from;
 	}	
+
+	private int buildOperatorId(final char[] source, int from, final int maxLen, long[] opList) throws SyntaxException, IllegalArgumentException, NullPointerException {
+		if (source[from] == '\'') {
+			from = CharUtils.parseUnescapedString(source,from+1,'\'',true,forIntResult);
+			if (from < maxLen && source[from-1] == '\'') {
+				if (forIntResult[0] > forIntResult[1]) {
+					throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Empty string can't be used for operator mnemonics!");
+				}
+				else {
+					opList[0] = getRepo().termRepo().placeName(source,forIntResult[0]-1,forIntResult[1]+2,null);
+				}
+			}
+			else {
+				throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing '\'' !");
+			}
+		}
+		else if (Character.isJavaIdentifierStart(source[from])) {
+			from = CharUtils.parseName(source,from,forIntResult);
+			if (forIntResult[0] == forIntResult[1]) {
+				throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");
+			}
+			else {
+				opList[0] = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1]+1,null);
+			}
+		}
+		else if (PUNCTUATIONS.contains(source[from])) {
+			forIntResult[0] = from;
+			while (PUNCTUATIONS.contains(source[from])) {
+				from++;
+			}
+			forIntResult[1] = from;
+			opList[0] = getRepo().termRepo().placeName(source,forIntResult[0],forIntResult[1],null);
+		}
+		else {
+			throw new SyntaxException(SyntaxException.toRow(source,from),SyntaxException.toCol(source,from),"Missing operator mnemonics !");
+		}
+		from = CharUtils.skipBlank(source,from,false);
+		return from;
+	}
 
 	private static int skipName(final char[] source, final int from) {
 		final ExtendedBitCharSet	letters = VALID_LETTERS; 

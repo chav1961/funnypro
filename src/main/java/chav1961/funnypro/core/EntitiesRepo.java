@@ -183,7 +183,7 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 				final OperatorType	type = OperatorType.values()[source.readInt()];
 				final long			id = source.readLong();
 				
-				putOperatorDef(new OperatorDefEntity(prty,type,id));
+				putOperatorDef(new OperatorDefEntity(prty, type, new long[] {id}));
 			}
 		}
 	}
@@ -277,6 +277,11 @@ public class EntitiesRepo implements IFProEntitiesRepo, IFProModule {
 		if (op == null) {
 			throw new NullPointerException("Operador def to add can't be null"); 
 		} 
+		else if (((OperatorDefEntity)op).getEntities().length > 1) {
+			for(long item : ((OperatorDefEntity)op).getEntities()) {
+				putOperatorDef(new OperatorDefEntity(op.getPriority(), op.getOperatorType(), new long[] {item}));
+			}
+		}
 		else {
 			final OperatorDefRepo	odr = new OperatorDefRepo(op.getEntityId(),op); 
 			OperatorDefRepo			found = operators.get(op.getEntityId()); 

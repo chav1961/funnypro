@@ -567,13 +567,13 @@ public class ParserAndPrinterTest {
 
 			IFProOperator		op = (IFProOperator)buildEntity(pap,":-op(100,xfx,assa).");
 			Assert.assertEquals(EntityType.operatordef,op.getRight().getEntityType());
-			Assert.assertEquals(repo.termRepo().seekName("assa"),op.getRight().getEntityId());
+			Assert.assertEquals(repo.termRepo().seekName((CharSequence)"assa"), op.getRight().getEntityId());
 			Assert.assertEquals(100,((IFProOperator)op.getRight()).getPriority());
 			Assert.assertEquals(OperatorType.xfx,((IFProOperator)op.getRight()).getOperatorType());
 
 			op = (IFProOperator)buildEntity(pap,":-op(100,xfx,'assa').");
 			Assert.assertEquals(EntityType.operatordef,op.getRight().getEntityType());
-			Assert.assertEquals(repo.termRepo().seekName("'assa'"),op.getRight().getEntityId());
+			Assert.assertEquals(repo.termRepo().seekName((CharSequence)"'assa'"),op.getRight().getEntityId());
 			Assert.assertEquals(100,((IFProOperator)op.getRight()).getPriority());
 			Assert.assertEquals(OperatorType.xfx,((IFProOperator)op.getRight()).getOperatorType());
 			

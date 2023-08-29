@@ -249,7 +249,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				IFProOperator[]		op;
 			
 				if ((op = repo.getOperatorDef(itemId,item.priority,item.priority,item.type.getSort())).length == 0) {
-					final IFProOperator			def = new OperatorDefEntity(item.priority, item.type, itemId); 
+					final IFProOperator			def = new OperatorDefEntity(item.priority, item.type, new long[] {itemId}); 
 					
 					repo.putOperatorDef(def);	
 					ids.add(itemId);

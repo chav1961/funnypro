@@ -37,21 +37,21 @@ public class EntitiesRepoTest {
 			Assert.assertEquals(PureLibSettings.CURRENT_LOGGER,repo.getDebug());
 			Assert.assertEquals(props,repo.getParameters());
 			
-			Assert.assertEquals(Classification.anonymous,repo.classify(repo.termRepo().seekName("_")));
-			Assert.assertEquals(Classification.op,repo.classify(repo.termRepo().seekName("op")));
-			Assert.assertEquals(Classification.operator,repo.classify(repo.termRepo().seekName(":-")));
-			Assert.assertEquals(Classification.operator,repo.classify(repo.termRepo().seekName("?-")));
-			Assert.assertEquals(Classification.term,repo.classify(repo.termRepo().seekName("a")));
+			Assert.assertEquals(Classification.anonymous,repo.classify(repo.termRepo().seekName((CharSequence)"_")));
+			Assert.assertEquals(Classification.op,repo.classify(repo.termRepo().seekName((CharSequence)"op")));
+			Assert.assertEquals(Classification.operator,repo.classify(repo.termRepo().seekName((CharSequence)":-")));
+			Assert.assertEquals(Classification.operator,repo.classify(repo.termRepo().seekName((CharSequence)"?-")));
+			Assert.assertEquals(Classification.term,repo.classify(repo.termRepo().seekName((CharSequence)"a")));
 			
-			Assert.assertEquals(OperatorType.fx,repo.operatorType(repo.termRepo().seekName("fx")));
-			Assert.assertEquals(OperatorType.fy,repo.operatorType(repo.termRepo().seekName("fy")));
-			Assert.assertEquals(OperatorType.xf,repo.operatorType(repo.termRepo().seekName("xf")));
-			Assert.assertEquals(OperatorType.yf,repo.operatorType(repo.termRepo().seekName("yf")));
-			Assert.assertEquals(OperatorType.xfx,repo.operatorType(repo.termRepo().seekName("xfx")));
-			Assert.assertEquals(OperatorType.xfy,repo.operatorType(repo.termRepo().seekName("xfy")));
-			Assert.assertEquals(OperatorType.yfx,repo.operatorType(repo.termRepo().seekName("yfx")));
+			Assert.assertEquals(OperatorType.fx,repo.operatorType(repo.termRepo().seekName((CharSequence)"fx")));
+			Assert.assertEquals(OperatorType.fy,repo.operatorType(repo.termRepo().seekName((CharSequence)"fy")));
+			Assert.assertEquals(OperatorType.xf,repo.operatorType(repo.termRepo().seekName((CharSequence)"xf")));
+			Assert.assertEquals(OperatorType.yf,repo.operatorType(repo.termRepo().seekName((CharSequence)"yf")));
+			Assert.assertEquals(OperatorType.xfx,repo.operatorType(repo.termRepo().seekName((CharSequence)"xfx")));
+			Assert.assertEquals(OperatorType.xfy,repo.operatorType(repo.termRepo().seekName((CharSequence)"xfy")));
+			Assert.assertEquals(OperatorType.yfx,repo.operatorType(repo.termRepo().seekName((CharSequence)"yfx")));
 
-			try{repo.operatorType(repo.termRepo().seekName(":-"));
+			try{repo.operatorType(repo.termRepo().seekName((CharSequence)":-"));
 				Assert.fail("Mandatory exception was not detected (unknown id for operator type)");
 			} catch (IllegalArgumentException exc) {
 			}
@@ -74,9 +74,10 @@ public class EntitiesRepoTest {
 		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo	repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
-			final long			op1Id = repo.termRepo().placeName("<<<>>>",null), op2Id = repo.termRepo().placeName(">>><<<",null);
-			final IFProOperator	op1 = new OperatorDefEntity(100,OperatorType.xfx,op1Id), op2 = new OperatorDefEntity(200,OperatorType.xfx,op2Id);
-			final IFProOperator	op3 = new OperatorDefEntity(100,OperatorType.fx,op1Id), op4 = new OperatorDefEntity(200,OperatorType.xfx,op1Id);  
+			final long			op1Id = repo.termRepo().placeName((CharSequence)"<<<>>>",null), 
+								op2Id = repo.termRepo().placeName((CharSequence)">>><<<",null);
+			final IFProOperator	op1 = new OperatorDefEntity(100, OperatorType.xfx, op1Id), op2 = new OperatorDefEntity(200, OperatorType.xfx, op2Id);
+			final IFProOperator	op3 = new OperatorDefEntity(100, OperatorType.fx, op1Id), op4 = new OperatorDefEntity(200, OperatorType.xfx, op1Id);  
 			
 			repo.putOperatorDef(op1);
 			repo.putOperatorDef(op2);
