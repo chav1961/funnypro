@@ -8,7 +8,7 @@ module chav1961.funnypro {
 	requires jdk.httpserver;
 	requires java.compiler;
 	requires jdk.javadoc;
-	requires chav1961.purelib;
+	requires transitive chav1961.purelib;
 
 	opens chav1961.funnypro.app to chav1961.purelib;
 

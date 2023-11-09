@@ -208,10 +208,57 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		Others
 	};
 
+	
+	
 	@FunctionalInterface
-	private interface EntityGetter {
+	private static interface EntityGetter {
 		IFProEntity get();
 	}
+	
+	private static interface NumericFunction {
+	}	
+	
+	@FunctionalInterface
+	private static interface NumericFunction1 extends NumericFunction {
+		double process(final double value);
+	}
+
+	@FunctionalInterface
+	private static interface NumericFunction2 extends NumericFunction {
+		double process(final double value1, final double value2);
+	}
+
+	private static final char[]				FUNC_SQRT = "sqrt".toCharArray(); 
+	private static final char[]				FUNC_SIN = "sin".toCharArray(); 
+	private static final char[]				FUNC_COS = "cos".toCharArray(); 
+	private static final char[]				FUNC_TAN = "tan".toCharArray(); 
+	private static final char[]				FUNC_ASIN = "asin".toCharArray(); 
+	private static final char[]				FUNC_ACOS = "acos".toCharArray(); 
+	private static final char[]				FUNC_ATAN = "atan".toCharArray(); 
+	private static final char[]				FUNC_ATAN2 = "atan2".toCharArray(); 
+	private static final char[]				FUNC_SINH = "sinh".toCharArray(); 
+	private static final char[]				FUNC_COSH = "cosh".toCharArray(); 
+	private static final char[]				FUNC_TANH = "tanh".toCharArray(); 
+	private static final char[]				FUNC_LOG = "log".toCharArray(); 
+	private static final char[]				FUNC_LOG10 = "log10".toCharArray(); 
+	private static final char[]				FUNC_EXP = "exp".toCharArray(); 
+	private static final char[][]			FUNC_LIST = {FUNC_SQRT, FUNC_SIN, FUNC_COS, FUNC_TAN, FUNC_ASIN, FUNC_ACOS, FUNC_ATAN, FUNC_ATAN2, FUNC_SINH, FUNC_COSH, FUNC_TANH, FUNC_LOG, FUNC_LOG10, FUNC_EXP};
+	private static final NumericFunction[]	FUNC_CALLBACK = {
+												nf1((p1)->Math.sqrt(p1)), 
+												nf1((p1)->Math.sin(p1)), 
+												nf1((p1)->Math.cos(p1)), 
+												nf1((p1)->Math.tan(p1)), 
+												nf1((p1)->Math.asin(p1)), 
+												nf1((p1)->Math.acos(p1)), 
+												nf1((p1)->Math.atan(p1)), 
+												nf2((p1,p2)->Math.atan2(p1,p2)), 
+												nf1((p1)->Math.sinh(p1)), 
+												nf1((p1)->Math.cosh(p1)), 
+												nf1((p1)->Math.tanh(p1)), 
+												nf1((p1)->Math.log(p1)), 
+												nf1((p1)->Math.log10(p1)), 
+												nf1((p1)->Math.exp(p1)) 
+											};
 	
 	final long[]	forInteger = new long[2];
 	final double[]	forReal = new double[2];
@@ -223,7 +270,12 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 													@Override public String getPluginPredicate() {return null;}
 													@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 												};
-	
+	private final FunctionCall[]				FUNCS = new FunctionCall[FUNC_LIST.length];
+												
+	public StandardResolver() {
+		
+	}
+												
 	@Override
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{DESC};
@@ -240,6 +292,11 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 		
 		desc.log = log;			
 		desc.parameters = parameters;		
+
+		for(int index = 0; index < FUNCS.length; index++) {
+			FUNCS[index] = new FunctionCall(repo.termRepo().placeName(FUNC_LIST[index], 0, FUNC_LIST[index].length, null), FUNC_CALLBACK[index]);
+		}
+		Arrays.sort(FUNCS);
 		
 		try(LoggerFacade 	actualLog = log.transaction("StandardResolver:onLoad")) {
 			
@@ -1064,13 +1121,13 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	
 	private IFProEntity calculate(final GlobalDescriptor global, final IFProEntity value) {
 		try{
-			return calculate(global, value, forInteger, forReal);
+			return calculate(global, value, FUNCS, forInteger, forReal);
 		} catch (UnsupportedOperationException exc) {
 			return null;
 		}
 	}
 
-	static IFProEntity calculate(final GlobalDescriptor global, final IFProEntity value, final long[] forInteger, final double[] forReal) throws NullPointerException {
+	static IFProEntity calculate(final GlobalDescriptor global, final IFProEntity value, final FunctionCall[] funcs, final long[] forInteger, final double[] forReal) throws NullPointerException {
 		if (value == null) {
 			throw new NullPointerException("Null entity to calculate value");
 		}
@@ -1081,59 +1138,80 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 				case integer	:
 				case real		:
 					return value;
+				case predicate	:
+					for(FunctionCall item : funcs) {
+						if (item.callId == value.getEntityId() && item.arity == ((IFProPredicate)value).getArity()) {
+							IFProEntity	first, second;
+							
+							switch (item.arity) {
+								case 1	:
+									first = calculate(global, getPredicateParameter(value, 0), funcs, forInteger, forReal);
+									
+									return new RealEntity(item.number1.process(getDoubleValue(first)));
+								case 2	:
+									first = calculate(global, getPredicateParameter(value, 0), funcs, forInteger, forReal);
+									second = calculate(global, getPredicateParameter(value, 1), funcs, forInteger, forReal);
+									
+									return new RealEntity(item.number2.process(getDoubleValue(first), getDoubleValue(second)));
+								default :
+									return new RealEntity(Double.NaN);
+							}
+						}
+					}
+					return new RealEntity(Double.NaN);
 				case operator	:
 					switch (FProUtil.detect(global.registered,value,RegisteredEntities.Others)) {
 						case Op500yfxPlus		:
-							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),funcs,forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0] + forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0] + forInteger[1]);
 							}
 						case Op500yfxMinus		:
-							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),funcs,forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0] - forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0] - forInteger[1]);
 							}
 						case Op400yfxMultiply	:
-							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),funcs,forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0] * forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0] * forInteger[1]);
 							}
 						case Op400yfxDivide		:
-							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),funcs,forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0] / forReal[1]);
 							}
 							else {
 								return new RealEntity(1.00*forInteger[0] / forInteger[1]);
 							}
 						case Op400yfxIntDivide	:
-							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),funcs,forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity((long)(forReal[0] / forReal[1]));
 							}
 							else {
 								return new IntegerEntity(forInteger[0] / forInteger[1]);
 							}
 						case Op400yfxMod		:
-							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),funcs,forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(forReal[0] % forReal[1]);
 							}
 							else {
 								return new IntegerEntity(forInteger[0] % forInteger[1]);
 							}
 						case Op200xfxExponent	:
-							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),forInteger,forReal),forInteger,forReal)) {
+							if (convert2Real(calculate(global,((IFProOperator)value).getLeft(),funcs,forInteger,forReal),calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal),forInteger,forReal)) {
 								return new RealEntity(Math.pow(forReal[0], forReal[1]));
 							}
 							else {
 								return new IntegerEntity((long)Math.pow(1.00*forInteger[0], 1.00*forInteger[1]));
 							}
 						case Op200fyMinus		:
-							right = calculate(global,((IFProOperator)value).getRight(),forInteger,forReal);
+							right = calculate(global,((IFProOperator)value).getRight(),funcs,forInteger,forReal);
 							if (right != null) {
 								if (right.getEntityType() == EntityType.real) {
 									return new RealEntity(-Double.longBitsToDouble(right.getEntityId()));
@@ -1151,7 +1229,7 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 							throw new UnsupportedOperationException("Unregistered operator op("+op.getPriority()+","+op.getOperatorType()+",id["+op.getEntityId()+"]) is used in arthmetical expressions");
 					}
 				default :
-					throw new UnsupportedOperationException("Neither number nor operator is used in in arthmetical expressions (id="+value.getEntityId()+",type="+value.getEntityType()+")");
+					throw new UnsupportedOperationException("Neither number nor operator/function is used in in arthmetical expressions (id="+value.getEntityId()+",type="+value.getEntityType()+")");
 			}
 		}
 	}
@@ -1182,12 +1260,12 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 	}
 	
 	private int compare(final GlobalDescriptor global, final IFProEntity left, final IFProEntity right) {
-		return compare(global, left, right, forInteger, forReal);
+		return compare(global, left, right, FUNCS, forInteger, forReal);
 	}
 	
-	static int compare(final GlobalDescriptor global,final IFProEntity left, final IFProEntity right, final long[] forInteger, final double[] forReal) {
-		final IFProEntity	leftVal = calculate(global, left, forInteger, forReal),
-							rightVal = calculate(global, right, forInteger, forReal);
+	static int compare(final GlobalDescriptor global,final IFProEntity left, final IFProEntity right, final FunctionCall[] funcs, final long[] forInteger, final double[] forReal) {
+		final IFProEntity	leftVal = calculate(global, left, funcs, forInteger, forReal),
+							rightVal = calculate(global, right, funcs, forInteger, forReal);
 		
 		if (leftVal == rightVal) {
 			return 0;
@@ -1534,6 +1612,70 @@ public class StandardResolver implements IResolvable<GlobalDescriptor,LocalDescr
 			return callback.onResolution(names, resolved, printedValues);
 		} catch (PrintingException e) {
 			throw new SyntaxException(0,0,e.getLocalizedMessage(),e);
+		}
+	}
+
+	private static NumericFunction nf1(final NumericFunction1 func) {
+		return func;
+	}
+
+	private static NumericFunction nf2(final NumericFunction2 func) {
+		return func;
+	}
+
+	private static IFProEntity getPredicateParameter(final IFProEntity value, final int index) {
+		return ((IFProPredicate)value).getParameters()[index];
+	}
+
+	private static double getDoubleValue(final IFProEntity entity) {
+		switch (entity.getEntityType()) {
+			case integer	:
+				return (double)entity.getEntityId();
+			case real		:
+				return Double.longBitsToDouble(entity.getEntityId());
+			case anonymous : case any : case externalplugin : case list : case operator : case operatordef : case predicate : case string : case variable:
+				return Double.NaN;
+			default:
+				throw new UnsupportedOperationException("Entity type ["+entity.getEntityType()+"] is not supported yet");
+		}
+	}
+	
+	static class FunctionCall implements Comparable<FunctionCall> {
+		final long	callId;
+		final int	arity;
+		final NumericFunction1	number1;
+		final NumericFunction2	number2;
+		
+		public FunctionCall(final long callId, final NumericFunction number) {
+			super();
+			this.callId = callId;
+			if (number instanceof NumericFunction1) {
+				this.arity = 1;
+				this.number1 = (NumericFunction1)number;
+				this.number2 = null;
+			}
+			else {
+				this.arity = 2;
+				this.number1 = null;
+				this.number2 = (NumericFunction2)number;
+			}
+		}
+		
+		@Override
+		public String toString() {
+			return "FunctionCall [callId=" + callId + ", arity=" + arity + ", number1=" + number1 + ", number2=" + number2 + "]";
+		}
+
+		@Override
+		public int compareTo(final FunctionCall o) {
+			final int	delta = o.arity - this.arity;
+			
+			if (delta != 0) {
+				return delta;
+			}
+			else {
+				return (int) (o.callId - this.callId);
+			}
 		}
 	}
 }

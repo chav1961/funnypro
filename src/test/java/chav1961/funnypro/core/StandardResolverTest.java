@@ -11,6 +11,7 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
+import chav1961.funnypro.core.StandardResolver.FunctionCall;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
@@ -319,60 +320,61 @@ public class StandardResolverTest {
 			final GlobalDescriptor	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final long[]			forInteger = new long[2];
 			final double[]			forReal = new double[2];
-			final long				plusId = repo.termRepo().seekName("+"), minusId = repo.termRepo().seekName("-");
-			final long				mulId = repo.termRepo().seekName("*"), divId = repo.termRepo().seekName("/"); 
-			final long				intDivId = repo.termRepo().seekName("//"), modId = repo.termRepo().seekName("mod"); 
-			final long				expId = repo.termRepo().seekName("**"); 
+			final long				plusId = repo.termRepo().seekName((CharSequence)"+"), minusId = repo.termRepo().seekName((CharSequence)"-");
+			final long				mulId = repo.termRepo().seekName((CharSequence)"*"), divId = repo.termRepo().seekName((CharSequence)"/"); 
+			final long				intDivId = repo.termRepo().seekName((CharSequence)"//"), modId = repo.termRepo().seekName((CharSequence)"mod"); 
+			final long				expId = repo.termRepo().seekName((CharSequence)"**"); 
+			final FunctionCall[]	func = new FunctionCall[0];
 
 			// Integer operands
-			Assert.assertEquals(100,StandardResolver.calculate(global, new IntegerEntity(100), forInteger, forReal).getEntityId());
+			Assert.assertEquals(100,StandardResolver.calculate(global, new IntegerEntity(100), func, forInteger, forReal).getEntityId());
 			
-			Assert.assertEquals(-100,StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.fy,minusId).setRight(new IntegerEntity(100)), forInteger, forReal).getEntityId());
-			Assert.assertEquals(125,StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.xfx,expId).setLeft(new IntegerEntity(5)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId());
+			Assert.assertEquals(-100,StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.fy,minusId).setRight(new IntegerEntity(100)), func, forInteger, forReal).getEntityId());
+			Assert.assertEquals(125,StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.xfx,expId).setLeft(new IntegerEntity(5)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId());
 
-			Assert.assertEquals(30,StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,mulId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId());
-			Assert.assertEquals(3,StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,intDivId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId());
-			Assert.assertEquals(1,StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,modId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId());
+			Assert.assertEquals(30,StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,mulId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId());
+			Assert.assertEquals(3,StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,intDivId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId());
+			Assert.assertEquals(1,StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,modId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId());
 
-			Assert.assertEquals(13,StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,plusId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId());
-			Assert.assertEquals(7,StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,minusId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId());
+			Assert.assertEquals(13,StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,plusId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId());
+			Assert.assertEquals(7,StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,minusId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId());
 
 			// Real operands
-			Assert.assertEquals(100,Double.longBitsToDouble(StandardResolver.calculate(global, new RealEntity(100), forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(100,Double.longBitsToDouble(StandardResolver.calculate(global, new RealEntity(100), func, forInteger, forReal).getEntityId()),0.001);
 			
-			Assert.assertEquals(-100,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.fy,minusId).setRight(new RealEntity(100)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(125,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.xfx,expId).setLeft(new RealEntity(5)).setRight(new RealEntity(3)), forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(-100,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.fy,minusId).setRight(new RealEntity(100)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(125,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.xfx,expId).setLeft(new RealEntity(5)).setRight(new RealEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
 
-			Assert.assertEquals(30,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,mulId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(3.3333333333,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,divId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(3,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,intDivId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(1,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,modId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(30,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,mulId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(3.3333333333,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,divId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(3,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,intDivId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(1,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,modId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
 
-			Assert.assertEquals(13,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,plusId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(7,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,minusId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(13,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,plusId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(7,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,minusId).setLeft(new RealEntity(10)).setRight(new RealEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
 
 			// Mixed operands
-			Assert.assertEquals(125,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.xfx,expId).setLeft(new RealEntity(5)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(125,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(200,OperatorType.xfx,expId).setLeft(new RealEntity(5)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
 
-			Assert.assertEquals(30,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,mulId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(3.3333333333,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,divId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(3.3333333333,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,divId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(3,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,intDivId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(1,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,modId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(30,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,mulId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(3.3333333333,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,divId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(3.3333333333,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,divId).setLeft(new IntegerEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(3,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,intDivId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(1,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(400,OperatorType.yfx,modId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
  
-			Assert.assertEquals(13,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,plusId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
-			Assert.assertEquals(7,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,minusId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(13,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,plusId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
+			Assert.assertEquals(7,Double.longBitsToDouble(StandardResolver.calculate(global, new OperatorEntity(500,OperatorType.yfx,minusId).setLeft(new RealEntity(10)).setRight(new IntegerEntity(3)), func, forInteger, forReal).getEntityId()),0.001);
 			
 			// Exceptions
-			try {StandardResolver.calculate(global, null, forInteger, forReal);
+			try {StandardResolver.calculate(global, null, func, forInteger, forReal);
 				Assert.fail("Mandatory exception was not detected (null 2-nd operand)");
 			} catch (NullPointerException exc) {
 			}
-			try {StandardResolver.calculate(global, new VariableEntity(100), forInteger, forReal);
+			try {StandardResolver.calculate(global, new VariableEntity(100), func, forInteger, forReal);
 				Assert.fail("Mandatory exception was not detected (neither number nor operator inside expression)");
 			} catch (UnsupportedOperationException exc) {
 			}
-			try {StandardResolver.calculate(global, new OperatorEntity(1000,OperatorType.yfx,999), forInteger, forReal);
+			try {StandardResolver.calculate(global, new OperatorEntity(1000,OperatorType.yfx,999), func, forInteger, forReal);
 				Assert.fail("Mandatory exception was not detected (unregistered operator inside expression)");
 			} catch (UnsupportedOperationException exc) {
 			}
@@ -392,14 +394,15 @@ public class StandardResolverTest {
 			final GlobalDescriptor	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final long[]			forInteger = new long[2];
 			final double[]			forReal = new double[2];
-			final long				pred1 = repo.termRepo().placeName("pred1",null), pred2 = repo.termRepo().placeName("pred2",null);
-			final long				var1 = repo.termRepo().placeName("Var1",null), var2 = repo.termRepo().placeName("Var2",null);
-			final long				text1 = repo.stringRepo().placeName("text1",null), text2 = repo.stringRepo().placeName("text2",null);
-			final long				plusId = repo.termRepo().seekName("+"), minusId = repo.termRepo().seekName("-"); 
+			final long				pred1 = repo.termRepo().placeName((CharSequence)"pred1",null), pred2 = repo.termRepo().placeName((CharSequence)"pred2",null);
+			final long				var1 = repo.termRepo().placeName((CharSequence)"Var1",null), var2 = repo.termRepo().placeName((CharSequence)"Var2",null);
+			final long				text1 = repo.stringRepo().placeName((CharSequence)"text1",null), text2 = repo.stringRepo().placeName((CharSequence)"text2",null);
+			final long				plusId = repo.termRepo().seekName((CharSequence)"+"), minusId = repo.termRepo().seekName((CharSequence)"-"); 
+			final FunctionCall[]	func = new FunctionCall[0];
 			
 			
-			Assert.assertTrue(StandardResolver.compare(global,new IntegerEntity(200), new IntegerEntity(100), forInteger, forReal) > 0);
-			Assert.assertTrue(StandardResolver.compare(global,new RealEntity(100), new RealEntity(200), forInteger, forReal) < 0);
+			Assert.assertTrue(StandardResolver.compare(global,new IntegerEntity(200), new IntegerEntity(100), func, forInteger, forReal) > 0);
+			Assert.assertTrue(StandardResolver.compare(global,new RealEntity(100), new RealEntity(200), func, forInteger, forReal) < 0);
 
 			IntegerEntity	ie = new IntegerEntity(100);
 			
