@@ -1,4 +1,4 @@
-package chav1961.funnypro.core;
+package chav1961.funnypro.plugins;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -8,6 +8,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import chav1961.funnypro.core.EntitiesRepo;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
@@ -20,6 +21,7 @@ import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProList;
 import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
+import chav1961.funnypro.plugins.IterablesCollection;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProRepo;
 import chav1961.funnypro.core.interfaces.IFProVM;

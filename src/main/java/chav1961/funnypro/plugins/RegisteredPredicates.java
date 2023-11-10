@@ -1,4 +1,4 @@
-package chav1961.funnypro.core;
+package chav1961.funnypro.plugins;
 
 
 public class RegisteredPredicates<T extends Enum<?>> {

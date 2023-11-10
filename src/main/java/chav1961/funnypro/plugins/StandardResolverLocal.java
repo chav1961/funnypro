@@ -1,4 +1,4 @@
-package chav1961.funnypro.core;
+package chav1961.funnypro.plugins;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 
-class LocalDescriptor {
+class StandardResolverLocal {
 	public IFProCallback			callback;
 	public IFProGlobalStack			stack;
 	public IFProParserAndPrinter	pap;
@@ -16,6 +16,6 @@ class LocalDescriptor {
 	
 	@Override 
 	public String toString() {
-		return "LocalDescriptor [stack=" + stack + ", pap=" + pap + "]";
+		return "StandardResolverLocal [stack=" + stack + ", pap=" + pap + "]";
 	}
 }

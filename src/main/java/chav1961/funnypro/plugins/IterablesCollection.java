@@ -1,7 +1,8 @@
-package chav1961.funnypro.core;
+package chav1961.funnypro.plugins;
 
 import java.util.Iterator;
 
+import chav1961.funnypro.core.FProUtil;
 import chav1961.funnypro.core.FProUtil.Change;
 import chav1961.funnypro.core.FProUtil.ContentType;
 import chav1961.funnypro.core.entities.IntegerEntity;

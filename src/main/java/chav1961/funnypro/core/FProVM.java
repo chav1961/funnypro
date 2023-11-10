@@ -367,7 +367,7 @@ public class FProVM implements IFProVM, IFProModule {
 		}
 	}
 	
-	protected ResolvableAndGlobal<GlobalDescriptor,LocalDescriptor> getStandardResolver() {
+	protected ResolvableAndGlobal<?,?> getStandardResolver() {
 		return FProUtil.getStandardResolver(repo);
 	}
 

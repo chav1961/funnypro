@@ -18,7 +18,7 @@ import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 
-public abstract class AbstractExternalPlugin<Global extends GlobalDescriptor,Local extends LocalDescriptor> implements IResolvable<Global,Local>, FProPluginList {
+public abstract class AbstractExternalPlugin<Global,Local> implements IResolvable<Global,Local>, FProPluginList {
 	private final String				pluginName;
 	private final DottedVersion			pluginVersion;
 	private final PluginDescriptor[]	desc;

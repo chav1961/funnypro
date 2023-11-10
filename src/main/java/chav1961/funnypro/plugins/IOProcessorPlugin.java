@@ -4,21 +4,15 @@ package chav1961.funnypro.plugins;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import chav1961.funnypro.core.FProUtil;
-import chav1961.funnypro.core.FProUtil.Change;
-import chav1961.funnypro.core.FProUtil.ContentType;
 import chav1961.funnypro.core.GlobalStack;
 import chav1961.funnypro.core.ParserAndPrinter;
 import chav1961.funnypro.core.entities.ExternalPluginEntity;
-import chav1961.funnypro.core.entities.IntegerEntity;
-import chav1961.funnypro.core.entities.ListEntity;
 import chav1961.funnypro.core.entities.PredicateEntity;
 import chav1961.funnypro.core.entities.StringEntity;
 import chav1961.funnypro.core.interfaces.FProPluginList;
@@ -31,28 +25,20 @@ import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.BoundStackTop;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.StackTopType;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack.TemporaryStackTop;
-import chav1961.funnypro.core.interfaces.IFProList;
-import chav1961.funnypro.core.interfaces.IFProOperator;
-import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
-import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
-import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
 import chav1961.purelib.basic.interfaces.LoggerFacade.Severity;
-import chav1961.purelib.enumerations.ContinueMode;
 import chav1961.purelib.streams.charsource.ReaderCharSource;
-import chav1961.purelib.streams.chartarget.StringBuilderCharTarget;
 import chav1961.purelib.streams.chartarget.WriterCharTarget;
 import chav1961.purelib.streams.interfaces.CharacterSource;
-import chav1961.purelib.streams.interfaces.CharacterTarget;
 
 public class IOProcessorPlugin implements IResolvable<IOProcessorGlobal,IOProcessorLocal>, FProPluginList {
 	public static final String			PLUGIN_NAME = "IOProcessorPlugin";
@@ -295,14 +281,12 @@ public class IOProcessorPlugin implements IResolvable<IOProcessorGlobal,IOProces
 						}
 						else if (predId1 == writeId) {
 							final IFProEntity[]		parms = ((IFProPredicate)entity).getParameters();
-							final StringBuilder 	sb = new StringBuilder();
 							
 							global.pap.putEntity(parms[0], global.currentWriter);
 							return ResolveRC.True;
 						}
 						else if (predId1 == writeLnId) {
 							final IFProEntity[]		parms = ((IFProPredicate)entity).getParameters();
-							final StringBuilder 	sb = new StringBuilder();
 							
 							global.pap.putEntity(parms[0], global.currentWriter);
 							global.currentWriter.append('\n');

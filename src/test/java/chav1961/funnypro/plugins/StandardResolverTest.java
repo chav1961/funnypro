@@ -1,4 +1,4 @@
-package chav1961.funnypro.core;
+package chav1961.funnypro.plugins;
 
 
 
@@ -11,7 +11,10 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import chav1961.funnypro.core.StandardResolver.FunctionCall;
+import chav1961.funnypro.core.EntitiesRepo;
+import chav1961.funnypro.core.FProUtil;
+import chav1961.funnypro.core.GlobalStack;
+import chav1961.funnypro.core.ParserAndPrinter;
 import chav1961.funnypro.core.entities.AnonymousEntity;
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.entities.ListEntity;
@@ -30,6 +33,10 @@ import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable.ResolveRC;
+import chav1961.funnypro.plugins.StandardResolverGlobal;
+import chav1961.funnypro.plugins.StandardResolverLocal;
+import chav1961.funnypro.plugins.StandardResolver;
+import chav1961.funnypro.plugins.StandardResolver.FunctionCall;
 import chav1961.purelib.basic.PureLibSettings;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.URIUtils;
@@ -55,7 +62,7 @@ public class StandardResolverTest {
 			final List<IFProVariable>	vars = new ArrayList<>();
 			
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final long					trueId = repo.termRepo().placeName("true",null);
 
 			try{sr.onLoad(null,props,repo);
@@ -71,7 +78,7 @@ public class StandardResolverTest {
 			} catch (NullPointerException exc) {
 			}
 
-			final LocalDescriptor		local = sr.beforeCall(global, stack, vars, (n,r,p)->true);
+			final StandardResolverLocal		local = sr.beforeCall(global, stack, vars, (n,r,p)->true);
 			
 			try{sr.beforeCall(null, stack, vars, (n,r,p)->true);
 				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
@@ -165,7 +172,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 			
 			pap.parseEntities(new StringCharSource("?-trace ."),(entity,vars)->{
@@ -317,7 +324,7 @@ public class StandardResolverTest {
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final StandardResolver	sr = new StandardResolver();
-			final GlobalDescriptor	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final long[]			forInteger = new long[2];
 			final double[]			forReal = new double[2];
 			final long				plusId = repo.termRepo().seekName((CharSequence)"+"), minusId = repo.termRepo().seekName((CharSequence)"-");
@@ -391,7 +398,7 @@ public class StandardResolverTest {
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final StandardResolver	sr = new StandardResolver();
-			final GlobalDescriptor	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final long[]			forInteger = new long[2];
 			final double[]			forReal = new double[2];
 			final long				pred1 = repo.termRepo().placeName((CharSequence)"pred1",null), pred2 = repo.termRepo().placeName((CharSequence)"pred2",null);
@@ -444,7 +451,7 @@ public class StandardResolverTest {
 		
 		try(final EntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
 			final StandardResolver	sr = new StandardResolver();
-			final GlobalDescriptor	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 
 			final PredicateEntity	pe = new PredicateEntity(100,new IntegerEntity(100),new RealEntity(100),new AnonymousEntity());
 			Assert.assertTrue(FProUtil.isIdentical(pe,StandardResolver.list2Predicate(StandardResolver.predicate2List(pe))));
@@ -463,7 +470,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 			
 			pap.parseEntities(new StringCharSource("?-10 < 20 ."),(entity,vars)->{
@@ -558,7 +565,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 
 			// Test =..
@@ -714,7 +721,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 			final long					predId = repo.termRepo().placeName("pred",null);
 			final IFProPredicate		template = new PredicateEntity(predId,new AnonymousEntity());
@@ -758,7 +765,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 			final long					predId = repo.termRepo().placeName("pred",null);
 			final IFProPredicate		template = new PredicateEntity(predId,new AnonymousEntity());
@@ -919,7 +926,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 
 			// Test AND
@@ -965,7 +972,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 
 			pap.parseEntities(new StringCharSource("pred(0) ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
@@ -1004,7 +1011,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 
 			pap.parseEntities(new StringCharSource("pred(0) ."),(e,v)->{repo.predicateRepo().assertZ(e); return false;});
@@ -1043,7 +1050,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StringBuilder			sb = new StringBuilder();
 			
 			sr.onRemove(global);
@@ -1058,7 +1065,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			CharacterSource				cs;
 			
 			cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
@@ -1122,7 +1129,7 @@ public class StandardResolverTest {
 			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final StandardResolver		sr = new StandardResolver();
-			final GlobalDescriptor		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
 			final CharacterSource		cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
 
 			pap.parseEntities(cs,new FProParserCallback(){	// Prepare environment

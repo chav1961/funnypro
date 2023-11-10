@@ -27,6 +27,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProParserAndPrinter;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
+import chav1961.funnypro.plugins.StandardResolver;
 import chav1961.purelib.basic.LongIdMap;
 import chav1961.purelib.basic.Utils;
 import chav1961.purelib.basic.exceptions.ContentException;
@@ -947,7 +948,7 @@ public class FProUtil {
 		}
 	}
 
-	public static ResolvableAndGlobal<GlobalDescriptor,LocalDescriptor> getStandardResolver(final IFProEntitiesRepo repo) {
+	public static ResolvableAndGlobal<?,?> getStandardResolver(final IFProEntitiesRepo repo) {
 		for (PluginItem item : repo.pluginsRepo().seek(StandardResolver.PLUGIN_NAME, StandardResolver.PLUGIN_PRODUCER, StandardResolver.PLUGIN_VERSION)) {
 			return new ResolvableAndGlobal(item.getDescriptor().getPluginEntity().getResolver(), item.getGlobal());
 		}

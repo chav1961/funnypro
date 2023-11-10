@@ -1,4 +1,4 @@
-package chav1961.funnypro.core;
+package chav1961.funnypro.plugins;
 
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 

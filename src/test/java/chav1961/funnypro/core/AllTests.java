@@ -6,8 +6,8 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({ CommonUtilsTest.class, EntitiesRepoTest.class, ExternalPluginsRepoTest.class, FactRuleRepoTest.class,
-		FProUtilTest.class, GlobalStackTest.class, IterablesCollectionTest.class, ParserAndPrinterTest.class,
-		QuickListTest.class, RepositoriesTest.class, StandardResolverTest.class, VarRepoTest.class, VMTest.class })
+		FProUtilTest.class, GlobalStackTest.class, ParserAndPrinterTest.class,
+		QuickListTest.class, RepositoriesTest.class, VarRepoTest.class, VMTest.class })
 
 public class AllTests {
 

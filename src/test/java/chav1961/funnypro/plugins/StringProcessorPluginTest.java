@@ -6,11 +6,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import chav1961.funnypro.core.EntitiesRepo;
-import chav1961.funnypro.core.GlobalDescriptor;
 import chav1961.funnypro.core.GlobalStack;
 import chav1961.funnypro.core.ParserAndPrinter;
-import chav1961.funnypro.core.StandardResolver;
-import chav1961.funnypro.core.StandardResolverTest;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo.PluginDescriptor;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
@@ -47,7 +44,7 @@ public class StringProcessorPluginTest {
 		final IFProEntitiesRepo		repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER, props);
 		final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER, props, repo);
 		final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER, props,repo);
-		final GlobalDescriptor		srg = sr.onLoad(PureLibSettings.CURRENT_LOGGER, props, repo);
+		final StandardResolverGlobal		srg = sr.onLoad(PureLibSettings.CURRENT_LOGGER, props, repo);
 		final StringProcessorGlobal	spg = spp.onLoad(PureLibSettings.CURRENT_LOGGER, props, repo);
 		final StringBuilder			sb = new StringBuilder();
 		

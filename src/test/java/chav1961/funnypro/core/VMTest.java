@@ -15,6 +15,8 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
+//import chav1961.funnypro.plugins.GlobalDescriptor;
+//import chav1961.funnypro.plugins.LocalDescriptor;
 import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
 import chav1961.purelib.basic.DefaultLoggerFacade;
@@ -127,18 +129,18 @@ class PseudoFProVM extends FProVM {
 		super(log, prop);
 	}
 
-	protected ResolvableAndGlobal<GlobalDescriptor,LocalDescriptor> getStandardResolver() {
+	protected ResolvableAndGlobal getStandardResolver() {
 		return new ResolvableAndGlobal(
-			new IResolvable<GlobalDescriptor,LocalDescriptor>() {
-			@Override public ResolveRC nextResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.False;}
+			new IResolvable() {
+			@Override public ResolveRC nextResolve(Object global, Object local, IFProEntity values) throws SyntaxException {return ResolveRC.False;}
 			@Override public String getName() {return "test";}
 			@Override public DottedVersion getVersion() {return DottedVersion.ZERO;}
-			@Override public LocalDescriptor beforeCall(GlobalDescriptor global, IFProGlobalStack gs, List<IFProVariable> vars,IFProCallback callback) {return null;}
-			@Override public ResolveRC firstResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {return ResolveRC.True;}
-			@Override public void endResolve(GlobalDescriptor global, LocalDescriptor local, IFProEntity values) throws SyntaxException {}			
-			@Override public void afterCall(GlobalDescriptor global, LocalDescriptor local) {}
-			@Override public void onRemove(GlobalDescriptor global) {}
-			@Override public GlobalDescriptor onLoad(LoggerFacade debug, SubstitutableProperties parameters, IFProEntitiesRepo repo) throws SyntaxException {return null;}
+			@Override public Object beforeCall(Object global, IFProGlobalStack gs, List vars, IFProCallback callback) throws SyntaxException {return null;}
+			@Override public ResolveRC firstResolve(Object global, Object local, IFProEntity values) throws SyntaxException {return ResolveRC.True;}
+			@Override public void endResolve(Object global, Object local, IFProEntity values) throws SyntaxException {}			
+			@Override public void afterCall(Object global, Object local) {}
+			@Override public void onRemove(Object global) {}
+			@Override public Object onLoad(LoggerFacade debug, SubstitutableProperties parameters, IFProEntitiesRepo repo) throws SyntaxException {return null;}
 		},
 		null);
 	}
