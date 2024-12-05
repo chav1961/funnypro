@@ -309,10 +309,12 @@ public class FProUtil {
 							return false;
 						}
 					case predicate			:
-						if (((IFProPredicate)peek).getArity() == ((IFProPredicate)entity).getArity()) {
-							final IFProEntity[]	left = ((IFProPredicate)peek).getParameters(), right = ((IFProPredicate)entity).getParameters();
+						final IFProPredicate	peekP = (IFProPredicate)peek, entityP = (IFProPredicate)entity;  
+						
+						if (peekP.getArity() == entityP.getArity()) {
+							final IFProEntity[]	left = peekP.getParameters(), right = entityP.getParameters();
 							
-							for (int index = 0, maxIndex = ((IFProPredicate)entity).getArity(); index < maxIndex; index++) {
+							for (int index = 0, maxIndex = entityP.getArity(); index < maxIndex; index++) {
 								if (!unify(left[index],right[index],changesList)) {
 									return false;
 								}
@@ -910,35 +912,38 @@ public class FProUtil {
 			QuickIds<T>	start = repo.get(entity.getEntityId());
 			
 			if (start != null) {
-				switch (entity.getEntityType()) {
-					case operator	:
-						final IFProOperator	oper = (IFProOperator)entity;
-						final int			priority = oper.getPriority();
-						final OperatorType	operType = oper.getOperatorType(); 
+				final EntityType 	type = entity.getEntityType();
+
+				if (type == EntityType.operator) {
+					final IFProOperator	oper = (IFProOperator)entity;
+					final int			priority = oper.getPriority();
+					final OperatorType	operType = oper.getOperatorType(); 
+					
+					while (start != null) {
+						final IFProOperator	def = (IFProOperator)start.def;
 						
-						while (start != null) {
-							if (((IFProOperator)start.def).getPriority() == priority &&  ((IFProOperator)start.def).getOperatorType() == operType) {
-								return start.action;
-							}
-							else {
-								start = start.next;
-							}
+						if (def.getPriority() == priority &&  def.getOperatorType() == operType) {
+							return start.action;
 						}
-						break;
-					case predicate	:
-						final int	arity = ((IFProPredicate)entity).getArity();
-						
-						while (start != null) {
-							if (((IFProPredicate)start.def).getArity() == arity) {
-								return start.action;
-							}
-							else {
-								start = start.next;
-							}
+						else {
+							start = start.next;
 						}
-						break;
-					default :
-						throw new UnsupportedOperationException("Entity type ["+entity.getEntityType()+"] is not supported yet");
+					}
+				}
+				else if (type == EntityType.predicate) {
+					final int	arity = ((IFProPredicate)entity).getArity();
+					
+					while (start != null) {
+						if (((IFProPredicate)start.def).getArity() == arity) {
+							return start.action;
+						}
+						else {
+							start = start.next;
+						}
+					}
+				}
+				else {
+					throw new UnsupportedOperationException("Entity type ["+type+"] is not supported yet");
 				}
 				return defaultValue; 
 			}

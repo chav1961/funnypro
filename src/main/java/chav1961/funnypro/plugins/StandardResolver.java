@@ -627,13 +627,13 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 			case Op700xfxGreaterEqual	:
 				return compare(global,entity) >= 0 ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxDogLess	:
-				return lexicalCompare(global.repo, entity) < 0 ? ResolveRC.True : ResolveRC.False;
+				return lexicalCompare(global.repo, (IFProOperator)entity) < 0 ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxDogLessEqual	:
-				return lexicalCompare(global.repo, entity) <= 0 ? ResolveRC.True : ResolveRC.False;
+				return lexicalCompare(global.repo, (IFProOperator)entity) <= 0 ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxDogGreater	:
-				return lexicalCompare(global.repo, entity) > 0 ? ResolveRC.True : ResolveRC.False;
+				return lexicalCompare(global.repo, (IFProOperator)entity) > 0 ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxDogGreaterEqual	:
-				return lexicalCompare(global.repo, entity) >= 0 ? ResolveRC.True : ResolveRC.False;
+				return lexicalCompare(global.repo, (IFProOperator)entity) >= 0 ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxEqual		:
 				return FProUtil.isIdentical(((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight()) ? ResolveRC.True : ResolveRC.False;
 			case Op700xfxNotEqual	:
@@ -1292,8 +1292,8 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 		}
 	}
 
-	static int lexicalCompare(final IFProEntitiesRepo repo, final IFProEntity entity) throws SyntaxException {
-		return lexicalCompare(repo, ((IFProOperator)entity).getLeft(),((IFProOperator)entity).getRight());
+	static int lexicalCompare(final IFProEntitiesRepo repo, final IFProOperator entity) throws SyntaxException {
+		return lexicalCompare(repo, entity.getLeft(),entity.getRight());
 	}	
 	
 	static int lexicalCompare(final IFProEntitiesRepo repo, final IFProEntity left, final IFProEntity right) throws SyntaxException {
@@ -1316,24 +1316,32 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 				case string		:
 					return repo.stringRepo().compareNames(left.getEntityId(), right.getEntityId());
 				case integer	:
-					return left.getEntityId() < right.getEntityId() ? -1 : (left.getEntityId() > right.getEntityId() ? 1 : 0);
+					final long	leftLong = left.getEntityId(), rightLong = right.getEntityId();  
+					
+					return leftLong < rightLong ? -1 : (leftLong > rightLong ? 1 : 0);
 				case real		:
-					return Double.longBitsToDouble(left.getEntityId()) < Double.longBitsToDouble(right.getEntityId()) ? -1 : (Double.longBitsToDouble(left.getEntityId()) > Double.longBitsToDouble(right.getEntityId()) ? 1 : 0);
+					final double	leftDouble = Double.longBitsToDouble(left.getEntityId()), rightDouble = Double.longBitsToDouble(right.getEntityId());
+					
+					return leftDouble < rightDouble ? -1 : (leftDouble > rightDouble ? 1 : 0);
 				case anonymous	:
 					return 0;
 				case variable	:
 					return repo.termRepo().compareNames(left.getEntityId(), right.getEntityId());
 				case list		:
-					if ((compare = lexicalCompare(repo,((IFProList)left).getChild(),((IFProList)right).getChild())) == 0) {
-						return lexicalCompare(repo,((IFProList)left).getTail(),((IFProList)right).getTail());
+					final IFProList	leftList = (IFProList)left, rightList = (IFProList)right;
+					
+					if ((compare = lexicalCompare(repo,leftList.getChild(),rightList.getChild())) == 0) {
+						return lexicalCompare(repo,leftList.getTail(),rightList.getTail());
 					}
 					else {
 						return compare;
 					}
 				case operator	:
 					if ((compare = repo.termRepo().compareNames(left.getEntityId(),right.getEntityId())) == 0) {
-						if ((compare = lexicalCompare(repo,((IFProOperator)left).getLeft(),((IFProOperator)right).getLeft())) == 0) {
-							return lexicalCompare(repo,((IFProOperator)left).getRight(),((IFProOperator)right).getRight());							
+						final IFProOperator	leftOp = (IFProOperator)left, rightOp = (IFProOperator)right;
+						
+						if ((compare = lexicalCompare(repo,leftOp.getLeft(),rightOp.getLeft())) == 0) {
+							return lexicalCompare(repo,leftOp.getRight(),rightOp.getRight());							
 						}
 						else {
 							return compare;
@@ -1344,16 +1352,19 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 					}
 				case predicate	:
 					if ((compare = repo.termRepo().compareNames(left.getEntityId(),right.getEntityId())) == 0) {
-						if (((IFProPredicate)left).getArity() == ((IFProPredicate)right).getArity()) {
-							for (int index = 0, maxIndex = ((IFProPredicate)left).getArity(); index < maxIndex; index++) {
-								if ((compare = lexicalCompare(repo,((IFProPredicate)left).getParameters()[index],((IFProPredicate)right).getParameters()[index])) != 0) {
+						final IFProPredicate	leftP = (IFProPredicate)left; 
+						final IFProPredicate	rightP = (IFProPredicate)right; 
+						
+						if (leftP.getArity() == rightP.getArity()) {
+							for (int index = 0, maxIndex = leftP.getArity(); index < maxIndex; index++) {
+								if ((compare = lexicalCompare(repo,leftP.getParameters()[index],rightP.getParameters()[index])) != 0) {
 									return compare;
 								}
 							}
 							return 0;
 						}
 						else {
-							return ((IFProPredicate)left).getArity() - ((IFProPredicate)right).getArity();
+							return leftP.getArity() - rightP.getArity();
 						}
 					}
 					else {

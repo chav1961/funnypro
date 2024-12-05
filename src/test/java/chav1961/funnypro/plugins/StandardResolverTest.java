@@ -63,7 +63,7 @@ public class StandardResolverTest {
 			
 			final StandardResolver		sr = new StandardResolver();
 			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
-			final long					trueId = repo.termRepo().placeName("true",null);
+			final long					trueId = repo.termRepo().placeName((CharSequence)"true",null);
 
 			try{sr.onLoad(null,props,repo);
 				Assert.fail("Mandatory exception was not detected (null 1-st argument)");
@@ -1121,7 +1121,7 @@ public class StandardResolverTest {
 		}
 	}
 
-//	@Test
+	@Test
 	public void performanceTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		

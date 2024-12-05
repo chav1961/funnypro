@@ -256,15 +256,17 @@ public class ParserAndPrinter implements IFProParserAndPrinter, IFProModule {
 					break;
 				case predicate			:
 					final IFProPredicate	pred = (IFProPredicate)entity;
+					final int				arity = pred.getArity();
 					
 					target.put(getRepo().termRepo().getName(entity.getEntityId()));
 					
-					if (pred.getArity() > 0) {
+					if (arity > 0) {
+						final IFProEntity[]	parms = pred.getParameters(); 
 						char	prefix = '(';
 						
-						for (int index = 0; index < pred.getArity(); index++) {
+						for (int index = 0; index < arity; index++) {
 							target.put(prefix);	
-							putEntity(pred.getParameters()[index], target);
+							putEntity(parms[index], target);
 							prefix = ',';
 						}
 						target.put(')');
@@ -1101,7 +1103,7 @@ loop:	while (from < maxLen && source[from] != '.') {
 	}
 
 	private boolean needBracket(final IFProOperator root, final IFProEntity child) {
-		if (child instanceof IFProOperator) {
+		if (child.getEntityType() == EntityType.operator) {
 			return ((IFProOperator)child).getPriority() > root.getPriority();
 		}
 		else {
