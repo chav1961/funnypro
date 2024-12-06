@@ -16,10 +16,12 @@ import java.util.Set;
 import chav1961.funnypro.core.interfaces.FProPluginList;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProEntity;
+import chav1961.funnypro.core.interfaces.IFProEntity.EntityType;
 import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalPluginsRepo;
 import chav1961.funnypro.core.interfaces.IFProModule;
 import chav1961.funnypro.core.interfaces.IFProOperator;
+import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVariable;
@@ -193,24 +195,32 @@ class ExternalPluginsRepo implements IFProExternalPluginsRepo, IFProModule {
 		}
 		else {
 			final long			idAwaited = template.getEntityId();
+			final EntityType	type = template.getEntityType();
 			
-			switch (template.getEntityType()) {
-				case operator 	:
-					for (ExternalEntityDescriptor<?> item : operators) {
-						if (item.getTemplate().getEntityId() == idAwaited && ((IFProOperator)template).getOperatorType() == ((IFProOperator)item.getTemplate()).getOperatorType()) {
-							return (ExternalEntityDescriptor<Global>) item;
-						}
+			if (type == EntityType.operator) {
+				final OperatorType	typeAwaited = ((IFProOperator)template).getOperatorType();
+				
+				for (ExternalEntityDescriptor<?> item : operators) {
+					final IFProOperator	op = (IFProOperator)item.getTemplate();
+					
+					if (op.getEntityId() == idAwaited && op.getOperatorType() == typeAwaited) {
+						return (ExternalEntityDescriptor<Global>) item;
 					}
-					break;
-				case predicate 	:
-					for (ExternalEntityDescriptor<?> item : predicates) {
-						if (item.getTemplate().getEntityId() == idAwaited && ((IFProPredicate)template).getArity() == ((IFProPredicate)item.getTemplate()).getArity()) {
-							return (ExternalEntityDescriptor<Global>) item;
-						}
+				}
+			}
+			else if (type == EntityType.predicate) {
+				final int	arity = ((IFProPredicate)template).getArity();
+				
+				for (ExternalEntityDescriptor<?> item : predicates) {
+					final IFProPredicate pred = (IFProPredicate)item.getTemplate();
+					
+					if (pred.getEntityId() == idAwaited && pred.getArity() == arity) {
+						return (ExternalEntityDescriptor<Global>) item;
 					}
-					break;
-				default:
-					throw new UnsupportedOperationException("Only operators and predicates are supported for external plugins"); 
+				}
+			}
+			else {
+				throw new UnsupportedOperationException("Only operators and predicates are supported for external plugins"); 
 			}
 			return null;
 		}

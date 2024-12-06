@@ -402,6 +402,7 @@ public class FProUtil {
 	
 	public static IFProEntity cloneEntity(final IFProEntity source) {
 		try(final VarRepo	repo = new VarRepo()) {
+			
 			return duplicate(source, repo);
 		} catch (CloneNotSupportedException e) {
 			return null;
@@ -673,28 +674,25 @@ public class FProUtil {
 	
 	@SuppressWarnings({ "unchecked" })
 	public static void releaseTemporaries(final IFProEntity mark, final SyntaxTreeInterface<?> repo, final IFProGlobalStack stack) {
-		while (!stack.isEmpty() && stack.peek().getEntityAssicated() == mark) {
-			final GlobalStackTop item = stack.peek();
-			
+		GlobalStackTop	item;
+		
+		while (!stack.isEmpty() && (item = stack.peek()).getEntityAssocated() == mark) {
 			switch (item.getTopType()) {
-				case andChain	:
-					break;
 				case bounds		:
 					unbind(((GlobalStack.BoundStackTop<Change>)item).getChangeChain());
 					stack.pop();
 					break;
+				case andChain	:
 				case external	:
-					break;
+				case orChain	:
 				case iterator	:
 					return;
-				case orChain	:
-					break;
 				case temporary	:
 					removeEntity(repo, ((GlobalStack.TemporaryStackTop)item).getEntity());
 					stack.pop();
 					break;
 				default	:
-					throw new UnsupportedOperationException();
+					throw new UnsupportedOperationException("Stack top type ["+item.getTopType()+"] is not supported yet");
 			}
 		}
 	}

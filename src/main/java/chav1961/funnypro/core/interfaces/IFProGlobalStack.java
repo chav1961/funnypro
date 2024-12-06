@@ -16,12 +16,13 @@ public interface IFProGlobalStack extends AutoCloseable {
 	 * <li>iterator - any expression source</li>
 	 * <li>bounds - binded variable list</li>
 	 * <li>temporary - temporary data</li>
+	 * <li>unknown - top not defined</li>
 	 * </ul>
 	 * @author Alexander Chernomyrdin aka chav1961
 	 * @since 0.0.1
 	 */
 	enum StackTopType {
-		andChain, orChain, iterator, bounds, temporary, external
+		andChain, orChain, iterator, bounds, temporary, external, unknown
 	}
 	
 	/**
@@ -37,7 +38,7 @@ public interface IFProGlobalStack extends AutoCloseable {
 		StackTopType getTopType();
 		
 		
-		IFProEntity getEntityAssicated();
+		IFProEntity getEntityAssocated();
 	}
 
 	/**

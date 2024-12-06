@@ -878,7 +878,7 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 					
 					if (rcAnd == ResolveRC.False) {
 						while((rcAnd = nextResolveInternal(global,local,((IFProOperator)entity).getLeft())) == ResolveRC.True) {
-							rcAnd = firstResolve(global,local,((IFProOperator)entity).getRight()); 
+							rcAnd = firstResolveInternal(global,local,((IFProOperator)entity).getRight()); 
 							
 							if (rcAnd == ResolveRC.True) {
 								return ResolveRC.True;
@@ -1238,8 +1238,11 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 
 	private static boolean convert2Real(final IFProEntity left, final IFProEntity right, final long[] forInteger, final double[] forReal) {
 		if (left != null && right != null) {
-			if (left.getEntityType() == right.getEntityType()) {
-				if (left.getEntityType() == EntityType.integer) {
+			final EntityType	leftType = left.getEntityType();
+			final EntityType	rightType = right.getEntityType();			
+			
+			if (leftType == rightType) {
+				if (leftType == EntityType.integer) {
 					forInteger[0] = left.getEntityId();		
 					forInteger[1] = right.getEntityId();
 					return false;
@@ -1251,8 +1254,8 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 				}
 			}
 			else {
-				forReal[0] = left.getEntityType() == EntityType.integer ? left.getEntityId() : Double.longBitsToDouble(left.getEntityId());		
-				forReal[1] = right.getEntityType() == EntityType.integer ? right.getEntityId() : Double.longBitsToDouble(right.getEntityId());
+				forReal[0] = leftType == EntityType.integer ? left.getEntityId() : Double.longBitsToDouble(left.getEntityId());		
+				forReal[1] = rightType == EntityType.integer ? right.getEntityId() : Double.longBitsToDouble(right.getEntityId());
 				return true;
 			}
 		}
@@ -1470,7 +1473,7 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 	private ResolveRC continueIterate(final StandardResolverGlobal global, final StandardResolverLocal local, final IFProEntity mark, final EntityGetter entityGetter) throws SyntaxException, PrintingException {
 		IFProGlobalStack	stack = local.stack;
 
-		while (!stack.isEmpty() && stack.peek().getEntityAssicated() == mark) {
+		while (!stack.isEmpty() && stack.peek().getEntityAssocated() == mark) {
 			final GlobalStackTop item = stack.peek();
 			
 			switch (item.getTopType()) {
@@ -1547,7 +1550,7 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 	
 	private static void endIterate(final IFProEntity entity, final SyntaxTreeInterface<?> repo, final IFProGlobalStack stack) {
 		FProUtil.releaseTemporaries(entity, repo, stack);
-		if (stack.getTopType() == StackTopType.iterator && stack.peek().getEntityAssicated() == entity) {
+		if (stack.getTopType() == StackTopType.iterator && stack.peek().getEntityAssocated() == entity) {
 			stack.pop();
 		}
 	}

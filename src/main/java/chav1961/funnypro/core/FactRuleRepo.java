@@ -5,6 +5,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -25,6 +26,13 @@ import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 
 class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 	private static final int					SERIALIZATION_MAGIC = 0x12122080;
+	private static final Iterator<IFProEntity>	EMPTY_ITERATOR = new Iterator<IFProEntity>() {
+													@Override public IFProEntity next() {return null;}
+													@Override public boolean hasNext() {return false;}
+												};
+	private static final Iterable<IFProEntity>	EMPTY_ENTITIES = new Iterable<IFProEntity>() {
+													@Override public Iterator<IFProEntity> iterator() {return EMPTY_ITERATOR;}
+												};
 	
 	private final LoggerFacade					log;
 	private final SubstitutableProperties		props;
@@ -365,31 +373,17 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			throw new IllegalArgumentException("Predicate arity ["+arity+"] outside available. Need be in 0.."+IFProPredicate.MAX_ARITY);
 		}
 		else if (predicates[arity] != null) {
-			if (predicates[arity].contains(entityId)) {
-				final Iterator<IFProEntity>	iterator = new Iterator<IFProEntity>(){
-															private IFProEntity		actual = predicates[arity].get(entityId).start;
-										
-															@Override 
-															public boolean hasNext() {
-																return actual != null;
-															}
-										
-															@Override
-															public IFProEntity next() {	// Clone - to protect side effects of unification in the fact/rule repo (about variables)
-																final IFProEntity	returned = FProUtil.hasAnyVariable(actual) ? FProUtil.cloneEntity(actual) : actual;
-																
-																actual = actual.getParent();
-																return returned;
-															}
-														};
-				return new Iterable<IFProEntity>(){@Override public Iterator<IFProEntity> iterator() {return iterator;}};
+			final ChainDescriptor 	desc = predicates[arity].get(entityId);
+			
+			if (desc != null) {
+				return new ChainIterable(desc.start);
 			}
 			else {
-				return new ArrayList<IFProEntity>();
+				return EMPTY_ENTITIES;
 			}
 		}
 		else {
-			return new ArrayList<IFProEntity>();
+			return EMPTY_ENTITIES;
 		}
 	}
 
@@ -452,6 +446,32 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			if (id != other.id) return false;
 			if (type != other.type) return false;
 			return true;
+		}
+	}
+	
+	private static class ChainIterable implements Iterable<IFProEntity>, Iterator<IFProEntity> {
+		private IFProEntity	actual;
+		
+		ChainIterable(final IFProEntity start) {
+			this.actual = start;
+		}
+		
+		@Override
+		public Iterator<IFProEntity> iterator() {
+			return this;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return actual != null;
+		}
+
+		@Override
+		public IFProEntity next() {
+			final IFProEntity	returned = FProUtil.hasAnyVariable(actual) ? FProUtil.cloneEntity(actual) : actual;
+			
+			actual = actual.getParent();
+			return returned;
 		}
 	}
 }

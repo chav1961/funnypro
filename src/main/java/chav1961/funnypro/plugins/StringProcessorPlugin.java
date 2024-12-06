@@ -250,7 +250,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 	
 	@Override
 	public void endResolve(final StringProcessorGlobal global, final StringProcessorLocal local, final IFProEntity entity) throws SyntaxException {
-		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.temporary && ((TemporaryStackTop)local.stack.peek()).getEntityAssicated() == entity) {
+		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.temporary && ((TemporaryStackTop)local.stack.peek()).getEntityAssocated() == entity) {
 			FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 		}
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
