@@ -3,9 +3,8 @@ package chav1961.funnypro.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,14 +14,9 @@ import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProGlobalStack;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.funnypro.core.interfaces.IFProVM.IFProCallback;
-//import chav1961.funnypro.plugins.GlobalDescriptor;
-//import chav1961.funnypro.plugins.LocalDescriptor;
-import chav1961.funnypro.core.interfaces.IFProVariable;
 import chav1961.funnypro.core.interfaces.IResolvable;
-import chav1961.purelib.basic.DefaultLoggerFacade;
 import chav1961.purelib.basic.DottedVersion;
 import chav1961.purelib.basic.SubstitutableProperties;
-import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
 import chav1961.purelib.basic.interfaces.LoggerFacade;
@@ -40,7 +34,7 @@ public class VMTest {
 	@Test
 	public void lifeCycleTest() throws Exception {
 		final SubstitutableProperties	props = new SubstitutableProperties();
-		final LoggerFacade		log = new DefaultLoggerFacade();
+		final LoggerFacade				log = getDefaultLogger();
 		
 		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
@@ -119,6 +113,10 @@ public class VMTest {
 			} catch (SyntaxException exc) {
 			}
 		}
+	}
+
+	private LoggerFacade getDefaultLogger() {
+		return LoggerFacade.Factory.newInstance(URI.create(LoggerFacade.LOGGER_SCHEME+":default:/"));
 	}
 }
 

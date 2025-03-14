@@ -12,6 +12,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -39,7 +40,6 @@ import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.funnypro.plugins.RegisteredOperators;
 import chav1961.funnypro.plugins.StandardResolver;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.purelib.basic.DefaultLoggerFacade;
 import chav1961.purelib.basic.OrdinalSyntaxTree;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
@@ -57,7 +57,7 @@ public class RepositoriesTest {
 
 	@Test
 	public void factRuleRepoTest() throws IOException {
-		final LoggerFacade		log = new DefaultLoggerFacade();
+		final LoggerFacade				log = getDefaultLogger();
 		final SubstitutableProperties	props = new SubstitutableProperties();
 		final SyntaxTreeInterface<?>	sti = new OrdinalSyntaxTree<>(); 
 		final FactRuleRepo		frr = new FactRuleRepo(log, props, sti);
@@ -139,15 +139,15 @@ public class RepositoriesTest {
 	
 	@Test
 	public void entitiesRepoTest() throws Exception {
-		final LoggerFacade		log = new DefaultLoggerFacade();
+		final LoggerFacade		log = getDefaultLogger();
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
 		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
 		try(final EntitiesRepo	repo = new EntitiesRepo(log,props)) {
-			final long				stringId = repo.stringRepo().placeName("test string",null);
-			final long				termId = repo.termRepo().placeName("predicate",null);
-			final long				operatorId = repo.termRepo().placeName("=:=",null);
+			final long				stringId = repo.stringRepo().placeName((CharSequence)"test string",null);
+			final long				termId = repo.termRepo().placeName((CharSequence)"predicate",null);
+			final long				operatorId = repo.termRepo().placeName((CharSequence)"=:=",null);
 			final IFProEntity		pred = new PredicateEntity(termId,new StringEntity(stringId),new IntegerEntity(12345));
 			final IFProOperator		opDef = new OperatorDefEntity(100,OperatorType.fx,operatorId);
 			final IFProOperator		opDef2 = new OperatorDefEntity(100,OperatorType.xf,operatorId);
@@ -229,8 +229,8 @@ public class RepositoriesTest {
 
 	@Test
 	public void externalPluginsRepoTest() throws Exception {
-		final SubstitutableProperties		props = new SubstitutableProperties();
-		final LoggerFacade		log = new DefaultLoggerFacade();
+		final SubstitutableProperties	props = new SubstitutableProperties();
+		final LoggerFacade				log = getDefaultLogger();
 		
 		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
@@ -266,8 +266,8 @@ public class RepositoriesTest {
 	
 	@Test
 	public void parsersTest() throws IOException, ContentException, PrintingException {
-		final LoggerFacade			log = new DefaultLoggerFacade();
-		final SubstitutableProperties		props = new SubstitutableProperties();
+		final LoggerFacade				log = getDefaultLogger();
+		final SubstitutableProperties	props = new SubstitutableProperties();
 		
 		props.setProperty(IFProVM.PROP_DONT_LOAD_ALL_PLUGINS, "true");
 		
@@ -307,5 +307,9 @@ public class RepositoriesTest {
 			System.err.println("Printed data is: "+wr.toString());
 		}
 		
+	}
+	
+	private LoggerFacade getDefaultLogger() {
+		return LoggerFacade.Factory.newInstance(URI.create(LoggerFacade.LOGGER_SCHEME+":default:/"));
 	}
 }

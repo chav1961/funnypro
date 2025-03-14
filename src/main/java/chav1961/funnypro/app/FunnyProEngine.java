@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.net.URI;
 import java.util.Properties;
 
 import javax.script.AbstractScriptEngine;
@@ -21,7 +22,6 @@ import chav1961.funnypro.core.FProVM;
 import chav1961.funnypro.core.interfaces.IFProEntitiesRepo;
 import chav1961.funnypro.core.interfaces.IFProVM;
 import chav1961.purelib.basic.SubstitutableProperties;
-import chav1961.purelib.basic.SystemErrLoggerFacade;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
 import chav1961.purelib.basic.exceptions.SyntaxException;
@@ -64,7 +64,7 @@ public class FunnyProEngine extends AbstractScriptEngine implements Closeable, I
 	private final ScriptEngineFactory	factory;
 	private final Bindings				currentBingdings = new SimpleBindings();
 	private final FProVM				vm;
-	private final LoggerFacade			logger = new SystemErrLoggerFacade();
+	private final LoggerFacade			logger = LoggerFacade.Factory.newInstance(URI.create(LoggerFacade.LOGGER_SCHEME+":err:/"));
 	
 	FunnyProEngine(final ScriptEngineFactory factory) throws ContentException, IOException {
 		this.factory = factory;
