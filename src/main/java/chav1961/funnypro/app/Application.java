@@ -46,7 +46,7 @@ public class Application {
 				}
 			}
 			else {
-				final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
+				//final ContentMetadataInterface	xda = ContentModelFactory.forXmlDescription(is);
 				final ScriptEngine 				engine = new ScriptEngineManager().getEngineByName(FunnyProEngineFactory.LANG_NAME);
 				final String		encoding = parsed.getValue(PARM_ENCODING, String.class);
 				

@@ -339,7 +339,7 @@ public class IOProcessorPlugin implements IResolvable<IOProcessorGlobal,IOProces
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.temporary && ((TemporaryStackTop)local.stack.peek()).getEntityAssocated() == entity) {
 			FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 		}
-		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
+		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop<?>)local.stack.peek()).getMark() == entity) {
 			FProUtil.unbind(((BoundStackTop<FProUtil.Change>)local.stack.pop()).getChangeChain());
 		}
 	}

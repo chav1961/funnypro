@@ -8,7 +8,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
-import java.util.Properties;
 
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;

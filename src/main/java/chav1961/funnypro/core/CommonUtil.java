@@ -3,7 +3,6 @@ package chav1961.funnypro.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
 import chav1961.funnypro.core.interfaces.IFProStreamSerializable;
@@ -72,7 +71,7 @@ class CommonUtil {
 	 * @param tree three to serialize
 	 * @throws IOException
 	 */
-	public static void writeTree(final DataOutput target, final SyntaxTreeInterface<?> tree) throws IOException, NullPointerException {
+	public static <T> void writeTree(final DataOutput target, final SyntaxTreeInterface<T> tree) throws IOException, NullPointerException {
 		if (target == null) {
 			throw new NullPointerException("Target stream can't be null");
 		}
@@ -82,7 +81,7 @@ class CommonUtil {
 		else {
 			target.writeInt(SERIALIZATION_TREE_MAGIC);			// Tree magic.
 			target.writeLong(tree.size());						// Size of the tree
-			tree.walk(new Walker(){								// Tree content
+			tree.walk(new Walker<T>(){								// Tree content
 				@Override
 				public boolean process(char[] name, int len, long id, Object cargo) {
 					try{target.writeLong(id);

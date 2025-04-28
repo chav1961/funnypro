@@ -25,10 +25,10 @@ class QuickList<D> extends LongIdMap<D> implements IFProQuickList<D> {
 	}
 
 	@Override
-	public int size() {
+	public long size() {
 		return size;
 	}
-
+	
 	@Override
 	public D get(final long key) {
 		return super.get(key);

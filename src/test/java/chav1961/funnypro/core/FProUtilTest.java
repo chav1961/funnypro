@@ -23,7 +23,7 @@ import chav1961.funnypro.core.interfaces.IFProOperator;
 import chav1961.funnypro.core.interfaces.IFProOperator.OperatorType;
 import chav1961.funnypro.core.interfaces.IFProPredicate;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.purelib.basic.OrdinalSyntaxTree;
+import chav1961.purelib.basic.AndOrTree;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.growablearrays.InOutGrowableByteArray;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
@@ -296,10 +296,9 @@ public class FProUtilTest {
 
 	@Test
 	public void otherStaticTest() {
-		final SyntaxTreeInterface<?>	st = new OrdinalSyntaxTree<>();
+		final SyntaxTreeInterface<?>	st = new AndOrTree<>();
 		
 		IFProEntity		left;
-		
 		
 		left = new AnonymousEntity();
 		Assert.assertEquals(left,FProUtil.duplicate(left));

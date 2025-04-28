@@ -40,7 +40,7 @@ import chav1961.funnypro.core.interfaces.IFProRepo.NameAndArity;
 import chav1961.funnypro.plugins.RegisteredOperators;
 import chav1961.funnypro.plugins.StandardResolver;
 import chav1961.funnypro.core.interfaces.IFProVariable;
-import chav1961.purelib.basic.OrdinalSyntaxTree;
+import chav1961.purelib.basic.AndOrTree;
 import chav1961.purelib.basic.SubstitutableProperties;
 import chav1961.purelib.basic.exceptions.ContentException;
 import chav1961.purelib.basic.exceptions.PrintingException;
@@ -59,7 +59,7 @@ public class RepositoriesTest {
 	public void factRuleRepoTest() throws IOException {
 		final LoggerFacade				log = getDefaultLogger();
 		final SubstitutableProperties	props = new SubstitutableProperties();
-		final SyntaxTreeInterface<?>	sti = new OrdinalSyntaxTree<>(); 
+		final SyntaxTreeInterface<?>	sti = new AndOrTree<>(); 
 		final FactRuleRepo		frr = new FactRuleRepo(log, props, sti);
 		final IFProEntity		temp = new PredicateEntity(12345,new StringEntity(67890),new IntegerEntity(13579));
 		

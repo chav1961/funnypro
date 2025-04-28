@@ -53,7 +53,7 @@ public class TutorialPlugin implements IResolvable<MyOwnMemory,ListEntityIndex>,
 	public PluginDescriptor[] getPluginDescriptors() {
 		return new PluginDescriptor[]{
 				new PluginDescriptor(){
-					@Override public IFProExternalEntity getPluginEntity() {return new ExternalPluginEntity(1, PLUGIN_NAME, PLUGIN_PRODUCER, PLUGIN_VERSION, new TutorialPlugin());}
+					@Override public IFProExternalEntity<?,?> getPluginEntity() {return new ExternalPluginEntity(1, PLUGIN_NAME, PLUGIN_PRODUCER, PLUGIN_VERSION, new TutorialPlugin());}
 					@Override public String getPluginPredicate() {return new String(PREDICATE);}
 					@Override public String getPluginDescription() {return PLUGIN_DESCRIPTION;}
 				}

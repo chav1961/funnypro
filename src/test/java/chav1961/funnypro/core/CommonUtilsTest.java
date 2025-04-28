@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import chav1961.funnypro.core.entities.IntegerEntity;
 import chav1961.funnypro.core.interfaces.IFProEntity;
-import chav1961.purelib.basic.OrdinalSyntaxTree;
+import chav1961.purelib.basic.AndOrTree;
 import chav1961.purelib.basic.growablearrays.InOutGrowableByteArray;
 import chav1961.purelib.basic.interfaces.SyntaxTreeInterface;
 
@@ -37,7 +37,7 @@ public class CommonUtilsTest {
 
 	@Test
 	public void treeManipulationTest() throws IOException {
-		final SyntaxTreeInterface<IFProEntity>	sti = new OrdinalSyntaxTree<>(), newSti = new OrdinalSyntaxTree<>(); 
+		final SyntaxTreeInterface<IFProEntity>	sti = new AndOrTree<>(), newSti = new AndOrTree<>(); 
 		
 		try(final InOutGrowableByteArray	iogba = new InOutGrowableByteArray(false)) {
 			sti.placeName((CharSequence)"name1",null);

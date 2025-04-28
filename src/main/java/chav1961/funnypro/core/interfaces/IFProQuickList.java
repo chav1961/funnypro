@@ -25,7 +25,7 @@ public interface IFProQuickList<D> {
 	 * <p>Get size of the list</p>
 	 * @return size of the list
 	 */
-	int size();
+	long size();
 	
 	/**
 	 * <p>Get data by it's key</p>

@@ -5,7 +5,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -206,7 +205,7 @@ class FactRuleRepo implements IFProRepo, IFProStreamSerializable, IFProModule {
 			
 			for (int arityIndex = 0; arityIndex < predicates.length; arityIndex++) {	// Write individual chains
 				if (predicates[arityIndex] != null) {
-					target.writeInt(predicates[arityIndex].size());				// Write amount of the predicates in this chain
+					target.writeInt((int)predicates[arityIndex].size());				// Write amount of the predicates in this chain
 					
 					for (Long item : predicates[arityIndex].content()) {		// Write chain contents
 						if (predicates[arityIndex].get(item).start != null) {

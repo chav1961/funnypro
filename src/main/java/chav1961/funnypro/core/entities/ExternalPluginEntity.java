@@ -1,7 +1,5 @@
 package chav1961.funnypro.core.entities;
 
-import java.util.Arrays;
-
 import chav1961.funnypro.core.interfaces.IFProEntity;
 import chav1961.funnypro.core.interfaces.IFProExternalEntity;
 import chav1961.funnypro.core.interfaces.IResolvable;

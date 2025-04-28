@@ -80,7 +80,7 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 	public static final String			PLUGIN_DESCRIPTION	= "Standard resolver for the Funny Prolog";
 
 	@SuppressWarnings("rawtypes")
-	static final RegisteredOperators[]			OPS = { new RegisteredOperators<RegisteredEntities>(1200,OperatorType.xfx,":-",RegisteredEntities.Op1200xfxGoal),
+	static final RegisteredOperators			OPS[] = { new RegisteredOperators<RegisteredEntities>(1200,OperatorType.xfx,":-",RegisteredEntities.Op1200xfxGoal),
 														new RegisteredOperators<RegisteredEntities>(1200,OperatorType.fx,":-",RegisteredEntities.Op1200fxGoal),
 														new RegisteredOperators<RegisteredEntities>(1200,OperatorType.fx,"?-",RegisteredEntities.Op1200fxQuestion),
 														new RegisteredOperators<RegisteredEntities>(1100,OperatorType.xfy,";",RegisteredEntities.Op1100xfyOr),
@@ -793,11 +793,11 @@ public class StandardResolver implements IResolvable<StandardResolverGlobal,Stan
 			case PredMemberOf		:
 				return iterate((StandardResolverGlobal)global,(StandardResolverLocal)local,entity,((IFProPredicate)entity).getParameters()[0],new IterablesCollection.IterableList((IFProPredicate) entity));
 			default :
-				final ExternalEntityDescriptor	eed = global.repo.pluginsRepo().getResolver(entity);
+				final ExternalEntityDescriptor<StandardResolverGlobal>	eed = global.repo.pluginsRepo().getResolver(entity);
 				
 				if (eed != null) {
-					final IResolvable 	resolver = eed.getResolver();
-					final Object		localData = resolver.beforeCall(eed.getGlobal(), local.stack, local.vars, local.callback);
+					final IResolvable<StandardResolverGlobal,StandardResolverLocal> 	resolver = eed.getResolver();
+					final StandardResolverLocal	localData = resolver.beforeCall(eed.getGlobal(), local.stack, local.vars, local.callback);
 					
 					if (resolver.firstResolve(eed.getGlobal(), localData, entity) == ResolveRC.True) {
 						local.stack.push(GlobalStack.getExternalStackTop(entity, eed, localData));

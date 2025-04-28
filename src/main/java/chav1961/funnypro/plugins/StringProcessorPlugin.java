@@ -240,7 +240,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 			}
 		}
 		else if (entity.getEntityType() == EntityType.operator && entity.getEntityId() == charArrayId && ((IFProOperator)entity).getOperatorType() == OperatorType.xfx) {
-			if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
+			if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop<?>)local.stack.peek()).getMark() == entity) {
 				FProUtil.unbind(((BoundStackTop<FProUtil.Change>)local.stack.pop()).getChangeChain());
 			}
 			return ResolveRC.False;
@@ -253,7 +253,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.temporary && ((TemporaryStackTop)local.stack.peek()).getEntityAssocated() == entity) {
 			FProUtil.releaseTemporaries(entity, global.repo.stringRepo(), local.stack);
 		}
-		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop)local.stack.peek()).getMark() == entity) {
+		if (!local.stack.isEmpty() && local.stack.peek().getTopType() == StackTopType.bounds && ((BoundStackTop<?>)local.stack.peek()).getMark() == entity) {
 			FProUtil.unbind(((BoundStackTop<FProUtil.Change>)local.stack.pop()).getChangeChain());
 		}
 	}
@@ -276,7 +276,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 					final StringBuilder		sb = new StringBuilder();
 					
 					FProUtil.forList((IFProList)third, (e)->{sb.append(divizor).append(FProUtil.asString(global.pap, e)); return ContinueMode.CONTINUE;});
-					final long				stringId = sb.length() == 0 ? StringEntity.EMPTY_STRING_ID : global.repo.stringRepo().placeName(sb.substring(divizorLength), null); 
+					final long				stringId = sb.length() == 0 ? StringEntity.EMPTY_STRING_ID : global.repo.stringRepo().placeName((CharSequence)sb.substring(divizorLength), null); 
 					final IFProEntity		string = new StringEntity(stringId);
 					
 					if (FProUtil.unify(first, string, change)) {
@@ -299,7 +299,7 @@ public class StringProcessorPlugin implements IResolvable<StringProcessorGlobal,
 					}
 					parts.add(val.substring(start));
 					
-					final IFProList		list = FProUtil.toList(parts, (v)->new StringEntity(global.repo.stringRepo().placeName(v, null)));
+					final IFProList		list = FProUtil.toList(parts, (v)->new StringEntity(global.repo.stringRepo().placeName((CharSequence)v, null)));
 					
 					if (FProUtil.unify(third, list, change)) {
 						local.stack.push(GlobalStack.getBoundStackTop(list, mark, change[0]));
