@@ -174,7 +174,7 @@ public class EntitiesRepoTest {
 			try(final InOutGrowableByteArray	iogba = new InOutGrowableByteArray(false)) {
 				repo.serialize(iogba);
 				iogba.flush();
-				iogba.reset();
+				iogba.rewind();
 				
 				try(final EntitiesRepo	newRepo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)) {
 					final long			op1NewId = repo.termRepo().placeName("<<<>>>",null), op2NewId = repo.termRepo().placeName(">>><<<",null);

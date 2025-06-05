@@ -240,7 +240,7 @@ public class FactRuleRepoTest {
 		try(final InOutGrowableByteArray	iogba = new InOutGrowableByteArray(false)) {
 			frr.serialize(iogba);
 			iogba.flush();
-			iogba.reset();
+			iogba.rewind();
 			newFrr.deserialize(iogba);
 		}
 		

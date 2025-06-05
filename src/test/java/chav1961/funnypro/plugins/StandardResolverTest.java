@@ -1120,12 +1120,12 @@ public class StandardResolverTest {
 	public void performanceTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
 		
-		try(final EntitiesRepo			repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
-			final IFProGlobalStack		stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
-			final ParserAndPrinter		pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
-			final StandardResolver		sr = new StandardResolver();
-			final StandardResolverGlobal		global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
-			final CharacterSource		cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
+		try(final EntitiesRepo				repo = new EntitiesRepo(PureLibSettings.CURRENT_LOGGER,props)){
+			final IFProGlobalStack			stack = new GlobalStack(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final ParserAndPrinter			pap = new ParserAndPrinter(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final StandardResolver			sr = new StandardResolver();
+			final StandardResolverGlobal	global = sr.onLoad(PureLibSettings.CURRENT_LOGGER,props,repo);
+			final CharacterSource			cs = new ArrayCharSource(URIUtils.loadCharsFromURI(new File("./src/test/resources/chav1961/funnypro/core/environment.fpro").toURI()));
 
 			pap.parseEntities(cs,new FProParserCallback(){	// Prepare environment
 										@Override

@@ -101,7 +101,7 @@ public class GlobalStackTest {
 			
 			Assert.assertTrue(stack.isEmpty());
 			Assert.assertNull(stack.peek());
-			Assert.assertNull(stack.getTopType());
+			Assert.assertEquals(StackTopType.unknown, stack.getTopType());
 			
 			try{stack.push(null);
 				Assert.fail("Mandatory exception was not detected (null argument)");

@@ -389,7 +389,7 @@ public class FProUtilTest {
 			}
 			
 			iogba.flush();			
-			iogba.reset();
+			iogba.rewind();
 			
 			Assert.assertEquals(entity1,FProUtil.deserialize(iogba));
 			Assert.assertEquals(entity2,FProUtil.deserialize(iogba));

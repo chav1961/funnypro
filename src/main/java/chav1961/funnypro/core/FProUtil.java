@@ -147,7 +147,7 @@ public class FProUtil {
 			throw new NullPointerException("Entity to serialize can't be null!"); 
 		}
 		else {
-			target.writeInt(entity.getEntityType().ordinal());		// Write operator type
+			target.writeByte(entity.getEntityType().ordinal());		// Write operator type
 			switch (entity.getEntityType()) {
 				case string			:
 				case integer		:
@@ -170,8 +170,8 @@ public class FProUtil {
 					break;
 				case operator		:
 					target.writeLong(entity.getEntityId());
-					target.writeInt(((IFProOperator)entity).getPriority());
-					target.writeInt(((IFProOperator)entity).getOperatorType().ordinal());
+					target.writeShort(((IFProOperator)entity).getPriority());
+					target.writeByte(((IFProOperator)entity).getOperatorType().ordinal());
 					switch (((IFProOperator)entity).getOperatorType()) {
 						case xf : case yf :
 							serialize(target,((IFProOperator)entity).getLeft());
@@ -189,7 +189,7 @@ public class FProUtil {
 					break;
 				case predicate		:
 					target.writeLong(entity.getEntityId());
-					target.writeInt(((IFProPredicate)entity).getArity());
+					target.writeShort(((IFProPredicate)entity).getArity());
 					for (int index = 0; index < ((IFProPredicate)entity).getArity(); index++) {
 						serialize(target,((IFProPredicate)entity).getParameters()[index]);
 					}
@@ -211,7 +211,7 @@ public class FProUtil {
 			throw new NullPointerException("Target stream can't be null!"); 
 		}
 		else {
-			final EntityType	type = EntityType.values()[source.readInt()];
+			final EntityType	type = EntityType.values()[source.readByte()];
 
 			switch (type) {
 				case string			:
@@ -229,8 +229,8 @@ public class FProUtil {
 					return new ListEntity((mask & 0x02) != 0 ? deserialize(source) : null,(mask & 0x01) != 0 ? deserialize(source) : null); 
 				case operator		:
 					final long				operatorId = source.readLong();
-					final int				priority = source.readInt();
-					final OperatorType		opType = OperatorType.values()[source.readInt()];
+					final int				priority = source.readShort();
+					final OperatorType		opType = OperatorType.values()[source.readByte()];
 					final OperatorEntity	opEntity = new OperatorEntity(priority,opType,operatorId);
 					
 					switch (opType) {
@@ -254,7 +254,7 @@ public class FProUtil {
 					return opEntity;
 				case predicate		:
 					final long				predicateId = source.readLong();
-					final int				arity = source.readInt();
+					final int				arity = source.readShort();
 					final IFProEntity[]		parms = new IFProEntity[arity];
 					
 					for (int index = 0; index < parms.length; index++) {
@@ -1373,26 +1373,30 @@ repeat:					while(start < to) {
 		else {
 			switch (container.getEntityType()) {
 				case list				:
-					if (((IFProList)container).getChild() == var) {
+					final IFProList listOp = (IFProList)container;
+					
+					if (listOp.getChild() == var) {
 						placeChanges(changesList,container,var,Change.IN_CHILD);
-						((IFProList)container).setChild(value);
+						listOp.setChild(value);
 					}
-					else if (((IFProList)container).getTail() == var) {
+					else if (listOp.getTail() == var) {
 						placeChanges(changesList,container,var,Change.IN_TAIL);		
-						((IFProList)container).setTail(value);
+						listOp.setTail(value);
 					}
 					else {
 						throw new IllegalArgumentException();
 					}
 					break;
 				case operator			:
-					if (((IFProOperator)container).getLeft() == var) {
+					final IFProOperator op = (IFProOperator)container;
+
+					if (op.getLeft() == var) {
 						placeChanges(changesList,container,var,Change.IN_LEFT);		
-						((IFProOperator)container).setLeft(value);
+						op.setLeft(value);
 					}
-					else if (((IFProOperator)container).getRight() == var) {
+					else if (op.getRight() == var) {
 						placeChanges(changesList,container,var,Change.IN_RIGHT);		
-						((IFProOperator)container).setRight(value);
+						op.setRight(value);
 					}
 					else {
 						throw new IllegalArgumentException();
@@ -1415,13 +1419,6 @@ repeat:					while(start < to) {
 	}
 	
 	private static void placeChanges(final Change[] changesList, final IFProEntity container, final IFProEntity oldValue, final int location) {
-//		final Change	ch = new Change();
-//		
-//		ch.next = changesList[0];
-//		ch.container = container;
-//		ch.oldValue = oldValue;
-//		ch.location = location;
-//		changesList[0] = ch;
 		changesList[0] = new Change(changesList[0], container, oldValue, location);
 	}	
 	

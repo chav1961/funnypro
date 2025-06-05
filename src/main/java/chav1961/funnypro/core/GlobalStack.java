@@ -101,7 +101,7 @@ public class GlobalStack implements IFProGlobalStack, IFProModule {
 	
 	@Override
 	public GlobalStackTop pop() {
-		if (top == ROOT) {
+		if (top.entity == ROOT) {
 			throw new IllegalStateException("Stack exhaused!");
 		}
 		else {

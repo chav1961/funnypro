@@ -24,7 +24,7 @@ public class CommonUtilsTest {
 			}
 			
 			iogba.flush();
-			iogba.reset();
+			iogba.rewind();
 			Assert.assertNull(CommonUtil.readString(iogba));
 			Assert.assertEquals("test string",CommonUtil.readString(iogba));
 
@@ -55,7 +55,7 @@ public class CommonUtilsTest {
 			}
 			
 			iogba.flush();
-			iogba.reset();
+			iogba.rewind();
 
 			CommonUtil.readTree(iogba,newSti,()->null);
 			Assert.assertTrue(newSti.seekName((CharSequence)"name1") >= 0);
