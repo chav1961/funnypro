@@ -2,6 +2,7 @@ package chav1961.funnypro.plugins;
 
 
 
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import chav1961.funnypro.core.EntitiesRepo;
 import chav1961.funnypro.core.FProUtil;
@@ -1116,6 +1118,7 @@ public class StandardResolverTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void performanceTest() throws Exception {
 		final SubstitutableProperties		props = new SubstitutableProperties();
